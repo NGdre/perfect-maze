@@ -1,19 +1,24 @@
 import { StateCreator } from "zustand";
 import {
   createIdToCellMap,
+  fillCellsWithOpenNeighbors,
   generateRectMazeId,
   RectMaze,
+  removeWallsBetweenCells,
   type PolygonCell,
 } from "@models/maze";
 import { type CellPatch } from "@models/CellHistory";
 import { getFunctionById } from "@solvers/index";
 import { MainStore } from "@stores/index";
+import { WallHistoryState } from "src/models/wall-history";
+import { cloneDeep } from "lodash";
 
 function initSerialSolver(
   startId: string,
   endId: string,
   mazeSolverId: number,
-  mazeInstance: RectMaze | null
+  mazeInstance: RectMaze | null,
+  wallsToRemove: WallHistoryState
 ) {
   const mazeSolver = getFunctionById(mazeSolverId, "SteppedAlgoExecution");
 
@@ -21,7 +26,11 @@ function initSerialSolver(
 
   if (!mazeSolver || !maze) return false;
 
-  const cells = maze.cells;
+  const cells = cloneDeep(maze.cells);
+
+  removeWallsBetweenCells(cells, wallsToRemove);
+  fillCellsWithOpenNeighbors(cells);
+
   const map = createIdToCellMap(cells);
 
   return mazeSolver(startId, endId, map);
@@ -116,7 +125,8 @@ export const createMazeSolutionSlice: StateCreator<
         startId,
         endId,
         get().mazeSolverId,
-        get().mazeInstance
+        get().mazeInstance,
+        get().wallHistory.history
       );
       set({ serialSolver });
     }
@@ -163,7 +173,8 @@ export const createMazeSolutionSlice: StateCreator<
         startId,
         endId,
         get().mazeSolverId,
-        get().mazeInstance
+        get().mazeInstance,
+        get().wallHistory.history
       );
 
       set({ serialSolver });
