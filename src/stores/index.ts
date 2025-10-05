@@ -10,13 +10,22 @@ import {
   MazeSolutionSlice,
 } from "./slices/mazeSolutionSlice";
 
+export const MazeMode = {
+  generation: "generation",
+  solving: "solving",
+} as const;
+
+export type MazeMode = (typeof MazeMode)[keyof typeof MazeMode];
+
 type State = {
   isMazeRendering: boolean;
   cellHistory: CellHistory;
+  mazeMode: MazeMode;
 };
 
 type Action = {
   setIsMazeRendering: (newStatus: State["isMazeRendering"]) => void;
+  setMazeMode: (mazeMode: MazeMode) => void;
 };
 
 export type MainStore = State &
@@ -32,6 +41,7 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
       return {
         cellHistory,
         isMazeRendering: false,
+        mazeMode: MazeMode.generation,
         ...initialState,
 
         ...createMazeGenerationSlice(set, get, api),
@@ -39,6 +49,15 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
 
         setIsMazeRendering(newStatus) {
           set({ isMazeRendering: newStatus });
+        },
+
+        setMazeMode(mazeMode) {
+          if (mazeMode === MazeMode.generation) {
+            get().resetSolution();
+            set({ mazeMode });
+          } else {
+            set({ mazeMode });
+          }
         },
       };
     })

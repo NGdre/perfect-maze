@@ -1,7 +1,7 @@
 import "./tabs.css";
 import ResizeForm from "./ResizeForm.tsx";
 import MazeGenerationButton from "./MazeGenerationButton.tsx";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { Tab, Tabs, TabList, TabPanel, TabsProps } from "react-tabs";
 import SelectButtons from "../lib/SelectButtons.tsx";
 import { useMazeStore } from "@stores/maze-store.ts";
 import PathFindingButton from "./PathFindingButton.tsx";
@@ -10,6 +10,7 @@ import {
   mazeSolversNames,
   solversInfo,
 } from "@solvers/index.ts";
+import { MazeMode } from "@stores/index.ts";
 import { generatorNames } from "@generators/index.ts";
 import { useTakeStepInSolution } from "@stores/selectors.ts";
 import HistoryControls from "./HistoryControls.tsx";
@@ -92,14 +93,32 @@ export function TabPanelContentForPathFinding() {
 }
 
 export default function MazeControlTabs() {
+  const setMazeMode = useMazeStore((state) => state.setMazeMode);
+
+  const handleTabSelect: TabsProps["onSelect"] = (
+    _index,
+    _lastIndex,
+    event
+  ) => {
+    const tabElement = event.target as HTMLElement;
+    const mazeMode = tabElement.dataset.mazeMode;
+
+    if (mazeMode) setMazeMode(mazeMode as MazeMode);
+  };
+
   return (
     <Tabs
       selectedTabClassName={classNames.selectedTab}
       className={classNames.tabsComponent}
+      onSelect={handleTabSelect}
     >
       <TabList className={classNames.tabList}>
-        <Tab className={classNames.tab}>{tabNameForGeneration}</Tab>
-        <Tab className={classNames.tab}>{tabNameForPathFinding}</Tab>
+        <Tab className={classNames.tab} data-maze-mode={MazeMode.generation}>
+          {tabNameForGeneration}
+        </Tab>
+        <Tab className={classNames.tab} data-maze-mode={MazeMode.solving}>
+          {tabNameForPathFinding}
+        </Tab>
       </TabList>
 
       <TabPanel>
