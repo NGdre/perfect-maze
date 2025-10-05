@@ -11,9 +11,8 @@ import {
   solversInfo,
 } from "@solvers/index.ts";
 import { generatorNames } from "@generators/index.ts";
-import TakeSolutionStepButton from "./TakeSolutionStepButton.tsx";
-import StopOrResumeButton from "./StopOrResumeButton.tsx";
-import ClearMazeButton from "./ClearMazeButton.tsx";
+import { useTakeStepInSolution } from "@stores/selectors.ts";
+import HistoryControls from "./HistoryControls.tsx";
 
 const classNames = {
   selectedTab: "tab--selected",
@@ -40,6 +39,10 @@ export function TabPanelContentForMazeGeneration() {
     (state) => state.updateMazeGenerationAlgorithm
   );
 
+  const takeStepInGeneration = useMazeStore(
+    (state) => state.takeStepInGeneration
+  );
+
   return (
     <>
       <ResizeForm />
@@ -49,6 +52,7 @@ export function TabPanelContentForMazeGeneration() {
         onSelect={(option) => option && updateMazeGenerator(option)}
       />
       <MazeGenerationButton />
+      <HistoryControls onStep={takeStepInGeneration} />
     </>
   );
 }
@@ -57,6 +61,7 @@ export function TabPanelContentForPathFinding() {
   const setCellSelection = useMazeStore((state) => state.setCellSelection);
   const setMazeSolverId = useMazeStore((state) => state.setMazeSolverId);
   const mazeSolverId = useMazeStore((state) => state.mazeSolverId);
+  const takeStepInSolution = useTakeStepInSolution();
 
   return (
     <>
@@ -80,12 +85,7 @@ export function TabPanelContentForPathFinding() {
         <PathFindingButton />
       )}
       {solversInfo[mazeSolverId].features.includes("SteppedAlgoExecution") && (
-        <>
-          <ClearMazeButton />
-          <TakeSolutionStepButton direction="backward" />
-          <StopOrResumeButton />
-          <TakeSolutionStepButton direction="forward" />
-        </>
+        <HistoryControls onStep={takeStepInSolution} />
       )}
     </>
   );

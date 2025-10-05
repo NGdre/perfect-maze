@@ -1,9 +1,5 @@
 import { useEffect } from "react";
-import {
-  useIsMazeRendering,
-  useSetIsMazeRendering,
-  useTakeStepInSolution,
-} from "@stores/selectors";
+import { useIsMazeRendering, useSetIsMazeRendering } from "@stores/selectors";
 import { VISIALIZATION_ANIMATION_DELAY } from "@constants";
 
 const buttonText = {
@@ -11,21 +7,15 @@ const buttonText = {
   RESUME: "запустить",
 };
 
-const StopOrResumeButton = () => {
-  const takeStepInSolution = useTakeStepInSolution();
+const StopOrResumeButton = ({ onStep }: { onStep: () => boolean }) => {
   const isMazeRendering = useIsMazeRendering();
   const setIsMazeRendering = useSetIsMazeRendering();
 
   useEffect(() => {
-    if (!isMazeRendering) {
-      setIsMazeRendering(false);
-      return;
-    }
-
-    setIsMazeRendering(true);
+    if (!isMazeRendering) return;
 
     const animationTimer = setInterval(() => {
-      const success = takeStepInSolution("forward");
+      const success = onStep();
 
       if (!success) setIsMazeRendering(false);
     }, VISIALIZATION_ANIMATION_DELAY);

@@ -1,12 +1,17 @@
-import { useMazeStore } from "../../stores/maze-store";
+import { MazeMode, useMazeStore } from "@stores/index";
 
 const ClearMazeButton = () => {
-  const clearMaze = useMazeStore((state) => state.resetSolution);
+  const resetSolution = useMazeStore((state) => state.resetSolution);
+  const resetMaze = useMazeStore((state) => state.resetMaze);
+
+  const mazeMode = useMazeStore((state) => state.mazeMode);
   const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
   return (
     <button
       onClick={() => {
-        clearMaze();
+        if (mazeMode === MazeMode.generation) {
+          resetMaze();
+        } else resetSolution();
       }}
       disabled={isMazeRendering}
     >
