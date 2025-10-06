@@ -23,6 +23,7 @@ type State = {
   columnsAmount: RectMaze["cols"];
   serialGenerator: Generator<any, void, any> | null;
   wallHistory: WallHistorySnapshot;
+  isMazeGenerationDone: boolean;
 };
 
 type Action = {
@@ -53,6 +54,7 @@ export const createMazeGenerationSlice: StateCreator<
   mazeInstance: null,
   serialGenerator: null,
   wallHistory: createWallHistory(),
+  isMazeGenerationDone: false,
 
   updateRowsAmount: (newRowsAmount) => set({ rowsAmount: newRowsAmount }),
 
@@ -80,7 +82,7 @@ export const createMazeGenerationSlice: StateCreator<
   },
 
   resetMaze() {
-    set({ wallHistory: clearHistory() });
+    set({ wallHistory: clearHistory(), isMazeGenerationDone: false });
   },
 
   // return true if serialGenerator is done, otherwise false
@@ -113,12 +115,13 @@ export const createMazeGenerationSlice: StateCreator<
         pair[1].id,
       ]);
 
-      set({ serialGenerator });
+      set({ serialGenerator, isMazeGenerationDone: false });
     }
 
     const next = serialGenerator?.next();
 
     if (next && next.done) {
+      set({ isMazeGenerationDone: true });
       return false;
     }
 
@@ -148,11 +151,12 @@ export const createMazeGenerationSlice: StateCreator<
         pair[1].id,
       ]);
 
-      set({ serialGenerator });
+      set({ serialGenerator, isMazeGenerationDone: false });
     }
 
     set({
       wallHistory: saveHistoryChanges(wallHistory, [...serialGenerator!]),
+      isMazeGenerationDone: true,
     });
   },
 });

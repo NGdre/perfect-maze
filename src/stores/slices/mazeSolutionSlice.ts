@@ -111,6 +111,7 @@ export const createMazeSolutionSlice: StateCreator<
       serialSolver: null,
       currVisualMazeChange: null,
       mazeSolution: [],
+      isSerialSolverDone: false,
     });
   },
 
@@ -134,6 +135,7 @@ export const createMazeSolutionSlice: StateCreator<
 
     set({
       currVisualMazeChange: cellHistory.historyCurrentStep.forward,
+      isSerialSolverDone: true,
     });
   },
 
@@ -177,7 +179,7 @@ export const createMazeSolutionSlice: StateCreator<
         get().wallHistory.history
       );
 
-      set({ serialSolver });
+      set({ serialSolver, isSerialSolverDone: false });
     }
 
     const next = serialSolver?.next();
