@@ -94,6 +94,7 @@ export function TabPanelContentForPathFinding() {
 
 export default function MazeControlTabs() {
   const setMazeMode = useMazeStore((state) => state.setMazeMode);
+  const mazeMode = useMazeStore((state) => state.mazeMode);
 
   const handleTabSelect: TabsProps["onSelect"] = (
     _index,
@@ -106,9 +107,12 @@ export default function MazeControlTabs() {
     if (mazeMode) setMazeMode(mazeMode as MazeMode);
   };
 
+  const selectedIndex = mazeMode === MazeMode.generation ? 0 : 1;
+
   return (
     <Tabs
       selectedTabClassName={classNames.selectedTab}
+      selectedIndex={selectedIndex}
       className={classNames.tabsComponent}
       onSelect={handleTabSelect}
     >
