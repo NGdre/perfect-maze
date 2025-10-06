@@ -25,3 +25,10 @@ export const useSetIsMazeRendering = () =>
 
 export const useTakeStepInSolution = () =>
   useMazeStore((state) => state.takeStepInSolution);
+
+export const useSetMazeMode = () => useMazeStore((state) => state.setMazeMode);
+
+export const useGenerateMaze = () =>
+  useMazeStore((state) => state.generateMaze);
+
+export const useMazeMode = () => useMazeStore((state) => state.mazeMode);

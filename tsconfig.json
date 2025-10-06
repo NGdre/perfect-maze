@@ -10,6 +10,7 @@
       "@solvers/*": ["src/models/solvers/*"],
       "@models/*": ["src/models/*"],
       "@stores/*": ["src/stores/*"],
+      "@stores": ["src/stores/index"],
       "@constants": ["src/constants"]
     }
   },

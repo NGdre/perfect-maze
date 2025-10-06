@@ -12,7 +12,11 @@ import {
 } from "@solvers/index.ts";
 import { MazeMode } from "@stores/index.ts";
 import { generatorNames } from "@generators/index.ts";
-import { useTakeStepInSolution } from "@stores/selectors.ts";
+import {
+  useMazeMode,
+  useSetMazeMode,
+  useTakeStepInSolution,
+} from "@stores/selectors.ts";
 import HistoryControls from "./HistoryControls.tsx";
 
 const classNames = {
@@ -93,8 +97,8 @@ export function TabPanelContentForPathFinding() {
 }
 
 export default function MazeControlTabs() {
-  const setMazeMode = useMazeStore((state) => state.setMazeMode);
-  const mazeMode = useMazeStore((state) => state.mazeMode);
+  const setMazeMode = useSetMazeMode();
+  const mazeMode = useMazeMode();
 
   const handleTabSelect: TabsProps["onSelect"] = (
     _index,
