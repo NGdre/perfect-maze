@@ -1,5 +1,5 @@
 import Spinner from "./Spinner";
-import Button from "./Button";
+import Button from "./button/Button";
 
 export default function RunAndWaitButton({
   onClick,
