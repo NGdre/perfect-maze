@@ -1,12 +1,13 @@
-import "./resetCSS.css";
-import "./App.css";
+import { useMazeGenerationWarning } from "src/hooks/useMazeGenerationWarning.ts";
 
 import { PROJECT_NAME } from "../constants.ts";
-import MazeControlTabs from "./maze-control/MazeControlTabs.tsx";
-import { MazeCanvasImproved } from "./maze-canvas/MazeCanvas.tsx";
+import "./App.css";
+import Logo from "./Logo.tsx";
 import { Dialog } from "./lib/dialog/Dialog.tsx";
 import { useDialog } from "./lib/dialog/useDialog.ts";
-import { useMazeGenerationWarning } from "src/hooks/useMazeGenerationWarning.ts";
+import { MazeCanvasImproved } from "./maze-canvas/MazeCanvas.tsx";
+import MazeControlTabs from "./maze-control/MazeControlTabs.tsx";
+import "./resetCSS.css";
 
 const classNames = {
   mainContainer: "container mx-auto px-4 flex",
@@ -21,7 +22,7 @@ function App() {
   return (
     <div className="bg-gray-50">
       <header className="mb-4">
-        <h1 className={classNames.logoText}>{PROJECT_NAME}</h1>
+        <Logo logoText={PROJECT_NAME} />
       </header>
       <main className={classNames.mainContainer}>
         <div className="left-panel">

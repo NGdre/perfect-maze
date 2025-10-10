@@ -6,7 +6,7 @@ export const MAX_ROWS = 100;
 export const MIN_COLUMNS = 5;
 export const MAX_COLUMNS = 100;
 
-export const PROJECT_NAME = "maze app";
+export const PROJECT_NAME = "Perfect Maze";
 
 export const colors = {
   WALL_COLOR: "#5f0f40",
