@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+
 import { DialogConfig } from "./Dialog";
 
 export const useDialog = () => {
   const [dialog, setDialog] = useState<DialogConfig | null>(null);
 
-  const showDialog = (config: DialogConfig) => {
+  const showDialog = useCallback((config: DialogConfig) => {
     setDialog(config);
-  };
+  }, []);
 
   const hideDialog = () => {
     setDialog(null);
