@@ -1,10 +1,9 @@
-import { ReactNode, useRef, useState, useEffect, createContext } from "react";
+import { ReactNode, createContext, useEffect, useRef, useState } from "react";
 
 const CanvasContainerStyles = {
-  width: "80vw",
+  width: "100%",
   height: "60vh",
   border: "1px solid #ccc",
-  margin: "20px auto",
   overflow: "hidden",
 };
 
@@ -25,9 +24,11 @@ export const CanvasContext =
 
 export const CanvasLayersContainer = ({
   targetAspect,
+  containerClassName,
   children,
 }: {
   targetAspect?: number;
+  containerClassName?: string;
   children: ReactNode;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,6 +61,7 @@ export const CanvasLayersContainer = ({
         position: "relative",
         ...CanvasContainerStyles,
       }}
+      className={containerClassName}
     >
       <CanvasContext.Provider value={containerSize}>
         {children}
