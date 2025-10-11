@@ -111,10 +111,9 @@ export const ChoiceChips: React.FC<ChoiceChipsProps> = ({
           <button
             key={option.value}
             className={clsx(
-              "inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 capitalize outline-none transition-all duration-200 hover:bg-gray-100",
-              isSelected && "border-blue-500 bg-blue-50 text-blue-700",
+              "inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 capitalize outline-none transition-all duration-200 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+              isSelected && "!border-primary-500 text-primary-700 bg-blue-50",
               option.disabled && "cursor-not-allowed opacity-60",
-              isFocused && "ring-2 ring-blue-500 ring-offset-2",
               chipClassName,
             )}
             style={chipStyle}
