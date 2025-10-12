@@ -13,6 +13,7 @@ export default {
         primary: colors.blue,
         accent: colors.purple,
         "text-primary": colors.gray[600],
+        "bg-primary": colors.indigo[50],
       },
     },
   },

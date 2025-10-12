@@ -9,25 +9,39 @@ import MazeViewport from "./maze-canvas/MazeViewport.tsx";
 import MazeControlTabs from "./maze-control/MazeControlTabs.tsx";
 import "./resetCSS.css";
 
+function Header({ padding }: { padding: number }) {
+  return (
+    <div className="border-b-2 border-primary-100 bg-bg-primary">
+      <header className={`px-${padding} py-3`}>
+        <Logo logoText={PROJECT_NAME} />
+      </header>
+    </div>
+  );
+}
+
 function App() {
   const { dialog, showDialog, hideDialog } = useDialog();
 
   useMazeGenerationWarning(showDialog);
 
+  const isSidebarOnTheRight = false;
+  const padding = 10;
+
   return (
-    <div className="h-screen bg-gray-50 text-text-primary">
-      <div className="container mx-auto space-y-10">
-        <header>
-          <Logo logoText={PROJECT_NAME} />
-        </header>
-        <main className="flex space-x-10">
-          <MazeViewport containerClassName="w-full" />
-          <aside className="w-1/4">
-            <MazeControlTabs />
-          </aside>
+    <div className="flex h-screen flex-col bg-blue-50 text-text-primary">
+      <Header padding={padding} />
+      <div className="flex flex-1">
+        <aside
+          className={`order-${Number(isSidebarOnTheRight)} w-1/4 max-w-96 border-r border-primary-100 bg-white/60 p-${padding}`}
+        >
+          <MazeControlTabs />
+        </aside>
+        <main className={`mx-${padding} flex-1`}>
+          <MazeViewport containerClassName="stripes mt-10 !border-primary-100" />
         </main>
-        {dialog && <Dialog {...dialog} onClose={hideDialog} />}
       </div>
+
+      {dialog && <Dialog {...dialog} onClose={hideDialog} />}
     </div>
   );
 }
