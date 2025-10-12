@@ -1,18 +1,21 @@
-import { useRef, useEffect, useState, useContext } from "react";
-import { type CanvasContextType, CanvasContext } from "./CanvasLayersContainer";
+import { useContext, useEffect, useRef, useState } from "react";
+
+import { CanvasContext, type CanvasContextType } from "./CanvasLayersContainer";
 
 export type CanvasLayerProps = {
   onRender: (
     ctx: CanvasRenderingContext2D,
     renderWidth: number,
     renderHeight: number,
-    dpr: number
+    dpr: number,
   ) => void | Promise<void> | (() => void);
+  className?: string;
   isInteractive?: boolean;
 };
 
 export const CanvasLayer = ({
   onRender,
+  className,
   isInteractive = false,
 }: CanvasLayerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,7 +76,7 @@ export const CanvasLayer = ({
       ctx,
       dimensions.renderWidth,
       dimensions.renderHeight,
-      dimensions.dpr
+      dimensions.dpr,
     );
 
     if (typeof fn === "function") return () => fn();
@@ -89,6 +92,7 @@ export const CanvasLayer = ({
         transform: `translate(-50%, -50%)`,
         pointerEvents: isInteractive ? "auto" : "none",
       }}
+      className={className}
     />
   );
 };
