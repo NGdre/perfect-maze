@@ -1,34 +1,20 @@
-import { generatorNames } from "@generators/index.ts";
-import {
-  getSolverIdByAlgoName,
-  mazeSolversNames,
-  solversInfo,
-} from "@solvers/index.ts";
-import { MazeMode } from "@stores/index.ts";
-import { useMazeStore } from "@stores/maze-store.ts";
+import { generatorNames } from "@generators";
+import { getSolverIdByAlgoName, mazeSolversNames, solversInfo } from "@solvers";
+import { MazeMode, useMazeStore } from "@stores";
 import {
   useMazeMode,
   useSetMazeMode,
   useTakeStepInSolution,
 } from "@stores/selectors.ts";
-import { FiFlag } from "react-icons/fi";
-import { FiMapPin } from "react-icons/fi";
+
+import { FiFlag, FiMapPin } from "react-icons/fi";
 import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 
 import { ChoiceChips } from "../lib/choice-chips/ChoiceChips.tsx";
+import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
 import HistoryControls from "./HistoryControls.tsx";
 import MazeGenerationButton from "./MazeGenerationButton.tsx";
 import PathFindingButton from "./PathFindingButton.tsx";
-import ResizeForm from "./ResizeForm.tsx";
-import "./tabs.css";
-
-const classNames = {
-  selectedTab: "tab--selected",
-  tabsComponent: "flex flex-col items-center",
-  tab: "tab",
-  tabList: "tab-list",
-  headingForAlgoSet: "mt-5",
-};
 
 const tabNameForGeneration = "Генерация";
 const tabNameForPathFinding = "Нахождение пути";
@@ -72,7 +58,6 @@ function StartOrEndChoiceChips() {
       value: "1",
       label: "выбрать конец",
       icon: <FiMapPin />,
-      disabled: true,
     },
   ];
 
@@ -100,14 +85,13 @@ export function TabPanelContentForMazeGeneration() {
 
   return (
     <>
-      <ResizeForm />
-      <h2 className={classNames.headingForAlgoSet}>{headingForGenerators}</h2>
+      <MazeGenerationButton />
+      <HistoryControls onStep={takeStepInGeneration} />
+      <MazeControlsHeading>{headingForGenerators}</MazeControlsHeading>
       <AlgorithmChoiceChips
         algorithmNames={generatorNames}
         updateAlgoritm={updateMazeGenerator}
       />
-      <MazeGenerationButton />
-      <HistoryControls onStep={takeStepInGeneration} />
     </>
   );
 }
@@ -119,19 +103,21 @@ export function TabPanelContentForPathFinding() {
 
   return (
     <>
-      <StartOrEndChoiceChips />
-      <h2 className={classNames.headingForAlgoSet}>{headingForPathFinders}</h2>
-
-      <AlgorithmChoiceChips
-        algorithmNames={mazeSolversNames}
-        updateAlgoritm={(algo) => setMazeSolverId(getSolverIdByAlgoName(algo))}
-      />
       {solversInfo[mazeSolverId].features.includes("JumpToFinal") && (
         <PathFindingButton />
       )}
       {solversInfo[mazeSolverId].features.includes("SteppedAlgoExecution") && (
         <HistoryControls onStep={takeStepInSolution} />
       )}
+
+      <StartOrEndChoiceChips />
+
+      <MazeControlsHeading>{headingForPathFinders}</MazeControlsHeading>
+
+      <AlgorithmChoiceChips
+        algorithmNames={mazeSolversNames}
+        updateAlgoritm={(algo) => setMazeSolverId(getSolverIdByAlgoName(algo))}
+      />
     </>
   );
 }
@@ -153,27 +139,34 @@ export default function MazeControlTabs() {
 
   const selectedIndex = mazeMode === MazeMode.generation ? 0 : 1;
 
+  const tabClassName = `hover:text-primary-500 border-b-2 transition-all border-transparent
+     py-4 text-sm font-semibold cursor-pointer
+     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-opacity-50 
+     flex-1 text-center min-w-0 capitalize tracking-wider`;
+
+  const tabPanelClassName = "space-y-5";
   return (
     <Tabs
-      selectedTabClassName={classNames.selectedTab}
+      selectedTabClassName="!border-primary-500 text-primary-500 font-bold"
       selectedIndex={selectedIndex}
-      className={classNames.tabsComponent}
       onSelect={handleTabSelect}
     >
-      <TabList className={classNames.tabList}>
-        <Tab className={classNames.tab} data-maze-mode={MazeMode.generation}>
+      <MazeControlsHeading>управление</MazeControlsHeading>
+
+      <TabList className="mb-5 flex border-b border-gray-400">
+        <Tab className={tabClassName} data-maze-mode={MazeMode.generation}>
           {tabNameForGeneration}
         </Tab>
-        <Tab className={classNames.tab} data-maze-mode={MazeMode.solving}>
+        <Tab className={tabClassName} data-maze-mode={MazeMode.solving}>
           {tabNameForPathFinding}
         </Tab>
       </TabList>
 
-      <TabPanel>
+      <TabPanel className={tabPanelClassName}>
         <TabPanelContentForMazeGeneration />
       </TabPanel>
 
-      <TabPanel>
+      <TabPanel className={tabPanelClassName}>
         <TabPanelContentForPathFinding />
       </TabPanel>
     </Tabs>
