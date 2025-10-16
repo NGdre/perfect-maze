@@ -1,8 +1,11 @@
-import "./button.css";
+import clsx from "clsx";
+
 import React, { useMemo, useState } from "react";
 import { FiLoader } from "react-icons/fi";
 
-interface ButtonProps {
+import "./button.css";
+
+export interface ButtonProps {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
@@ -13,7 +16,7 @@ interface ButtonProps {
   active?: boolean;
   onClick?: (
     event: React.MouseEvent<HTMLButtonElement>,
-    isActive: boolean
+    isActive: boolean,
   ) => void;
   type?: "button" | "submit" | "reset";
   ariaLabel?: string;
@@ -58,7 +61,7 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   const buttonClasses = useMemo(() => {
-    const baseClasses = [
+    return clsx(
       "btn",
       `btn--${variant}`,
       `btn--${size}`,
@@ -66,16 +69,12 @@ const Button: React.FC<ButtonProps> = ({
       disabled && "btn--disabled",
       isLoading && "btn--loading",
       className,
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    return baseClasses;
+    );
   }, [variant, size, active, disabled, isLoading, className]);
 
   const hasIcon = useMemo(() => {
     return React.Children.toArray(children).some(
-      (child) => React.isValidElement(child) && typeof child.type !== "string"
+      (child) => React.isValidElement(child) && typeof child.type !== "string",
     );
   }, [children]);
 
@@ -126,17 +125,19 @@ const Button: React.FC<ButtonProps> = ({
   }, [ariaLabel, isToggle, active, isLoading, disabled]);
 
   return (
-    <button
-      type={type}
-      className={buttonClasses}
-      disabled={disabled || isLoading}
-      onClick={handleClick}
-      title={title}
-      {...ariaAttributes}
-      {...rest}
-    >
-      {renderContent()}
-    </button>
+    <div className={clsx(disabled && "cursor-not-allowed")}>
+      <button
+        type={type}
+        className={buttonClasses}
+        disabled={disabled || isLoading}
+        onClick={handleClick}
+        title={title}
+        {...ariaAttributes}
+        {...rest}
+      >
+        {renderContent()}
+      </button>
+    </div>
   );
 };
 
