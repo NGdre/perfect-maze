@@ -1,4 +1,4 @@
-const colors = require("tailwindcss/colors");
+import { colors } from "./src/constants.ts";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -9,11 +9,9 @@ export default {
       serif: ["Merriweather", "serif"],
     },
     extend: {
-      colors: {
-        primary: colors.blue,
-        accent: colors.purple,
-        "text-primary": colors.gray[600],
-        "bg-primary": colors.indigo[50],
+      colors,
+      spacing: {
+        "between-header-main-sidebar": "2.5rem",
       },
     },
   },

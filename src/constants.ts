@@ -1,3 +1,5 @@
+import tailwindColors from "tailwindcss/colors";
+
 export const DEFAULT_ROWS_AMOUNT = 20;
 export const DEFAULT_COLUMNS_AMOUNT = 29;
 
@@ -15,6 +17,11 @@ export const colors = {
   END_CELL: "pink",
   HOVERED_CELL: "purple",
   PATH_COLOR: "red",
+  primary: tailwindColors.blue,
+  accent: tailwindColors.purple,
+  "text-primary": tailwindColors.gray[600],
+  "bg-primary": tailwindColors.indigo[50],
+  "blue-25": "#fafcff",
 } as const;
 
 export const PATH_WIDTH = 2;
