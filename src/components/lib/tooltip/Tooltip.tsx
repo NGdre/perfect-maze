@@ -1,13 +1,20 @@
+import { ComponentProps } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
-function Tooltip({ id }: { id?: string }) {
+type ReactTooltipProps = Omit<ComponentProps<typeof ReactTooltip>, "id">;
+
+interface TooltipProps {
+  id?: string;
+}
+
+function Tooltip({ id, ...rest }: TooltipProps & ReactTooltipProps) {
   return (
     <ReactTooltip
       id={id}
-      className="!rounded !px-2 !py-1 !text-xs !text-white !shadow-lg"
-      variant="info"
-      delayShow={500}
-      delayHide={200}
+      className="!rounded !bg-primary-500 !px-2 !py-1 !text-xs !text-white !shadow-lg"
+      delayShow={150}
+      delayHide={100}
+      {...rest}
     />
   );
 }
