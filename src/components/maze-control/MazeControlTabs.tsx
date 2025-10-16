@@ -12,9 +12,7 @@ import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 
 import { ChoiceChips } from "../lib/choice-chips/ChoiceChips.tsx";
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
-import HistoryControls from "./HistoryControls.tsx";
-import MazeGenerationButton from "./MazeGenerationButton.tsx";
-import PathFindingButton from "./PathFindingButton.tsx";
+import VisualizationControls from "./VisualizationControls.tsx";
 
 const tabNameForGeneration = "Генерация";
 const tabNameForPathFinding = "Нахождение пути";
@@ -35,11 +33,14 @@ function AlgorithmChoiceChips<T extends string>({
   algorithmNames: T[];
   updateAlgoritm: (algorithm: T) => void;
 }) {
+  const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
+
   return (
     <ChoiceChips
       options={algorithmNames.map((label, i) => ({
         value: String(i),
         label,
+        disabled: isMazeRendering,
       }))}
       onChange={(index) => index && updateAlgoritm(algorithmNames[+index])}
     />
@@ -48,16 +49,19 @@ function AlgorithmChoiceChips<T extends string>({
 
 function StartOrEndChoiceChips() {
   const setCellSelection = useMazeStore((state) => state.setCellSelection);
+  const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
   const options = [
     {
       value: "0",
       label: "выбрать старт",
       icon: <FiFlag />,
+      disabled: isMazeRendering,
     },
     {
       value: "1",
       label: "выбрать конец",
       icon: <FiMapPin />,
+      disabled: isMazeRendering,
     },
   ];
 
@@ -84,10 +88,18 @@ export function TabPanelContentForMazeGeneration() {
     (state) => state.takeStepInGeneration,
   );
 
+  const resetMaze = useMazeStore((state) => state.resetMaze);
+  const generateMaze = useMazeStore((state) => state.generateMaze);
+
   return (
     <>
-      <MazeGenerationButton />
-      <HistoryControls onStep={takeStepInGeneration} />
+      <VisualizationControls
+        onStep={takeStepInGeneration}
+        onReset={resetMaze}
+        onComplete={generateMaze}
+        resetTooltipContent="сбросить лабиринт"
+        completeTooltipContent="сгенерировать лабиринт"
+      />
       <MazeControlsHeading>{headingForGenerators}</MazeControlsHeading>
       <AlgorithmChoiceChips
         algorithmNames={generatorNames}
@@ -101,14 +113,19 @@ export function TabPanelContentForPathFinding() {
   const setMazeSolverId = useMazeStore((state) => state.setMazeSolverId);
   const mazeSolverId = useMazeStore((state) => state.mazeSolverId);
   const takeStepInSolution = useTakeStepInSolution();
+  const resetSolution = useMazeStore((state) => state.resetSolution);
+  const solveMaze = useMazeStore((state) => state.solveMaze);
 
   return (
     <>
-      {solversInfo[mazeSolverId].features.includes("JumpToFinal") && (
-        <PathFindingButton />
-      )}
       {solversInfo[mazeSolverId].features.includes("SteppedAlgoExecution") && (
-        <HistoryControls onStep={takeStepInSolution} />
+        <VisualizationControls
+          onStep={takeStepInSolution}
+          onReset={resetSolution}
+          onComplete={solveMaze}
+          resetTooltipContent="сбросить путь"
+          completeTooltipContent="найти путь"
+        />
       )}
 
       <StartOrEndChoiceChips />
@@ -154,7 +171,7 @@ export default function MazeControlTabs() {
     >
       <MazeControlsHeading>управление</MazeControlsHeading>
 
-      <TabList className="mb-5 flex border-b border-gray-400">
+      <TabList className="mb-10 flex border-b border-gray-400">
         <Tab className={tabClassName} data-maze-mode={MazeMode.generation}>
           {tabNameForGeneration}
         </Tab>
