@@ -70,6 +70,7 @@ function StartOrEndChoiceChips() {
         if (value === options[1].value) setCellSelection("end");
         if (value === null) setCellSelection("none");
       }}
+      value={null}
     />
   );
 }
