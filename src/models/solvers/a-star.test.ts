@@ -1,6 +1,7 @@
 import { aStarVisualSchema } from "src/configs/visual";
-import { generateRectMazeId, type PolygonCell } from "../maze";
-import { applyAStarVisual, aStarSerial } from "./a-star";
+
+import { type PolygonCell, generateRectMazeId } from "../maze";
+import { aStarSerial, applyAStarVisual } from "./a-star";
 import { idToCellMapFixture } from "./fixtures/id-to-cell-map-fixture";
 
 jest.mock("./reconstruct-path", () => ({
@@ -21,7 +22,7 @@ describe("aStar", () => {
       ...aStarSerial(
         start,
         end,
-        idToCellMapFixture as Map<string, PolygonCell>
+        idToCellMapFixture as Map<string, PolygonCell>,
       ),
     ];
     const pathSteps = steps.filter((step) => step.isPathCell);
@@ -64,7 +65,7 @@ describe("aStar", () => {
 describe("applyAStarVisual", () => {
   test("works as expected when isPathCell equals true", () => {
     const solutionStep = {
-      isPathCell: true,
+      isPathCell: true as const,
       prevCellId: "0,0",
       foundPath: "0,1",
     };
@@ -82,10 +83,14 @@ describe("applyAStarVisual", () => {
 
   test("when isPathCell equals false and there are no cells for enqueued array", () => {
     const solutionStep = {
-      isPathCell: false,
+      isPathCell: false as const,
       visited: {
         id: "0,0",
-        text: {},
+        text: {
+          "h-value": "0",
+          "g-value": "0",
+          "f-value": "0",
+        },
       },
       enqueued: [],
     };

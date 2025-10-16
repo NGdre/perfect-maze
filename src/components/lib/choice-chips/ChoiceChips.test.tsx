@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+//@ts-ignore
 import React from "react";
 
 import { ChipOption, ChoiceChips } from "./ChoiceChips";

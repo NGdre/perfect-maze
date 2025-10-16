@@ -1,24 +1,24 @@
-import { StateCreator } from "zustand";
+import { type CellPatch } from "@models/CellHistory";
 import {
+  type PolygonCell,
+  RectMaze,
   createIdToCellMap,
   fillCellsWithOpenNeighbors,
   generateRectMazeId,
-  RectMaze,
   removeWallsBetweenCells,
-  type PolygonCell,
 } from "@models/maze";
-import { type CellPatch } from "@models/CellHistory";
+import { WallHistoryState } from "@models/wall-history";
 import { getFunctionById } from "@solvers/index";
 import { MainStore } from "@stores/index";
-import { WallHistoryState } from "src/models/wall-history";
 import { cloneDeep } from "lodash";
+import { StateCreator } from "zustand";
 
 function initSerialSolver(
   startId: string,
   endId: string,
   mazeSolverId: number,
   mazeInstance: RectMaze | null,
-  wallsToRemove: WallHistoryState
+  wallsToRemove: WallHistoryState,
 ) {
   const mazeSolver = getFunctionById(mazeSolverId, "SteppedAlgoExecution");
 
@@ -127,7 +127,7 @@ export const createMazeSolutionSlice: StateCreator<
         endId,
         get().mazeSolverId,
         get().mazeInstance,
-        get().wallHistory.history
+        get().wallHistory.history,
       );
       set({ serialSolver });
     }
@@ -176,7 +176,7 @@ export const createMazeSolutionSlice: StateCreator<
         endId,
         get().mazeSolverId,
         get().mazeInstance,
-        get().wallHistory.history
+        get().wallHistory.history,
       );
 
       set({ serialSolver, isSerialSolverDone: false });

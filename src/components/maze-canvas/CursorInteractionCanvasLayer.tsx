@@ -1,11 +1,13 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { CELL_SELECTION_THROTTLE_DELAY, colors } from "@constants";
-import { createCellFinder, generateRectMazeId, RectMaze } from "@models/maze";
+import { RectMaze, createCellFinder, generateRectMazeId } from "@models/maze";
 import { fillPolygonWithCircle } from "@models/maze-canvas-rendering";
-import { cellSelectionModes, useMazeStore } from "@stores/maze-store";
+import { useMazeStore } from "@stores/maze-store";
 import { useColumnsAmount, useMazeCells } from "@stores/selectors";
+import { CellSelectionModes } from "@stores/slices/mazeSolutionSlice";
 import { flow, noop, throttle } from "@utils";
 import ow from "ow";
+
 import { useCallback } from "react";
 
 export type Position = [row: number, col: number];
@@ -13,7 +15,7 @@ export type Position = [row: number, col: number];
 export const cellPositionOnCanvasHover = (
   canvas: HTMLCanvasElement,
   e: MouseEvent,
-  cellSize: number
+  cellSize: number,
 ): Position => {
   ow(cellSize, ow.number.positive);
 
@@ -38,7 +40,7 @@ function hoverInteraction(config: {
   ctx: CanvasRenderingContext2D;
   cells: RectMaze["cells"] | undefined;
   cellSize: number;
-  cellSelection: cellSelectionModes;
+  cellSelection: CellSelectionModes;
 }) {
   const { ctx, cells, cellSize, cellSelection } = config;
 
@@ -51,7 +53,7 @@ function hoverInteraction(config: {
 
   const hoverCell = throttle((e: MouseEvent) => {
     const cell = findCell(
-      generateRectMazeId(...cellPositionOnCanvasHover(canvas, e, cellSize))
+      generateRectMazeId(...cellPositionOnCanvasHover(canvas, e, cellSize)),
     );
 
     if (cell) {
@@ -76,7 +78,7 @@ function hoverInteraction(config: {
 function clickInteraction(config: {
   ctx: CanvasRenderingContext2D;
   cellSize: number;
-  cellSelection: cellSelectionModes;
+  cellSelection: CellSelectionModes;
   onStart: (startId: string) => void;
   onEnd: (endId: string) => void;
 }) {
@@ -88,7 +90,7 @@ function clickInteraction(config: {
 
   const markCell = (e: MouseEvent) => {
     const id = generateRectMazeId(
-      ...cellPositionOnCanvasHover(canvas, e, cellSize)
+      ...cellPositionOnCanvasHover(canvas, e, cellSize),
     );
 
     if (cellSelection === "start") onStart(id);
@@ -132,7 +134,7 @@ export const CursorInteractionCanvasLayer = () => {
 
       return flow(cleanUpHoverInteraction, cleanUpClickInteraction);
     },
-    [columns, cellSelection, cells]
+    [columns, cellSelection, cells],
   );
 
   return (

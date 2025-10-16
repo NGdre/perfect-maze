@@ -1,6 +1,6 @@
-import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../constants";
-import { mean, flow, first } from "@utils";
+import { flow, mean } from "@utils";
 
+import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../constants";
 import {
   validateArrayInRange,
   validateEqualNumbers,
@@ -83,7 +83,7 @@ export function getCirclePoint(
   r: number,
   theta: number,
   isDegrees = true,
-  clockwise = false
+  clockwise = false,
 ) {
   if (clockwise) theta = -theta;
   if (isDegrees) {
@@ -224,22 +224,10 @@ export type RectMaze = {
   cellSize: number;
 };
 
-const validationRules = {
-  rows: {
-    min: MIN_ROWS,
-    max: MAX_ROWS,
-  },
-
-  cols: {
-    min: MIN_ROWS,
-    max: MAX_ROWS,
-  },
-};
-
 export const createRectMaze = (
   rows: RectMaze["rows"],
   cols: RectMaze["cols"],
-  cellSize: RectMaze["cellSize"]
+  cellSize: RectMaze["cellSize"],
 ): RectMaze => {
   validateIntGreaterThanOrEqual(rows, MIN_ROWS);
   validateIntGreaterThanOrEqual(cols, MIN_COLUMNS);
@@ -295,7 +283,7 @@ export const createCellFinder = flow(createIdToCellMap, findCell);
 
 export function removeWallBetweenCells(
   firstCell: PolygonCell,
-  secondCell: PolygonCell
+  secondCell: PolygonCell,
 ) {
   const firstWalls = firstCell.walls;
   const secondWalls = secondCell.walls;
@@ -317,7 +305,7 @@ export function removeWallBetweenCells(
 
 export function removeWallsBetweenCells(
   cells: MazeCells,
-  pairs: Array<cellsIdPair>
+  pairs: Array<cellsIdPair>,
 ) {
   const pairsLength = pairs.length;
 
@@ -344,7 +332,7 @@ export function removeWallsBetweenCells(
 type wallToCellId = Map<string, cellId[]>;
 
 export const createWallToOpenNeighborsMap = (
-  cells: MazeCells
+  cells: MazeCells,
 ): wallToCellId => {
   const cellsLength = cells.length;
 

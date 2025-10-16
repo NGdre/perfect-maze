@@ -1,6 +1,6 @@
 import { useMazeGenerationWarning } from "src/hooks/useMazeGenerationWarning.ts";
 
-import { PROJECT_NAME, colors } from "../constants.ts";
+import { PROJECT_NAME } from "../constants.ts";
 import "./App.css";
 import Logo from "./Logo.tsx";
 import { Dialog } from "./lib/dialog/Dialog.tsx";

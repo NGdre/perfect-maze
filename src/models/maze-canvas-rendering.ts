@@ -1,6 +1,7 @@
 import { loopPairs } from "@utils";
-import { Point2d, type PolygonCell } from "./maze";
 import ow from "ow";
+
+import { Point2d, type PolygonCell } from "./maze";
 
 type context2d = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
@@ -40,7 +41,7 @@ export function drawLine(config: {
 export function drawWalls(
   ctx: context2d,
   cells: PolygonCell[],
-  opts: { wallColor?: string; lineWidth?: number }
+  opts: { wallColor?: string; lineWidth?: number },
 ) {
   const len = cells.length;
   const color = opts.wallColor;
@@ -62,16 +63,10 @@ export function drawWalls(
   ctx.closePath();
 }
 
-const MazePathConfig = {
-  color: "red",
-  lineWidth: 0.5,
-  isVisible: true,
-};
-
 export function drawPath(
   ctx: context2d,
   path: PolygonCell[],
-  opts: { pathColor?: string; lineWidth?: number }
+  opts: { pathColor?: string; lineWidth?: number },
 ) {
   const color = opts.pathColor;
   const lineWidth = opts.lineWidth;
@@ -83,15 +78,6 @@ export function drawPath(
   });
 }
 
-const cellMarkConfig = {
-  text: "S",
-  textStyle: ".start-mark-text",
-  fillStyle: "green",
-  shape: "circle",
-  fillFraction: 0.9,
-  cellId: "4,7",
-};
-
 const PI2 = Math.PI * 2;
 
 export function fillWithCircle(
@@ -99,7 +85,7 @@ export function fillWithCircle(
   x: number,
   y: number,
   radius: number,
-  color: string
+  color: string,
 ) {
   ctx.beginPath();
 
@@ -128,7 +114,7 @@ export function fillPolygonWithCircle(
   ctx: context2d,
   cell: PolygonCell,
   color: string,
-  fillFraction = 0.9
+  fillFraction = 0.9,
 ) {
   ow(fillFraction, ow.number.positive.lessThanOrEqual(1));
 
@@ -140,5 +126,3 @@ export function fillPolygonWithCircle(
 
   fillWithCircle(ctx, x, y, radius, color);
 }
-
-export function getHoveredCell(canvas: HTMLCanvasElement) {}
