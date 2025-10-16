@@ -1,0 +1,59 @@
+.rotating-shadow {
+  --shadow-offset: 3px;
+  --shadow-spread: 1px;
+
+  --first-color: #ff0080;
+  --second-color: #ff8c00;
+  --third-color: #40e0d0;
+  --forth-color: #9370db;
+
+  animation: rotating-shadow 3s linear infinite;
+}
+
+@keyframes rotating-shadow {
+  0%,
+  100% {
+    box-shadow:
+      var(--shadow-offset) 0 0 calc(-1 * var(--shadow-spread))
+        var(--first-color),
+      0 var(--shadow-offset) 0 calc(-1 * var(--shadow-spread))
+        var(--second-color),
+      calc(-1 * var(--shadow-offset)) 0 0 calc(-1 * var(--shadow-spread))
+        var(--third-color),
+      0 calc(-1 * var(--shadow-offset)) 0 calc(-1 * var(--shadow-spread))
+        var(--forth-color);
+  }
+  25% {
+    box-shadow:
+      0 var(--shadow-offset) 0 calc(-1 * var(--shadow-spread))
+        var(--first-color),
+      calc(-1 * var(--shadow-offset)) 0 0 calc(-1 * var(--shadow-spread))
+        var(--second-color),
+      0 calc(-1 * var(--shadow-offset)) 0 calc(-1 * var(--shadow-spread))
+        var(--third-color),
+      var(--shadow-offset) 0 0 calc(-1 * var(--shadow-spread))
+        var(--forth-color);
+  }
+  50% {
+    box-shadow:
+      calc(-1 * var(--shadow-offset)) 0 0 calc(-1 * var(--shadow-spread))
+        var(--first-color),
+      0 calc(-1 * var(--shadow-offset)) 0 calc(-1 * var(--shadow-spread))
+        var(--second-color),
+      var(--shadow-offset) 0 0 calc(-1 * var(--shadow-spread))
+        var(--third-color),
+      0 var(--shadow-offset) 0 calc(-1 * var(--shadow-spread))
+        var(--forth-color);
+  }
+  75% {
+    box-shadow:
+      0 calc(-1 * var(--shadow-offset)) 0 calc(-1 * var(--shadow-spread))
+        var(--first-color),
+      var(--shadow-offset) 0 0 calc(-1 * var(--shadow-spread))
+        var(--second-color),
+      0 var(--shadow-offset) 0 calc(-1 * var(--shadow-spread))
+        var(--third-color),
+      calc(-1 * var(--shadow-offset)) 0 0 calc(-1 * var(--shadow-spread))
+        var(--forth-color);
+  }
+}
