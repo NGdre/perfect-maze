@@ -3,7 +3,6 @@ import {
   type PolygonCell,
   RectMaze,
   createIdToCellMap,
-  fillCellsWithOpenNeighbors,
   generateRectMazeId,
   removeWallsBetweenCells,
 } from "@models/maze";
@@ -29,7 +28,6 @@ function initSerialSolver(
   const cells = cloneDeep(maze.cells);
 
   removeWallsBetweenCells(cells, wallsToRemove);
-  fillCellsWithOpenNeighbors(cells);
 
   const map = createIdToCellMap(cells);
 

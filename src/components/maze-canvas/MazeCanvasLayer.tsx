@@ -1,15 +1,13 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
-import { colors, WALLS_WIDTH } from "@constants";
+import { WALLS_WIDTH, colors } from "@constants";
 import { drawWalls } from "@models/maze-canvas-rendering";
-import { useCallback } from "react";
 import { useMazeStore } from "@stores/maze-store";
 import { useColumnsAmount, useMazeCells } from "@stores/selectors";
-import {
-  fillCellsWithOpenNeighbors,
-  removeWallsBetweenCells,
-} from "src/models/maze";
-import { getHistoryState } from "src/models/wall-history";
 import { cloneDeep } from "lodash";
+import { removeWallsBetweenCells } from "src/models/maze";
+import { getHistoryState } from "src/models/wall-history";
+
+import { useCallback } from "react";
 
 export const MazeCanvasLayer = () => {
   const columns = useColumnsAmount();
@@ -18,7 +16,7 @@ export const MazeCanvasLayer = () => {
   const initMaze = useMazeStore((state) => state.initMaze);
 
   const wallHistoryState = useMazeStore((state) =>
-    getHistoryState(state.wallHistory)
+    getHistoryState(state.wallHistory),
   );
 
   const renderMaze = useCallback(
@@ -38,14 +36,13 @@ export const MazeCanvasLayer = () => {
       const cellsCopy = cloneDeep(cells);
 
       removeWallsBetweenCells(cellsCopy, wallHistoryState);
-      fillCellsWithOpenNeighbors(cellsCopy);
 
       drawWalls(ctx, cellsCopy, {
         lineWidth: WALLS_WIDTH,
         wallColor: colors.WALL_COLOR,
       });
     },
-    [columns, cells, wallHistoryState]
+    [columns, cells, wallHistoryState],
   );
 
   return <CanvasLayer onRender={renderMaze} />;

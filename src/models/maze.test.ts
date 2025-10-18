@@ -1,13 +1,13 @@
 import {
-  Wall,
   Point2d,
   SquareCell,
-  getCirclePoint,
+  Wall,
+  createCellFinder,
   createRectMaze,
   generateRectMazeId,
-  createCellFinder,
+  getCirclePoint,
   removeWallBetweenCells,
-  fillCellsWithOpenNeighbors,
+  removeWallsBetweenCells,
 } from "./maze";
 
 // works only when one wall removed
@@ -103,55 +103,29 @@ describe("RectMaze", () => {
     const secondCell = findCell(secondCellId);
 
     if (firstCell && secondCell) {
-      removeWallBetweenCells(firstCell, secondCell);
+      removeWallBetweenCells(firstCell, secondCell, firstCellId, secondCellId);
+
+      expect(firstCell.neighbors.includes(secondCellId)).toBe(true);
+      expect(secondCell.neighbors.includes(firstCellId)).toBe(true);
       expect(isSameWallRemoved(firstCell, secondCell)).toBe(true);
     }
   });
 
-  it("provides neighbors ids to cells", () => {
+  it(`${removeWallsBetweenCells.name} refills cells with correct neighbors when removing again`, () => {
     const maze = createRectMaze(rows, cols, edgeLength);
 
-    fillCellsWithOpenNeighbors(maze.cells);
-
-    const expected: {
-      [key: string]: string[];
-    } = {
-      "0,0": [],
-      "0,1": [],
-      "1,0": [],
-      "1,1": [],
-      "0,2": [],
-      "1,2": [],
-      "2,0": [],
-      "2,1": [],
-      "2,2": [],
-    };
-
-    const keys = Object.keys(expected);
+    const firstCellId = generateRectMazeId(0, 0);
+    const secondCellId = generateRectMazeId(1, 0);
 
     const findCell = createCellFinder(maze.cells);
-
-    for (const key of keys) {
-      expected[key].forEach((elem) => {
-        expect(findCell(key)?.neighbors).toContain(elem);
-      });
-    }
-
-    const firstCellId = generateRectMazeId(1, 1);
-    const secondCellId = generateRectMazeId(1, 2);
     const firstCell = findCell(firstCellId);
     const secondCell = findCell(secondCellId);
 
-    if (firstCell && secondCell) removeWallBetweenCells(firstCell, secondCell);
-    fillCellsWithOpenNeighbors(maze.cells);
-    expected["1,1"] = ["1,2"];
-    expected["1,2"] = ["1,1"];
+    if (firstCell && secondCell) {
+      removeWallsBetweenCells(maze.cells, [[firstCellId, secondCellId]]);
 
-    // duplication because I'm tired
-    for (const key of keys) {
-      expected[key].forEach((elem) => {
-        expect(findCell(key)?.neighbors).toContain(elem);
-      });
+      expect(firstCell.neighbors).toHaveLength(1);
+      expect(secondCell.neighbors).toHaveLength(1);
     }
   });
 });
@@ -166,14 +140,14 @@ describe(Wall.name, () => {
     const wall2 = new Wall(new Point2d(x1, y1), new Point2d(x2, y2));
     const wall3 = new Wall(
       new Point2d(x1 - diff, y1 - diff),
-      new Point2d(x2, y2)
+      new Point2d(x2, y2),
     );
 
     expect(Wall.isSameWall(wall1, wall2)).toBe(true);
     expect(Wall.isSameWall(wall1, wall3)).toBe(false);
   });
 
-  it(`walls with opposite orientations are the sane`, () => {
+  it(`walls with opposite orientations are the same`, () => {
     const wall1 = new Wall(new Point2d(x1, y1), new Point2d(x2, y2));
 
     const wall2 = new Wall(new Point2d(x2, y2), new Point2d(x1, y1));
@@ -189,6 +163,17 @@ describe(Point2d.name, () => {
     const p1 = new Point2d(x1, y1);
     const p2 = new Point2d(x1, y1);
     const p3 = new Point2d(x2, y2);
+
+    expect(Point2d.isSamePoint(p1, p2)).toBe(true);
+    expect(Point2d.isSamePoint(p1, p3)).toBe(false);
+  });
+
+  it(`${Point2d.isSamePoint.name} method works correctly if coords of two points are close to each other`, () => {
+    const [x1, y1, x2, y2, x3, y3] = [30.33, 40.78, 30.32, 40.79, 30.4, 40.7];
+
+    const p1 = new Point2d(x1, y1);
+    const p2 = new Point2d(x2, y2);
+    const p3 = new Point2d(x3, y3);
 
     expect(Point2d.isSamePoint(p1, p2)).toBe(true);
     expect(Point2d.isSamePoint(p1, p3)).toBe(false);

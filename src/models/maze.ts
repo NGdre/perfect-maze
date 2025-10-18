@@ -2,7 +2,6 @@ import { flow, mean } from "@utils";
 
 import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../constants";
 import {
-  validateArrayInRange,
   validateEqualNumbers,
   validateIntGreaterThanOrEqual,
   validateIntLessThanOrEqual,
@@ -23,8 +22,15 @@ export class Point2d {
     this.y = +y.toFixed(fractionDigits);
   }
 
-  static isSamePoint(first: Point2d, second: Point2d) {
-    return first.x === second.x && first.y === second.y;
+  static isSamePoint(
+    first: Point2d,
+    second: Point2d,
+    epsilon: number = 0.05,
+  ): boolean {
+    return (
+      Math.abs(first.x - second.x) < epsilon &&
+      Math.abs(first.y - second.y) < epsilon
+    );
   }
 }
 
@@ -61,20 +67,6 @@ export class Wall {
 
   get end() {
     return this._end;
-  }
-
-  // not tested, bad naming and param
-  toString(opposite = false) {
-    const firstPoint = `${this._start.x} ${this._start.y}`;
-    const secondPoint = `${this._end.x} ${this._end.y}`;
-
-    return opposite
-      ? secondPoint + " " + firstPoint
-      : firstPoint + " " + secondPoint;
-  }
-
-  toStringOpposite() {
-    return this.toString(true);
   }
 }
 
@@ -281,9 +273,12 @@ export function findCell(map: idToCellMap) {
 
 export const createCellFinder = flow(createIdToCellMap, findCell);
 
+// отдельно лучше не использовать, так как свойство neighbors будет некорректно
 export function removeWallBetweenCells(
   firstCell: PolygonCell,
   secondCell: PolygonCell,
+  fid: string,
+  sid: string,
 ) {
   const firstWalls = firstCell.walls;
   const secondWalls = secondCell.walls;
@@ -292,14 +287,31 @@ export function removeWallBetweenCells(
 
   validateEqualNumbers(numberOfWalls, secondWalls.length);
 
+  let firstWall, secondWall;
+
   for (let i = 0; i < numberOfWalls; i++) {
     for (let j = 0; j < numberOfWalls; j++) {
       if (Wall.isSameWall(firstWalls[i], secondWalls[j])) {
-        firstWalls[i].visible = false;
-        secondWalls[j].visible = false;
+        firstWall = firstWalls[i];
+        secondWall = secondWalls[j];
         break;
       }
     }
+  }
+
+  if (!firstWall || !secondWall) {
+    throw Error("can not find wall for removal");
+  }
+
+  firstWall.visible = false;
+  secondWall.visible = false;
+
+  if (!firstCell.neighbors.includes(sid)) {
+    firstCell.neighbors.push(sid);
+  }
+
+  if (!secondCell.neighbors.includes(fid)) {
+    secondCell.neighbors.push(fid);
   }
 }
 
@@ -310,6 +322,11 @@ export function removeWallsBetweenCells(
   const pairsLength = pairs.length;
 
   const findCell = createCellFinder(cells);
+
+  // reset neighbors
+  for (let i = 0; i < cells.length; i++) {
+    cells[i].neighbors.length = 0;
+  }
 
   for (let i = 0; i < pairsLength; i++) {
     const fid = pairs[i][0];
@@ -325,69 +342,6 @@ export function removeWallsBetweenCells(
       label: `invalid pairs to remove: cell with id ${sid} is not found`,
     });
 
-    removeWallBetweenCells(fcell, scell);
-  }
-}
-
-type wallToCellId = Map<string, cellId[]>;
-
-export const createWallToOpenNeighborsMap = (
-  cells: MazeCells,
-): wallToCellId => {
-  const cellsLength = cells.length;
-
-  const wallToCellId: wallToCellId = new Map();
-
-  if (!cells.length) return wallToCellId;
-
-  const wallsAmount = cells[0].numberOfWalls;
-
-  for (let i = 0; i < cellsLength; i++) {
-    const currCell = cells[i];
-
-    for (let j = 0; j < wallsAmount; j++) {
-      if (currCell.walls[j].visible) continue;
-
-      const wallKey = currCell.walls[j].toString();
-      const oppositeWallKey = currCell.walls[j].toStringOpposite();
-
-      if (wallToCellId.has(oppositeWallKey)) {
-        wallToCellId.get(oppositeWallKey)!.push(currCell.id);
-      } else {
-        wallToCellId.set(wallKey, [currCell.id]);
-      }
-    }
-  }
-
-  return wallToCellId;
-};
-
-export function fillCellsWithOpenNeighbors<T extends MazeCells>(cells: T) {
-  const cellsLength = cells.length;
-  const map = createWallToOpenNeighborsMap(cells);
-
-  // можно улучшить алгоритм
-  for (let i = 0; i < cellsLength; i++) {
-    const currCell = cells[i];
-
-    currCell.neighbors.length = 0;
-
-    currCell.walls.forEach((wall) => {
-      if (wall.visible) return;
-
-      const wallKey = wall.toString();
-      const oppositeWallKey = wall.toStringOpposite();
-
-      const ids = map.get(wallKey) || map.get(oppositeWallKey);
-
-      // there's only can be one or two neihbors cells for each wall
-      validateArrayInRange(ids, 1, 2);
-
-      const neighborId = ids.find((id: string) => id !== currCell.id);
-
-      if (neighborId) {
-        currCell.neighbors.push(neighborId);
-      }
-    });
+    removeWallBetweenCells(fcell, scell, fid, sid);
   }
 }
