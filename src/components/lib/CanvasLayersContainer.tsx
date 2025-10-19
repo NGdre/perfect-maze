@@ -1,4 +1,13 @@
-import { ReactNode, createContext, useEffect, useRef, useState } from "react";
+import { throttle } from "lodash";
+
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const CanvasContainerStyles = {
   width: "100%",
@@ -36,23 +45,31 @@ export const CanvasLayersContainer = ({
   const [containerSize, setContainerSize] =
     useState<CanvasContextType>(canvasContextDefault);
 
+  const updateSize = useCallback(
+    throttle(() => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      setContainerSize({
+        containerWidth: container.offsetWidth,
+        containerHeight: container.offsetHeight,
+        targetAspect: targetAspect || canvasContextDefault.targetAspect,
+      });
+    }, 1000),
+    [targetAspect],
+  );
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const updateSize = () => {
-      setContainerSize({
-        containerWidth: container.offsetWidth,
-        containerHeight: container.offsetHeight,
-        targetAspect: targetAspect || containerSize.targetAspect,
-      });
-    };
-
     const ro = new ResizeObserver(updateSize);
     ro.observe(container);
     updateSize();
-    return () => ro.disconnect();
-  }, []);
+    return () => {
+      ro.disconnect();
+    };
+  }, [targetAspect]);
 
   return (
     <div
