@@ -66,6 +66,7 @@ export const createMazeGenerationSlice: StateCreator<
       mazeGenerationAlgorithm: newAlgorithm,
       wallHistory: clearHistory(),
       serialGenerator: null,
+      isMazeGenerationDone: false,
     }),
 
   initMaze(edgeLength) {
