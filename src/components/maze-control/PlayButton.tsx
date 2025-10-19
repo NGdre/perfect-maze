@@ -15,20 +15,41 @@ const PlayButton = ({
   const isMazeRendering = useIsMazeRendering();
   const setIsMazeRendering = useSetIsMazeRendering();
 
-  useEffect(() => {
-    if (!isMazeRendering) return;
+  useEffect((): (() => void) => {
+    if (!isMazeRendering) return () => {};
 
-    const animationTimer = setInterval(() => {
-      const success = onStep();
+    let animationId: number | undefined;
+    let accumulatedTime = 0;
+    let previousTime = performance.now();
 
-      if (!success) setIsMazeRendering(false);
-    }, VISIALIZATION_ANIMATION_DELAY);
+    const animate = (currentTime: DOMHighResTimeStamp): void => {
+      const deltaTime = currentTime - previousTime;
+      previousTime = currentTime;
+      accumulatedTime += deltaTime;
+
+      if (accumulatedTime >= VISIALIZATION_ANIMATION_DELAY) {
+        const success = onStep();
+        if (!success) {
+          setIsMazeRendering(false);
+          return;
+        }
+        accumulatedTime = 0;
+      }
+
+      if (isMazeRendering) {
+        animationId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationId = requestAnimationFrame(animate);
 
     return () => {
       setIsMazeRendering(false);
-      clearInterval(animationTimer);
+      if (animationId !== undefined) {
+        cancelAnimationFrame(animationId);
+      }
     };
-  }, [isMazeRendering]);
+  }, [isMazeRendering, onStep, setIsMazeRendering]);
 
   return (
     <>
