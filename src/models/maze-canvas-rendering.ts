@@ -12,14 +12,21 @@ export function drawLine(config: {
   strokeStyle?: string;
   lineWidth?: number;
   batching?: boolean;
+  scaleFactor?: number;
 }) {
-  const { strokeStyle, lineWidth, ctx, batching = false } = config;
+  const {
+    strokeStyle,
+    lineWidth,
+    ctx,
+    batching = false,
+    scaleFactor = 1,
+  } = config;
 
   if (lineWidth) ctx.lineWidth = lineWidth;
   if (strokeStyle) ctx.strokeStyle = strokeStyle;
 
   function line(...cords: lineCords) {
-    const [x1, y1, x2, y2] = cords;
+    const [x1, y1, x2, y2] = cords.map((c) => c * scaleFactor);
 
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
@@ -41,15 +48,23 @@ export function drawLine(config: {
 export function drawWalls(
   ctx: context2d,
   cells: PolygonCell[],
-  opts: { wallColor?: string; lineWidth?: number },
+  opts: { wallColor?: string; lineWidth?: number; scaleFactor: number },
 ) {
-  const len = cells.length;
   const color = opts.wallColor;
   const lineWidth = opts.lineWidth;
+  const scaleFactor = opts.scaleFactor;
 
-  const line = drawLine({ ctx, strokeStyle: color, lineWidth, batching: true });
+  const line = drawLine({
+    ctx,
+    strokeStyle: color,
+    lineWidth,
+    batching: true,
+    scaleFactor,
+  });
 
   ctx.beginPath();
+
+  const len = cells.length;
 
   for (let i = 0; i < len; i++) {
     for (const wall of cells[i].walls) {
@@ -114,15 +129,16 @@ export function fillPolygonWithCircle(
   ctx: context2d,
   cell: PolygonCell,
   color: string,
+  cellSize: number,
   fillFraction = 0.9,
 ) {
   ow(fillFraction, ow.number.positive.lessThanOrEqual(1));
 
   const { x, y } = cell.center;
 
-  const halfCellLength = cell.edgeLength / 2;
+  const halfCellLength = cellSize / 2;
 
   const radius = halfCellLength * fillFraction;
 
-  fillWithCircle(ctx, x, y, radius, color);
+  fillWithCircle(ctx, x * cellSize, y * cellSize, radius, color);
 }

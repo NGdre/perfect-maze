@@ -1,11 +1,10 @@
-import { StateCreator } from "zustand";
-import { createRectMaze, generateRectMazeId, RectMaze } from "@models/maze";
-import { MainStore } from "@stores/index";
-import { generatorNames, getGeneratorByAlgoName } from "@generators/index";
 import { DEFAULT_COLUMNS_AMOUNT, DEFAULT_ROWS_AMOUNT } from "@constants";
-import { TimeDirection } from "./mazeSolutionSlice";
-import { mapGenerator } from "src/utils";
+import { generatorNames, getGeneratorByAlgoName } from "@generators/index";
+import { RectMaze, createRectMaze, generateRectMazeId } from "@models/maze";
+import { MainStore } from "@stores";
+import { mapGenerator } from "@utils";
 import {
+  WallHistorySnapshot,
   backwardHistory,
   clearHistory,
   createWallHistory,
@@ -13,8 +12,10 @@ import {
   isHistoryEmpty,
   saveHistoryChange,
   saveHistoryChanges,
-  WallHistorySnapshot,
 } from "src/models/wall-history";
+import { StateCreator } from "zustand";
+
+import { TimeDirection } from "./mazeSolutionSlice";
 
 type State = {
   mazeInstance: RectMaze | null;
@@ -31,10 +32,10 @@ type Action = {
   updateColumnsAmount: (newColumnsAmount: State["columnsAmount"]) => void;
 
   updateMazeGenerationAlgorithm: (
-    newAlgorithm: State["mazeGenerationAlgorithm"]
+    newAlgorithm: State["mazeGenerationAlgorithm"],
   ) => void;
 
-  initMaze: (edgeLength: number) => void;
+  initMaze: () => void;
   generateMaze: () => void;
   takeStepInGeneration: (direction: TimeDirection) => boolean;
   resetMaze: () => void;
@@ -69,7 +70,7 @@ export const createMazeGenerationSlice: StateCreator<
       isMazeGenerationDone: false,
     }),
 
-  initMaze(edgeLength) {
+  initMaze() {
     const rows = get().rowsAmount;
     const cols = get().columnsAmount;
 
@@ -77,7 +78,7 @@ export const createMazeGenerationSlice: StateCreator<
       endId: generateRectMazeId(rows - 1, cols - 1),
     });
 
-    const maze = createRectMaze(rows, cols, edgeLength);
+    const maze = createRectMaze(rows, cols);
 
     set({ mazeInstance: maze });
   },

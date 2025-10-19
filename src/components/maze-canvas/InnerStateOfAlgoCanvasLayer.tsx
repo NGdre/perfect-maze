@@ -1,57 +1,62 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
-import { colors, FILL_TO_CELL_RATIO } from "@constants";
+import { FILL_TO_CELL_RATIO, colors } from "@constants";
 import { createIdToCellMap } from "@models/maze";
 import { drawPolygon } from "@models/maze-canvas-rendering";
 import {
-  useCellHistory,
+  useColumnsAmount,
   useCurrVisualMazeChange,
+  useIsCellHistoryEmpty,
   useMazeCells,
 } from "@stores/selectors";
-import { scalePolygon } from "@utils";
-import { useCallback, useRef } from "react";
+import { scalePolygonFromCenter } from "@utils";
+
+import { useCallback } from "react";
 
 const ERASE_CELL_RATIO = 1;
 
 export const InnerStateOfAlgoCanvasLayer = () => {
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-
   const change = useCurrVisualMazeChange();
-  const cellHistory = useCellHistory();
+  const isCellHistoryEmpty = useIsCellHistoryEmpty();
   const cells = useMazeCells();
+  const columns = useColumnsAmount();
 
-  const ctx = ctxRef.current;
+  const renderPath = useCallback(
+    function (ctx: CanvasRenderingContext2D, width: number) {
+      if (ctx && isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
 
-  if (ctx && cellHistory.getState().size === 0) ctx.clearRect(0, 0, 9999, 9999);
+      if (!ctx || width === 0 || columns === 0 || !change || !cells) return;
 
-  if (ctx && change && cells) {
-    const idToCellMap = createIdToCellMap(cells);
+      const cellSize = width / columns;
 
-    for (const cellChange of change) {
-      const currCell = idToCellMap.get(cellChange.id);
+      const idToCellMap = createIdToCellMap(cells);
 
-      if (!currCell) continue;
+      for (const cellChange of change) {
+        const currCell = idToCellMap.get(cellChange.id);
 
-      const isPathCell = cellChange.isPathCell;
+        if (!currCell) continue;
 
-      const drawPolygonArgs = isPathCell
-        ? { scaleFactor: ERASE_CELL_RATIO, color: colors.EMPTY_CELL }
-        : {
-            scaleFactor: FILL_TO_CELL_RATIO,
-            color:
-              (cellChange.color as string | undefined) || colors.EMPTY_CELL,
-          };
+        const isPathCell = cellChange.isPathCell;
 
-      drawPolygon(
-        ctx,
-        scalePolygon(currCell.getPoints(), drawPolygonArgs.scaleFactor),
-        drawPolygonArgs.color
-      );
-    }
-  }
+        const drawPolygonArgs = isPathCell
+          ? { scaleFactor: ERASE_CELL_RATIO, color: colors.EMPTY_CELL }
+          : {
+              scaleFactor: FILL_TO_CELL_RATIO,
+              color:
+                (cellChange.color as string | undefined) || colors.EMPTY_CELL,
+            };
 
-  const renderPath = useCallback(function (ctx: CanvasRenderingContext2D) {
-    if (!ctxRef.current) ctxRef.current = ctx;
-  }, []);
+        drawPolygon(
+          ctx,
+          scalePolygonFromCenter(
+            currCell.getPoints(cellSize),
+            drawPolygonArgs.scaleFactor,
+          ),
+          drawPolygonArgs.color,
+        );
+      }
+    },
+    [change, isCellHistoryEmpty, cells, columns],
+  );
 
-  return <CanvasLayer onRender={renderPath} />;
+  return <CanvasLayer onRender={renderPath} preserveState={true} />;
 };

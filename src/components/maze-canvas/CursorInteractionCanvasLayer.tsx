@@ -58,7 +58,7 @@ function hoverInteraction(config: {
 
     if (cell) {
       ctx.reset();
-      fillPolygonWithCircle(ctx, cell, cellColor);
+      fillPolygonWithCircle(ctx, cell, cellColor, cellSize);
     }
   }, CELL_SELECTION_THROTTLE_DELAY);
 

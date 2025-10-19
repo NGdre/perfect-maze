@@ -1,7 +1,7 @@
 import tailwindColors from "tailwindcss/colors";
 
 export const DEFAULT_ROWS_AMOUNT = 20;
-export const DEFAULT_COLUMNS_AMOUNT = 29;
+export const DEFAULT_COLUMNS_AMOUNT = 40;
 
 export const MIN_ROWS = 5;
 export const MAX_ROWS = 100;

@@ -1,4 +1,5 @@
 import { Point2d } from "@models/maze";
+
 // наверное Point2d нужно вынести из maze
 
 export {
@@ -28,7 +29,7 @@ export function loopPairs<T>(pairs: Array<T>, cb: (prev: T, curr: T) => void) {
 
 export function mapGenerator<T, U, R>(
   generator: Generator<T, R>,
-  transform: (value: T) => U
+  transform: (value: T) => U,
 ): Generator<U, R> {
   return {
     next(arg?: unknown): IteratorResult<U, R> {
@@ -76,7 +77,7 @@ export function getCentroid(points: Point2d[]) {
   };
 }
 
-export function scalePolygon(points: Point2d[], scaleFactor: number) {
+export function scalePolygonFromCenter(points: Point2d[], scaleFactor: number) {
   const centroid = getCentroid(points);
   return points.map((point) => {
     return {

@@ -8,6 +8,9 @@ export const useCurrVisualMazeChange = () =>
 
 export const useCellHistory = () => useMazeStore((state) => state.cellHistory);
 
+export const useIsCellHistoryEmpty = () =>
+  useMazeStore((state) => state.cellHistory.isEmpty());
+
 export const useStartId = () => useMazeStore((state) => state.startId);
 
 export const useEndId = () => useMazeStore((state) => state.endId);

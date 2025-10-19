@@ -26,7 +26,7 @@ export const MazeCanvasLayer = () => {
       const cellSize = width / columns;
 
       if (!cells) {
-        initMaze(cellSize);
+        initMaze();
         return;
       }
 
@@ -40,6 +40,7 @@ export const MazeCanvasLayer = () => {
       drawWalls(ctx, cellsCopy, {
         lineWidth: WALLS_WIDTH,
         wallColor: colors.WALL_COLOR,
+        scaleFactor: cellSize,
       });
     },
     [columns, cells, wallHistoryState],

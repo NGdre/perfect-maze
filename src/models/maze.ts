@@ -1,4 +1,4 @@
-import { flow, mean } from "@utils";
+import { cloneDeep, flow, mean } from "@utils";
 
 import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../constants";
 import {
@@ -46,10 +46,8 @@ export class Wall {
 
   static isSameWall(first: Wall, second: Wall) {
     return (
-      (Point2d.isSamePoint(first.start, second.start) &&
-        Point2d.isSamePoint(first.end, second.end)) ||
-      (Point2d.isSamePoint(first.start, second.end) &&
-        Point2d.isSamePoint(first.end, second.start))
+      Point2d.isSamePoint(first.start, second.end) &&
+      Point2d.isSamePoint(first.end, second.start)
     );
   }
 
@@ -96,10 +94,8 @@ export abstract class PolygonCell {
 
   neighbors: Array<string> = [];
 
-  constructor(id: string, edgeLength: number) {
+  constructor(id: string) {
     this._id = id;
-
-    this.edgeLength = edgeLength;
   }
 
   get id() {
@@ -109,10 +105,6 @@ export abstract class PolygonCell {
   get walls() {
     // without cloning now
     return this._walls;
-  }
-
-  get edgeLength() {
-    return this._edgeLength;
   }
 
   get center() {
@@ -128,20 +120,16 @@ export abstract class PolygonCell {
   }
 
   //not tested
-  getPoints() {
+  getPoints(scaleFactor = 1) {
     const points = [];
 
     for (let i = 0; i < this.numberOfWalls; i++) {
-      points.push(this.walls[i].start);
+      const { x, y } = this.walls[i].start;
+
+      points.push({ x: x * scaleFactor, y: y * scaleFactor });
     }
 
     return points;
-  }
-
-  set edgeLength(value) {
-    if (value <= 0)
-      throw new Error(`edgeLength must be positive, but recieved ${value}`);
-    this._edgeLength = value;
   }
 
   protected nextVertice(vertice: Point2d, angle: number) {
@@ -173,8 +161,8 @@ export abstract class PolygonCell {
 export class SquareCell extends PolygonCell {
   numberOfWalls = 4;
 
-  constructor(id: string, edgeLength: number) {
-    super(id, edgeLength);
+  constructor(id: string) {
+    super(id);
   }
 
   generateWalls(x: number, y: number) {
@@ -186,8 +174,8 @@ export class SquareCell extends PolygonCell {
 export class HexagonCell extends PolygonCell {
   numberOfWalls = 6;
 
-  constructor(id: string, edgeLength: number) {
-    super(id, edgeLength);
+  constructor(id: string) {
+    super(id);
   }
 
   generateWalls(x: number, y: number, clockwise: boolean = true) {
@@ -213,13 +201,11 @@ export type RectMaze = {
   cells: RectMazeCells;
   rows: number;
   cols: number;
-  cellSize: number;
 };
 
 export const createRectMaze = (
   rows: RectMaze["rows"],
   cols: RectMaze["cols"],
-  cellSize: RectMaze["cellSize"],
 ): RectMaze => {
   validateIntGreaterThanOrEqual(rows, MIN_ROWS);
   validateIntGreaterThanOrEqual(cols, MIN_COLUMNS);
@@ -231,12 +217,9 @@ export const createRectMaze = (
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
       const id = generateRectMazeId(i, j);
-      const cell = new SquareCell(id, cellSize);
+      const cell = new SquareCell(id);
 
-      const x = j * cellSize;
-      const y = i * cellSize;
-
-      cell.generateWalls(x, y);
+      cell.generateWalls(j, i);
 
       cells.push(cell);
     }
@@ -245,7 +228,6 @@ export const createRectMaze = (
   return {
     rows,
     cols,
-    cellSize,
     cells,
   };
 };
