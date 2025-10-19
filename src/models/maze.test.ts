@@ -25,8 +25,8 @@ function isSameWallRemoved(firstCell: SquareCell, secondCell: SquareCell) {
 // не работает, потому что я поменял порядок построения стен
 it.skip(`${isSameWallRemoved.name} works correctly`, () => {
   const edgeLength = 2;
-  const firstCell = new SquareCell("1", edgeLength);
-  const secondCell = new SquareCell("2", edgeLength);
+  const firstCell = new SquareCell("1");
+  const secondCell = new SquareCell("2");
 
   firstCell.generateWalls(0, 0);
   secondCell.generateWalls(0, edgeLength);
@@ -46,7 +46,7 @@ describe(SquareCell.name, () => {
   const someId = "1";
 
   it("walls must be empty when regenerating walls", () => {
-    const firstCell = new SquareCell(someId, edgeLength);
+    const firstCell = new SquareCell(someId);
     const wallAmount = firstCell.numberOfWalls;
 
     expect(firstCell.walls).toHaveLength(0);
@@ -60,7 +60,7 @@ describe(SquareCell.name, () => {
   });
 
   it("must have a correct center", () => {
-    const firstCell = new SquareCell(someId, edgeLength);
+    const firstCell = new SquareCell(someId);
 
     firstCell.generateWalls(0, 0);
 
@@ -72,10 +72,10 @@ describe(SquareCell.name, () => {
 });
 
 describe("RectMaze", () => {
-  const [rows, cols, edgeLength] = [5, 10, 2];
+  const [rows, cols] = [5, 10];
 
   it("creates maze", () => {
-    const maze = createRectMaze(rows, cols, edgeLength);
+    const maze = createRectMaze(rows, cols);
 
     expect(maze.cells).toHaveLength(rows * cols);
     expect(maze.cells[0] instanceof SquareCell).toBe(true);
@@ -83,7 +83,7 @@ describe("RectMaze", () => {
   });
 
   it("finds cell", () => {
-    const maze = createRectMaze(rows, cols, edgeLength);
+    const maze = createRectMaze(rows, cols);
     const existingCellId = generateRectMazeId(rows - 1, cols - 1);
     const nonExistingCellId = generateRectMazeId(rows + 1, cols + 1);
     const findCell = createCellFinder(maze.cells);
@@ -93,7 +93,7 @@ describe("RectMaze", () => {
   });
 
   it("removes wall", () => {
-    const maze = createRectMaze(rows, cols, edgeLength);
+    const maze = createRectMaze(rows, cols);
 
     const firstCellId = generateRectMazeId(0, 0);
     const secondCellId = generateRectMazeId(1, 0);
@@ -112,7 +112,7 @@ describe("RectMaze", () => {
   });
 
   it(`${removeWallsBetweenCells.name} refills cells with correct neighbors when removing again`, () => {
-    const maze = createRectMaze(rows, cols, edgeLength);
+    const maze = createRectMaze(rows, cols);
 
     const firstCellId = generateRectMazeId(0, 0);
     const secondCellId = generateRectMazeId(1, 0);
