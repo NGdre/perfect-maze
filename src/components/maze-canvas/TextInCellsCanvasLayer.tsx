@@ -3,90 +3,92 @@ import { colors } from "@constants";
 import { createIdToCellMap } from "@models/maze";
 import { drawPolygon } from "@models/maze-canvas-rendering";
 import { TextInBoxRenderer } from "@models/text-in-box-renderer";
+import { AStarText } from "@solvers/a-star";
 import {
-  useCellHistory,
+  useColumnsAmount,
   useCurrVisualMazeChange,
+  useIsCellHistoryEmpty,
   useMazeCells,
 } from "@stores/selectors";
-import { scalePolygon } from "@utils";
-import { useCallback, useRef } from "react";
-import fontForNumbers from "../../assets/fonts/BarlowCondensed-Light.ttf";
+import { scalePolygonFromCenter } from "@utils";
 import { buildTextInCellConfig } from "src/configs/visual";
-import { AStarText } from "@solvers/a-star";
+
+import { useCallback } from "react";
+
+import fontForNumbers from "../../assets/fonts/BarlowCondensed-Light.ttf";
 
 const fontForNumbersName = "Barlow Condensed";
 const ERASE_CELL_RATIO = 1;
 
-// InnerStateOfAlgoCanvasLayer явно неудачное название
 export const TextInCellsCanvasLayer = () => {
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-
   const change = useCurrVisualMazeChange();
-  const cellHistory = useCellHistory();
+  const isCellHistoryEmpty = useIsCellHistoryEmpty();
   const cells = useMazeCells();
+  const columns = useColumnsAmount();
 
-  const ctx = ctxRef.current;
+  const renderPath = useCallback(
+    async function (ctx: CanvasRenderingContext2D, width: number) {
+      if (!ctx) {
+        const loadFont = async () => {
+          try {
+            const font = new FontFace(
+              fontForNumbersName,
+              `url(${fontForNumbers})`,
+            );
+            await font.load();
+            document.fonts.add(font);
+          } catch (error) {
+            console.error("Error loading font:", error);
+          }
+        };
 
-  if (ctx && cellHistory.getState().size === 0) ctx.clearRect(0, 0, 9999, 9999);
-
-  if (ctx && change && cells) {
-    const idToCellMap = createIdToCellMap(cells);
-
-    const renderer = new TextInBoxRenderer(ctx);
-
-    for (const cellChange of change) {
-      const currCell = idToCellMap.get(cellChange.id);
-
-      if (!currCell) continue;
-
-      const isPathCell = cellChange.isPathCell;
-
-      if (isPathCell || !cellChange.text) {
-        drawPolygon(
-          ctx,
-          scalePolygon(currCell.getPoints(), ERASE_CELL_RATIO),
-          colors.EMPTY_CELL
-        );
-        continue;
+        loadFont();
       }
 
-      if (!cellChange.text) continue;
+      if (ctx && isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
 
-      const currCellPos = currCell.getPoints()[0];
+      if (!ctx || width === 0 || columns === 0 || !change || !cells) return;
 
-      const textInCellConfig = buildTextInCellConfig(
-        Object.assign(currCellPos, { size: currCell.edgeLength }),
-        cellChange.text as AStarText
-      );
+      const cellSize = width / columns;
 
-      renderer.addBox(textInCellConfig);
-      renderer.render();
-    }
-  }
+      const idToCellMap = createIdToCellMap(cells);
 
-  const renderPath = useCallback(async function (
-    ctx: CanvasRenderingContext2D
-  ) {
-    if (!ctxRef.current) {
-      ctxRef.current = ctx;
+      const renderer = new TextInBoxRenderer(ctx);
 
-      const loadFont = async () => {
-        try {
-          const font = new FontFace(
-            fontForNumbersName,
-            `url(${fontForNumbers})`
+      for (const cellChange of change) {
+        const currCell = idToCellMap.get(cellChange.id);
+
+        if (!currCell) continue;
+
+        const isPathCell = cellChange.isPathCell;
+
+        if (isPathCell || !cellChange.text) {
+          drawPolygon(
+            ctx,
+            scalePolygonFromCenter(
+              currCell.getPoints(cellSize),
+              ERASE_CELL_RATIO,
+            ),
+            colors.EMPTY_CELL,
           );
-          await font.load();
-          document.fonts.add(font);
-        } catch (error) {
-          console.error("Error loading font:", error);
+          continue;
         }
-      };
 
-      loadFont();
-    }
-  },
-  []);
+        if (!cellChange.text) continue;
+
+        const currCellPos = currCell.getPoints(cellSize)[0];
+
+        const textInCellConfig = buildTextInCellConfig(
+          Object.assign(currCellPos, { size: cellSize }),
+          cellChange.text as AStarText,
+        );
+
+        renderer.addBox(textInCellConfig);
+        renderer.render();
+      }
+    },
+    [isCellHistoryEmpty, cells, change, columns],
+  );
 
   return <CanvasLayer onRender={renderPath} />;
 };
