@@ -22,9 +22,9 @@ export const InnerStateOfAlgoCanvasLayer = () => {
 
   const renderPath = useCallback(
     function (ctx: CanvasRenderingContext2D, width: number) {
-      if (ctx && isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
+      if (isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
 
-      if (!ctx || width === 0 || columns === 0 || !change || !cells) return;
+      if (width === 0 || columns === 0 || !change || !cells) return;
 
       const cellSize = width / columns;
 

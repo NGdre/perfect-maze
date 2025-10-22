@@ -20,10 +20,10 @@ export const MazePathCanvasLayer = () => {
   const columns = useColumnsAmount();
 
   const renderPath = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number) {
-      if (!ctx || width === 0 || columns === 0) return;
+    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
+      if (width === 0 || columns === 0) return;
 
-      if (isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
+      if (isCellHistoryEmpty) ctx.clearRect(0, 0, width, height);
 
       const cellSize = width / columns;
 

@@ -41,8 +41,10 @@ function hoverInteraction(config: {
   cells: RectMaze["cells"] | undefined;
   cellSize: number;
   cellSelection: CellSelectionModes;
+  width: number;
+  height: number;
 }) {
-  const { ctx, cells, cellSize, cellSelection } = config;
+  const { ctx, cells, cellSize, cellSelection, width, height } = config;
 
   if (!cells) return noop;
 
@@ -51,20 +53,20 @@ function hoverInteraction(config: {
   const findCell = createCellFinder(cells);
   const cellColor = selectCellColor[cellSelection];
 
+  const clearHoveredCell = () => {
+    ctx.clearRect(0, 0, width, height);
+  };
+
   const hoverCell = throttle((e: MouseEvent) => {
     const cell = findCell(
       generateRectMazeId(...cellPositionOnCanvasHover(canvas, e, cellSize)),
     );
 
     if (cell) {
-      ctx.reset();
+      clearHoveredCell();
       fillPolygonWithCircle(ctx, cell, cellColor, cellSize);
     }
   }, CELL_SELECTION_THROTTLE_DELAY);
-
-  const clearHoveredCell = () => {
-    ctx.reset();
-  };
 
   canvas.addEventListener("mousemove", hoverCell);
   canvas.addEventListener("mouseleave", clearHoveredCell);
@@ -112,7 +114,7 @@ export const CursorInteractionCanvasLayer = () => {
   const setEndId = useMazeStore((state) => state.setEndId);
 
   const renderCursorInteraction = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number) {
+    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
       if (!ctx || width === 0 || columns === 0) return;
 
       const cellSize = width / columns;
@@ -122,6 +124,8 @@ export const CursorInteractionCanvasLayer = () => {
         cells,
         cellSize,
         cellSelection,
+        width,
+        height,
       });
 
       const cleanUpClickInteraction = clickInteraction({

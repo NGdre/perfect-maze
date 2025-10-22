@@ -24,12 +24,12 @@ export const CellMarksCanvasLayer = () => {
   ]);
 
   const renderCellMarks = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number) {
+    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
       if (!ctx || width === 0 || !cells || !startId || !endId) return;
 
       const cellSize = width / columns;
 
-      ctx.reset();
+      ctx.clearRect(0, 0, width, height);
 
       const startCell = findCell(startId);
 

@@ -13,7 +13,7 @@ import {
 import { scalePolygonFromCenter } from "@utils";
 import { buildTextInCellConfig } from "src/configs/visual";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import fontForNumbers from "../../assets/fonts/BarlowCondensed-Light.ttf";
 
@@ -26,28 +26,29 @@ export const TextInCellsCanvasLayer = () => {
   const cells = useMazeCells();
   const columns = useColumnsAmount();
 
-  const renderPath = useCallback(
-    async function (ctx: CanvasRenderingContext2D, width: number) {
-      if (!ctx) {
-        const loadFont = async () => {
-          try {
-            const font = new FontFace(
-              fontForNumbersName,
-              `url(${fontForNumbers})`,
-            );
-            await font.load();
-            document.fonts.add(font);
-          } catch (error) {
-            console.error("Error loading font:", error);
-          }
-        };
-
-        loadFont();
+  useEffect(() => {
+    const loadFont = async () => {
+      try {
+        const font = new FontFace(fontForNumbersName, `url(${fontForNumbers})`);
+        await font.load();
+        document.fonts.add(font);
+      } catch (error) {
+        console.error("Error loading font:", error);
       }
+    };
 
-      if (ctx && isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
+    loadFont();
+  }, []);
 
-      if (!ctx || width === 0 || columns === 0 || !change || !cells) return;
+  const renderPath = useCallback(
+    async function (
+      ctx: CanvasRenderingContext2D,
+      width: number,
+      height: number,
+    ) {
+      if (isCellHistoryEmpty) ctx.clearRect(0, 0, width, height);
+
+      if (width === 0 || columns === 0 || !change || !cells) return;
 
       const cellSize = width / columns;
 

@@ -20,7 +20,7 @@ export const MazeCanvasLayer = () => {
   );
 
   const renderMaze = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number) {
+    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
       if (width === 0) return;
 
       const cellSize = width / columns;
@@ -30,7 +30,7 @@ export const MazeCanvasLayer = () => {
         return;
       }
 
-      ctx.reset();
+      ctx.clearRect(0, 0, width, height);
 
       // cloning because methods mutating cells
       const cellsCopy = cloneDeep(cells);
