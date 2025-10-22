@@ -12,6 +12,7 @@ import {
 } from "@stores/selectors";
 import { scalePolygonFromCenter } from "@utils";
 import { buildTextInCellConfig } from "src/configs/visual";
+import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 
 import { useCallback, useEffect } from "react";
 
@@ -23,7 +24,6 @@ const ERASE_CELL_RATIO = 1;
 export const TextInCellsCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
   const isCellHistoryEmpty = useIsCellHistoryEmpty();
-  const cells = useMazeCells();
   const columns = useColumnsAmount();
 
   useEffect(() => {
@@ -40,19 +40,15 @@ export const TextInCellsCanvasLayer = () => {
     loadFont();
   }, []);
 
+  const idToCellMap = useIdToCellMap();
+
   const renderPath = useCallback(
-    async function (
-      ctx: CanvasRenderingContext2D,
-      width: number,
-      height: number,
-    ) {
+    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
       if (isCellHistoryEmpty) ctx.clearRect(0, 0, width, height);
 
-      if (width === 0 || columns === 0 || !change || !cells) return;
+      if (width === 0 || columns === 0 || !change || !idToCellMap) return;
 
       const cellSize = width / columns;
-
-      const idToCellMap = createIdToCellMap(cells);
 
       const renderer = new TextInBoxRenderer(ctx);
 
@@ -88,7 +84,7 @@ export const TextInCellsCanvasLayer = () => {
         renderer.render();
       }
     },
-    [isCellHistoryEmpty, cells, change, columns],
+    [isCellHistoryEmpty, change, columns, idToCellMap],
   );
 
   return <CanvasLayer onRender={renderPath} />;

@@ -1,13 +1,12 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { PATH_WIDTH } from "@constants";
-import { createIdToCellMap } from "@models/maze";
 import { drawLine } from "@models/maze-canvas-rendering";
 import {
   useColumnsAmount,
   useCurrVisualMazeChange,
   useIsCellHistoryEmpty,
-  useMazeCells,
 } from "@stores/selectors";
+import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 
 import { useCallback, useRef } from "react";
 
@@ -15,21 +14,21 @@ export const MazePathCanvasLayer = () => {
   const cameFrom = useRef(new Map<string, string>());
 
   const change = useCurrVisualMazeChange();
-  const cells = useMazeCells();
+
   const isCellHistoryEmpty = useIsCellHistoryEmpty();
   const columns = useColumnsAmount();
 
+  const idToCellMap = useIdToCellMap();
+
   const renderPath = useCallback(
     function (ctx: CanvasRenderingContext2D, width: number, height: number) {
-      if (width === 0 || columns === 0) return;
+      if (width === 0 || columns === 0 || !idToCellMap) return;
 
       if (isCellHistoryEmpty) ctx.clearRect(0, 0, width, height);
 
       const cellSize = width / columns;
 
-      if (change && cells) {
-        const idToCellMap = createIdToCellMap(cells);
-
+      if (change) {
         for (const cellChange of change) {
           const currCell = idToCellMap.get(cellChange.id);
 
@@ -101,7 +100,7 @@ export const MazePathCanvasLayer = () => {
         }
       }
     },
-    [change, isCellHistoryEmpty, cells, columns],
+    [change, isCellHistoryEmpty, columns, idToCellMap],
   );
   return <CanvasLayer onRender={renderPath} />;
 };

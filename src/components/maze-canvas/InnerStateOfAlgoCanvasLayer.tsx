@@ -9,7 +9,8 @@ import {
   useMazeCells,
 } from "@stores/selectors";
 import { scalePolygonFromCenter } from "@utils";
-import { useMazeStore } from "src/stores";
+import { useIdToCellMap } from "src/hooks/useIdToCellMap";
+import { useMazeStore } from "@stores";
 
 import { useCallback } from "react";
 
@@ -25,6 +26,8 @@ export const InnerStateOfAlgoCanvasLayer = () => {
   const cells = useMazeCells();
   const columns = useColumnsAmount();
 
+  const idToCellMap = useIdToCellMap();
+
   const renderPath = useCallback(
     function (
       ctx: CanvasRenderingContext2D,
@@ -37,11 +40,9 @@ export const InnerStateOfAlgoCanvasLayer = () => {
 
       if (isCellHistoryEmpty || isResized) ctx.clearRect(0, 0, width, height);
 
-      if (columns === 0 || !change || !cells) return;
+      if (columns === 0 || !change || !idToCellMap) return;
 
       const cellSize = width / columns;
-
-      const idToCellMap = createIdToCellMap(cells);
 
       const shouldRedraw = isResized;
 
@@ -72,7 +73,7 @@ export const InnerStateOfAlgoCanvasLayer = () => {
         );
       }
     },
-    [change, isCellHistoryEmpty, cells, columns, cellHistoryState],
+    [change, isCellHistoryEmpty, columns, cellHistoryState, idToCellMap],
   );
 
   return <CanvasLayer onRender={renderPath} />;
