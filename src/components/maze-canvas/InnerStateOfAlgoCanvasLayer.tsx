@@ -9,6 +9,7 @@ import {
   useMazeCells,
 } from "@stores/selectors";
 import { scalePolygonFromCenter } from "@utils";
+import { useMazeStore } from "src/stores";
 
 import { useCallback } from "react";
 
@@ -17,20 +18,36 @@ const ERASE_CELL_RATIO = 1;
 export const InnerStateOfAlgoCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
   const isCellHistoryEmpty = useIsCellHistoryEmpty();
+  const cellHistoryState = useMazeStore((state) =>
+    state.cellHistory.getState(),
+  );
+
   const cells = useMazeCells();
   const columns = useColumnsAmount();
 
   const renderPath = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number) {
-      if (isCellHistoryEmpty) ctx.clearRect(0, 0, 9999, 9999);
+    function (
+      ctx: CanvasRenderingContext2D,
+      width: number,
+      height: number,
+      _dpr: number,
+      isResized: boolean,
+    ) {
+      if (width === 0) return;
 
-      if (width === 0 || columns === 0 || !change || !cells) return;
+      if (isCellHistoryEmpty || isResized) ctx.clearRect(0, 0, width, height);
+
+      if (columns === 0 || !change || !cells) return;
 
       const cellSize = width / columns;
 
       const idToCellMap = createIdToCellMap(cells);
 
-      for (const cellChange of change) {
+      const shouldRedraw = isResized;
+
+      const changes = shouldRedraw ? [...cellHistoryState.values()] : change;
+
+      for (const cellChange of changes) {
         const currCell = idToCellMap.get(cellChange.id);
 
         if (!currCell) continue;
@@ -55,8 +72,8 @@ export const InnerStateOfAlgoCanvasLayer = () => {
         );
       }
     },
-    [change, isCellHistoryEmpty, cells, columns],
+    [change, isCellHistoryEmpty, cells, columns, cellHistoryState],
   );
 
-  return <CanvasLayer onRender={renderPath} preserveState={true} />;
+  return <CanvasLayer onRender={renderPath} />;
 };

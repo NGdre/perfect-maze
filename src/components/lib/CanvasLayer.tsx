@@ -8,21 +8,18 @@ export type CanvasLayerProps = {
     renderWidth: number,
     renderHeight: number,
     dpr: number,
+    isResized: boolean,
   ) => void | Promise<void> | (() => void);
   className?: string;
   isInteractive?: boolean;
-  preserveState?: boolean;
 };
 
 export const CanvasLayer = ({
   onRender,
   className,
   isInteractive = false,
-  preserveState = false,
 }: CanvasLayerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const offscreenCanvasRef = useRef<HTMLCanvasElement>();
-  const cleanupRef = useRef<(() => void) | void | null>(null);
   const prevRenderSizeRef = useRef<{
     width: number;
     height: number;
@@ -70,103 +67,29 @@ export const CanvasLayer = ({
       prevSize.height !== renderHeight ||
       prevSize.dpr !== dpr;
 
-    if (preserveState) {
-      if (!offscreenCanvasRef.current || sizeChanged) {
-        const newOffscreenCanvas = document.createElement("canvas");
-        const offscreenCtx = newOffscreenCanvas.getContext("2d");
+    if (sizeChanged) {
+      canvas.width = renderWidth * dpr;
+      canvas.height = renderHeight * dpr;
+      canvas.style.width = `${renderWidth}px`;
+      canvas.style.height = `${renderHeight}px`;
 
-        if (offscreenCtx) {
-          newOffscreenCanvas.width = renderWidth * dpr;
-          newOffscreenCanvas.height = renderHeight * dpr;
-          offscreenCtx.scale(dpr, dpr);
-
-          if (offscreenCanvasRef.current && sizeChanged) {
-            const oldWidth = offscreenCanvasRef.current.width / dpr;
-            const oldHeight = offscreenCanvasRef.current.height / dpr;
-
-            offscreenCtx.drawImage(
-              offscreenCanvasRef.current,
-              0,
-              0,
-              oldWidth,
-              oldHeight,
-              0,
-              0,
-              renderWidth,
-              renderHeight,
-            );
-          }
-
-          offscreenCanvasRef.current = newOffscreenCanvas;
-
-          if (cleanupRef.current) {
-            cleanupRef.current();
-            cleanupRef.current = null;
-          }
-
-          const result = onRender(offscreenCtx, renderWidth, renderHeight, dpr);
-          cleanupRef.current = typeof result === "function" ? result : null;
-        }
-      } else {
-        const offscreenCtx = offscreenCanvasRef.current.getContext("2d");
-
-        if (offscreenCtx) {
-          if (cleanupRef.current) {
-            cleanupRef.current();
-            cleanupRef.current = null;
-          }
-
-          const result = onRender(offscreenCtx, renderWidth, renderHeight, dpr);
-          cleanupRef.current = typeof result === "function" ? result : null;
-        }
-      }
-
-      if (offscreenCanvasRef.current) {
-        canvas.width = renderWidth * dpr;
-        canvas.height = renderHeight * dpr;
-        canvas.style.width = `${renderWidth}px`;
-        canvas.style.height = `${renderHeight}px`;
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.drawImage(offscreenCanvasRef.current, 0, 0);
-      }
-    } else {
-      if (sizeChanged) {
-        canvas.width = renderWidth * dpr;
-        canvas.height = renderHeight * dpr;
-        canvas.style.width = `${renderWidth}px`;
-        canvas.style.height = `${renderHeight}px`;
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(dpr, dpr);
-      }
-
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
-      }
-
-      const result = onRender(ctx, renderWidth, renderHeight, dpr);
-      cleanupRef.current = typeof result === "function" ? result : null;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
     }
+
+    const result = onRender(ctx, renderWidth, renderHeight, dpr, sizeChanged);
+    const cleanup = typeof result === "function" ? result : null;
 
     prevRenderSizeRef.current = {
       width: renderWidth,
       height: renderHeight,
       dpr,
     };
-  }, [renderSize, onRender, preserveState]);
 
-  useEffect(() => {
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
-      }
-      // prevent leaks
-      offscreenCanvasRef.current = undefined;
+      cleanup?.();
     };
-  }, []);
+  }, [renderSize, onRender]);
 
   return (
     <canvas
