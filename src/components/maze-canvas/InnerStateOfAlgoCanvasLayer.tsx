@@ -1,16 +1,14 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { FILL_TO_CELL_RATIO, colors } from "@constants";
-import { createIdToCellMap } from "@models/maze";
 import { drawPolygon } from "@models/maze-canvas-rendering";
+import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
   useCurrVisualMazeChange,
   useIsCellHistoryEmpty,
-  useMazeCells,
 } from "@stores/selectors";
 import { scalePolygonFromCenter } from "@utils";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
-import { useMazeStore } from "@stores";
 
 import { useCallback } from "react";
 
@@ -23,7 +21,8 @@ export const InnerStateOfAlgoCanvasLayer = () => {
     state.cellHistory.getState(),
   );
 
-  const cells = useMazeCells();
+  const isUndoOperation = useMazeStore((state) => state.isUndoOperation);
+
   const columns = useColumnsAmount();
 
   const idToCellMap = useIdToCellMap();
@@ -38,13 +37,14 @@ export const InnerStateOfAlgoCanvasLayer = () => {
     ) {
       if (width === 0) return;
 
-      if (isCellHistoryEmpty || isResized) ctx.clearRect(0, 0, width, height);
+      if (isCellHistoryEmpty || isResized || isUndoOperation)
+        ctx.clearRect(0, 0, width, height);
 
       if (columns === 0 || !change || !idToCellMap) return;
 
       const cellSize = width / columns;
 
-      const shouldRedraw = isResized;
+      const shouldRedraw = isResized || isUndoOperation;
 
       const changes = shouldRedraw ? [...cellHistoryState.values()] : change;
 
@@ -73,7 +73,14 @@ export const InnerStateOfAlgoCanvasLayer = () => {
         );
       }
     },
-    [change, isCellHistoryEmpty, columns, cellHistoryState, idToCellMap],
+    [
+      change,
+      isCellHistoryEmpty,
+      columns,
+      cellHistoryState,
+      idToCellMap,
+      isUndoOperation,
+    ],
   );
 
   return <CanvasLayer onRender={renderPath} />;

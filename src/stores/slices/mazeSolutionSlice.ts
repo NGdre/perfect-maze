@@ -53,6 +53,7 @@ type State = {
   cellSelection: CellSelectionModes;
   mazeSolverId: number;
   isSerialSolverDone: boolean;
+  isUndoOperation: boolean;
 };
 
 type Action = {
@@ -80,6 +81,7 @@ export const createMazeSolutionSlice: StateCreator<
   cellSelection: "none",
   mazeSolverId: 0,
   isSerialSolverDone: false,
+  isUndoOperation: false,
 
   currVisualMazeChange: null,
 
@@ -148,6 +150,7 @@ export const createMazeSolutionSlice: StateCreator<
       if (cellHistory.canUndo()) {
         set({
           currVisualMazeChange: cellHistory.historyCurrentStep.backward,
+          isUndoOperation: true,
         });
 
         cellHistory.undo();
@@ -155,6 +158,10 @@ export const createMazeSolutionSlice: StateCreator<
 
       return true;
     }
+
+    set({
+      isUndoOperation: false,
+    });
 
     if (cellHistory.canRedo()) {
       cellHistory.redo();

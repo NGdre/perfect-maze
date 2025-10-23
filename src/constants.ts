@@ -25,7 +25,7 @@ export const colors = {
 } as const;
 
 export const PATH_WIDTH = 2;
-export const WALLS_WIDTH = 0.5;
+export const WALLS_WIDTH = 1;
 
 export const FILL_TO_CELL_RATIO = 0.5;
 
