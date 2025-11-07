@@ -1,4 +1,5 @@
 import { type CellPatch } from "@models/CellHistory";
+import { MazeMode, algoRegistry } from "@models/algorithm-registry";
 import {
   type PolygonCell,
   RectMaze,
@@ -7,7 +8,6 @@ import {
   removeWallsBetweenCells,
 } from "@models/maze";
 import { WallHistoryState } from "@models/wall-history";
-import { getFunctionById } from "@solvers/index";
 import { MainStore } from "@stores/index";
 import { cloneDeep } from "lodash";
 import { StateCreator } from "zustand";
@@ -19,11 +19,11 @@ function initSerialSolver(
   mazeInstance: RectMaze | null,
   wallsToRemove: WallHistoryState,
 ) {
-  const mazeSolver = getFunctionById(mazeSolverId, "SteppedAlgoExecution");
+  const mazeSolver = algoRegistry.findAlgoById(mazeSolverId);
 
   const maze = mazeInstance;
 
-  if (!mazeSolver || !maze) return false;
+  if (!mazeSolver || !maze) return null;
 
   const cells = cloneDeep(maze.cells);
 
@@ -63,7 +63,7 @@ type Action = {
   setCellSelection: (cellSelection: State["cellSelection"]) => void;
   setStartId: (startId: State["startId"]) => void;
   setEndId: (endId: State["endId"]) => void;
-  setMazeSolverId: (mazeSolverId: State["mazeSolverId"]) => void;
+  setMazeSolverId: (mazeSolverName: string) => void;
 };
 
 export type MazeSolutionSlice = State & Action;
@@ -79,7 +79,7 @@ export const createMazeSolutionSlice: StateCreator<
   startId: generateRectMazeId(0, 0),
   endId: generateRectMazeId(0, 0),
   cellSelection: "none",
-  mazeSolverId: 0,
+  mazeSolverId: algoRegistry.getGroup(MazeMode.solving)[0],
   isSerialSolverDone: false,
   isUndoOperation: false,
 
@@ -97,11 +97,11 @@ export const createMazeSolutionSlice: StateCreator<
     set({ endId });
   },
 
-  setMazeSolverId: (mazeSolverId) => {
+  setMazeSolverId: (mazeSolverName) => {
     get().resetSolution();
 
     set({
-      mazeSolverId,
+      mazeSolverId: algoRegistry.getIdByName(mazeSolverName),
     });
   },
 

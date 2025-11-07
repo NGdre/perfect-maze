@@ -1,6 +1,7 @@
-import { MazeMode, useMazeStore } from "@stores";
+import { MazeMode } from "@models/algorithm-registry.ts";
+import { useMazeStore } from "@stores";
+import { useMazeMode } from "@stores/selectors.ts";
 import { TimeDirection } from "@stores/slices/mazeSolutionSlice";
-import { useMazeMode } from "src/stores/selectors.ts";
 
 import {
   FiFastForward,

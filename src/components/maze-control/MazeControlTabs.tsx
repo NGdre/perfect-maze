@@ -1,11 +1,17 @@
 import { generatorNames } from "@generators";
-import { getSolverIdByAlgoName, mazeSolversNames, solversInfo } from "@solvers";
-import { MazeMode, useMazeStore } from "@stores";
+import { mazeSolversNames } from "@solvers";
+import { useMazeStore } from "@stores";
 import {
   useMazeMode,
   useSetMazeMode,
   useTakeStepInSolution,
 } from "@stores/selectors.ts";
+import {
+  MazeMode,
+  MazeModeType,
+  generatorNames,
+  mazeSolversNames,
+} from "src/models/algorithm-registry.ts";
 
 import { FiFlag, FiMapPin } from "react-icons/fi";
 import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
@@ -111,14 +117,12 @@ export function TabPanelContentForMazeGeneration() {
 
 export function TabPanelContentForPathFinding() {
   const setMazeSolverId = useMazeStore((state) => state.setMazeSolverId);
-  const mazeSolverId = useMazeStore((state) => state.mazeSolverId);
   const takeStepInSolution = useTakeStepInSolution();
   const resetSolution = useMazeStore((state) => state.resetSolution);
   const solveMaze = useMazeStore((state) => state.solveMaze);
 
   return (
     <>
-      {solversInfo[mazeSolverId].features.includes("SteppedAlgoExecution") && (
         <VisualizationControls
           onStep={takeStepInSolution}
           onReset={resetSolution}
@@ -126,7 +130,6 @@ export function TabPanelContentForPathFinding() {
           resetTooltipContent="сбросить путь"
           completeTooltipContent="найти путь"
         />
-      )}
 
       <StartOrEndChoiceChips />
 
@@ -134,7 +137,7 @@ export function TabPanelContentForPathFinding() {
 
       <AlgorithmChoiceChips
         algorithmNames={mazeSolversNames}
-        updateAlgoritm={(algo) => setMazeSolverId(getSolverIdByAlgoName(algo))}
+        updateAlgoritm={(algo) => setMazeSolverId(algo)}
       />
     </>
   );
@@ -152,7 +155,7 @@ export default function MazeControlTabs() {
     const tabElement = event.target as HTMLElement;
     const mazeMode = tabElement.dataset.mazeMode;
 
-    if (mazeMode) setMazeMode(mazeMode as MazeMode);
+    if (mazeMode) setMazeMode(mazeMode as MazeModeType);
   };
 
   const selectedIndex = mazeMode === MazeMode.generation ? 0 : 1;

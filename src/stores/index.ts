@@ -1,31 +1,26 @@
+import CellHistory from "@models/CellHistory";
+import { MazeMode, MazeModeType } from "@models/algorithm-registry";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import CellHistory from "@models/CellHistory";
+
 import {
-  createMazeGenerationSlice,
   MazeGenerationSlice,
+  createMazeGenerationSlice,
 } from "./slices/mazeGenerationSlice";
 import {
-  createMazeSolutionSlice,
   MazeSolutionSlice,
+  createMazeSolutionSlice,
 } from "./slices/mazeSolutionSlice";
-
-export const MazeMode = {
-  generation: "generation",
-  solving: "solving",
-} as const;
-
-export type MazeMode = (typeof MazeMode)[keyof typeof MazeMode];
 
 type State = {
   isMazeRendering: boolean;
   cellHistory: CellHistory;
-  mazeMode: MazeMode;
+  mazeMode: MazeModeType;
 };
 
 type Action = {
   setIsMazeRendering: (newStatus: State["isMazeRendering"]) => void;
-  setMazeMode: (mazeMode: MazeMode) => void;
+  setMazeMode: (mazeMode: MazeModeType) => void;
 };
 
 export type MainStore = State &
@@ -60,7 +55,7 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
           }
         },
       };
-    })
+    }),
   );
 
 export const useMazeStore = createMazeStore();

@@ -1,8 +1,8 @@
 import { DEFAULT_COLUMNS_AMOUNT, DEFAULT_ROWS_AMOUNT } from "@constants";
-import { generatorNames, getGeneratorByAlgoName } from "@generators/index";
 import { RectMaze, createRectMaze, generateRectMazeId } from "@models/maze";
 import { MainStore } from "@stores";
 import { mapGenerator } from "@utils";
+import { MazeMode, algoRegistry } from "src/models/algorithm-registry";
 import {
   WallHistorySnapshot,
   backwardHistory,
@@ -19,7 +19,7 @@ import { TimeDirection } from "./mazeSolutionSlice";
 
 type State = {
   mazeInstance: RectMaze | null;
-  mazeGenerationAlgorithm: string;
+  mazeGenerationAlgorithmId: number;
   rowsAmount: RectMaze["rows"];
   columnsAmount: RectMaze["cols"];
   serialGenerator: Generator<any, void, any> | null;
@@ -31,9 +31,7 @@ type Action = {
   updateRowsAmount: (newRowsAmount: State["rowsAmount"]) => void;
   updateColumnsAmount: (newColumnsAmount: State["columnsAmount"]) => void;
 
-  updateMazeGenerationAlgorithm: (
-    newAlgorithm: State["mazeGenerationAlgorithm"],
-  ) => void;
+  updateMazeGenerationAlgorithm: (newAlgorithm: string) => void;
 
   initMaze: () => void;
   generateMaze: () => void;
@@ -51,7 +49,7 @@ export const createMazeGenerationSlice: StateCreator<
 > = (set, get) => ({
   rowsAmount: DEFAULT_ROWS_AMOUNT,
   columnsAmount: DEFAULT_COLUMNS_AMOUNT,
-  mazeGenerationAlgorithm: generatorNames[0],
+  mazeGenerationAlgorithmId: algoRegistry.getGroup(MazeMode.generation)[0],
   mazeInstance: null,
   serialGenerator: null,
   wallHistory: createWallHistory(),
@@ -64,7 +62,7 @@ export const createMazeGenerationSlice: StateCreator<
 
   updateMazeGenerationAlgorithm: (newAlgorithm) =>
     set({
-      mazeGenerationAlgorithm: newAlgorithm,
+      mazeGenerationAlgorithmId: algoRegistry.getIdByName(newAlgorithm),
       wallHistory: clearHistory(),
       serialGenerator: null,
       isMazeGenerationDone: false,
@@ -108,9 +106,9 @@ export const createMazeGenerationSlice: StateCreator<
     let serialGenerator = get().serialGenerator;
 
     if (isHistoryEmpty(wallHistory)) {
-      const currGeneratorAlgo = get().mazeGenerationAlgorithm;
+      const currGeneratorAlgoId = get().mazeGenerationAlgorithmId;
 
-      const mazeGenerator = getGeneratorByAlgoName(currGeneratorAlgo);
+      const mazeGenerator = algoRegistry.findAlgoById(currGeneratorAlgoId);
 
       serialGenerator = mapGenerator(mazeGenerator(rows, cols), (pair) => [
         pair[0].id,
@@ -144,9 +142,9 @@ export const createMazeGenerationSlice: StateCreator<
     let serialGenerator = get().serialGenerator;
 
     if (isHistoryEmpty(wallHistory)) {
-      const currGeneratorAlgo = get().mazeGenerationAlgorithm;
+      const currGeneratorAlgoId = get().mazeGenerationAlgorithmId;
 
-      const mazeGenerator = getGeneratorByAlgoName(currGeneratorAlgo);
+      const mazeGenerator = algoRegistry.findAlgoById(currGeneratorAlgoId);
 
       serialGenerator = mapGenerator(mazeGenerator(rows, cols), (pair) => [
         pair[0].id,

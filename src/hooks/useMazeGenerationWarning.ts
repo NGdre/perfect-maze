@@ -1,5 +1,5 @@
-import { MazeMode, useMazeStore } from "@stores";
-import { useEffect } from "react";
+import { MazeMode } from "@models/algorithm-registry";
+import { useMazeStore } from "@stores";
 import {
   useGenerateMaze,
   useMazeMode,
@@ -7,11 +7,13 @@ import {
 } from "@stores/selectors.ts";
 import { DialogConfig } from "src/components/lib/dialog/Dialog";
 
+import { useEffect } from "react";
+
 export function useMazeGenerationWarning(
-  showDialog: (config: DialogConfig) => void
+  showDialog: (config: DialogConfig) => void,
 ) {
   const isMazeGenerationDone = useMazeStore(
-    (state) => state.isMazeGenerationDone
+    (state) => state.isMazeGenerationDone,
   );
 
   const setMazeMode = useSetMazeMode();
