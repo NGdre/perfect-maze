@@ -1,6 +1,5 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { colors } from "@constants";
-import { createIdToCellMap } from "@models/maze";
 import { drawPolygon } from "@models/maze-canvas-rendering";
 import { TextInBoxRenderer } from "@models/text-in-box-renderer";
 import { AStarText } from "@solvers/a-star";
@@ -8,10 +7,9 @@ import {
   useColumnsAmount,
   useCurrVisualMazeChange,
   useIsCellHistoryEmpty,
-  useMazeCells,
 } from "@stores/selectors";
 import { scalePolygonFromCenter } from "@utils";
-import { buildTextInCellConfig } from "src/configs/visual";
+import { buildAStarTextConfig } from "src/configs/visual";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 
 import { useCallback, useEffect } from "react";
@@ -75,7 +73,7 @@ export const TextInCellsCanvasLayer = () => {
 
         const currCellPos = currCell.getPoints(cellSize)[0];
 
-        const textInCellConfig = buildTextInCellConfig(
+        const textInCellConfig = buildAStarTextConfig(
           Object.assign(currCellPos, { size: cellSize }),
           cellChange.text as AStarText,
         );
