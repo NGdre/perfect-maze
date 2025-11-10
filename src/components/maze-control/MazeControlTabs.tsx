@@ -1,5 +1,3 @@
-import { generatorNames } from "@generators";
-import { mazeSolversNames } from "@solvers";
 import { useMazeStore } from "@stores";
 import {
   useMazeMode,
@@ -18,6 +16,7 @@ import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 
 import { ChoiceChips } from "../lib/choice-chips/ChoiceChips.tsx";
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
+import MazeLegend from "../maze-legend/MazeLegend.tsx";
 import VisualizationControls from "./VisualizationControls.tsx";
 
 const tabNameForGeneration = "Генерация";
@@ -123,13 +122,13 @@ export function TabPanelContentForPathFinding() {
 
   return (
     <>
-        <VisualizationControls
-          onStep={takeStepInSolution}
-          onReset={resetSolution}
-          onComplete={solveMaze}
-          resetTooltipContent="сбросить путь"
-          completeTooltipContent="найти путь"
-        />
+      <VisualizationControls
+        onStep={takeStepInSolution}
+        onReset={resetSolution}
+        onComplete={solveMaze}
+        resetTooltipContent="сбросить путь"
+        completeTooltipContent="найти путь"
+      />
 
       <StartOrEndChoiceChips />
 
@@ -190,6 +189,7 @@ export default function MazeControlTabs() {
       <TabPanel className={tabPanelClassName}>
         <TabPanelContentForPathFinding />
       </TabPanel>
+      <MazeLegend />
     </Tabs>
   );
 }
