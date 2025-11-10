@@ -16,6 +16,7 @@ type State = {
   isMazeRendering: boolean;
   cellHistory: CellHistory;
   mazeMode: MazeModeType;
+  displayMode: null | string;
 };
 
 type Action = {
@@ -37,6 +38,7 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
         cellHistory,
         isMazeRendering: false,
         mazeMode: MazeMode.generation,
+        displayMode: null,
         ...initialState,
 
         ...createMazeGenerationSlice(set, get, api),

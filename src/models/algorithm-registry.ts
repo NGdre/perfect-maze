@@ -15,6 +15,7 @@ type AlgoConfig = Readonly<{
   name: string;
   type: MazeModeType;
   func: (...args: any[]) => Generator<any>;
+  displayModes?: string[];
 }>;
 
 export class AlgorithmRegistry {
@@ -43,6 +44,10 @@ export class AlgorithmRegistry {
 
   getName(id: AlgoConfig["id"]) {
     return this.findConfigById(id).name;
+  }
+
+  getDisplayModes(id: AlgoConfig["id"]) {
+    return this.findConfigById(id).displayModes || [];
   }
 
   getIdByName(name: AlgoConfig["name"]) {
@@ -80,10 +85,16 @@ export const RECURSIVE_BACKTRACKING_ID = algoRegistry.push({
   func: recursiveBacktracking,
 });
 
+export const A_STAR_DISPLAY_MODES = {
+  base: "base",
+  text: "text",
+};
+
 export const A_STAR_ID = algoRegistry.push({
   name: "A*",
   type: MazeMode.solving,
   func: aStarSerialVisual,
+  displayModes: Object.values(A_STAR_DISPLAY_MODES),
 });
 
 export const BFS_ID = algoRegistry.push({
