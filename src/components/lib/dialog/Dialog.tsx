@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Popup } from "./Popup";
 import "./dialog.css";
 
 export interface DialogButton {
@@ -24,22 +24,9 @@ export const Dialog: React.FC<DialogProps> = ({
   buttons,
   onClose,
 }) => {
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
-
-  /* stopPropagation is needed so click event on overlay is not fired when 
-  there is a click on dialog-content */
   return (
-    <div className="dialog-overlay" onClick={onClose} role="presentation">
+    <Popup onClose={onClose}>
       <div
-        className="dialog-content"
-        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="dialog-title"
         aria-describedby="dialog-message"
@@ -62,6 +49,6 @@ export const Dialog: React.FC<DialogProps> = ({
           ))}
         </div>
       </div>
-    </div>
+    </Popup>
   );
 };
