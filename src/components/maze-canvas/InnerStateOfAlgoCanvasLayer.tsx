@@ -1,13 +1,12 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { FILL_TO_CELL_RATIO, colors } from "@constants";
-import { drawPolygon } from "@models/maze-canvas-rendering";
+import { drawCell } from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
   useCurrVisualMazeChange,
   useIsCellHistoryEmpty,
 } from "@stores/selectors";
-import { scalePolygonFromCenter } from "@utils";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 
 import { useCallback } from "react";
@@ -63,14 +62,10 @@ export const InnerStateOfAlgoCanvasLayer = () => {
                 (cellChange.color as string | undefined) || colors.EMPTY_CELL,
             };
 
-        drawPolygon(
-          ctx,
-          scalePolygonFromCenter(
-            currCell.getPoints(cellSize),
-            drawPolygonArgs.scaleFactor,
-          ),
-          drawPolygonArgs.color,
-        );
+        drawCell(ctx, currCell, cellSize, {
+          scaleFromCenterFactor: drawPolygonArgs.scaleFactor,
+          background: drawPolygonArgs.color,
+        });
       }
     },
     [

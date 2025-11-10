@@ -1,7 +1,6 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
-import { colors } from "@constants";
 import { createCellFinder } from "@models/maze";
-import { fillPolygonWithCircle } from "@models/maze-canvas-rendering";
+import { drawFinish, drawStart } from "@models/maze-canvas-rendering";
 import {
   useColumnsAmount,
   useEndId,
@@ -33,13 +32,11 @@ export const CellMarksCanvasLayer = () => {
 
       const startCell = findCell(startId);
 
-      if (startCell)
-        fillPolygonWithCircle(ctx, startCell, colors.START_CELL, cellSize);
+      if (startCell) drawStart(ctx, startCell, cellSize);
 
       const endCell = findCell(endId);
 
-      if (endCell)
-        fillPolygonWithCircle(ctx, endCell, colors.END_CELL, cellSize);
+      if (endCell) drawFinish(ctx, endCell, cellSize);
     },
     [cells, startId, endId, columns],
   );

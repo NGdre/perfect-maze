@@ -1,7 +1,9 @@
-import { loopPairs } from "@utils";
+import { FILL_TO_CELL_RATIO, colors } from "@constants";
+import { loopPairs, scalePolygonFromCenter } from "@utils";
 import ow from "ow";
 
 import { Point2d, type PolygonCell } from "./maze";
+import { TextInBoxRenderer } from "./text-in-box-renderer";
 
 type context2d = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
@@ -141,4 +143,78 @@ export function fillPolygonWithCircle(
   const radius = halfCellLength * fillFraction;
 
   fillWithCircle(ctx, x * cellSize, y * cellSize, radius, color);
+}
+
+export function drawCell(
+  ctx: CanvasRenderingContext2D,
+  cell: PolygonCell,
+  cellSize: number,
+  opt: {
+    background: string;
+    scaleFromCenterFactor?: number;
+  },
+) {
+  const { background, scaleFromCenterFactor = FILL_TO_CELL_RATIO } = opt;
+
+  drawPolygon(
+    ctx,
+    scalePolygonFromCenter(cell.getPoints(cellSize), scaleFromCenterFactor),
+    background,
+  );
+}
+
+function drawTextInCell(
+  ctx: CanvasRenderingContext2D,
+  cell: PolygonCell,
+  cellSize: number,
+  text: string,
+) {
+  const { x, y } = cell.getPoints(cellSize)[0];
+  const textRenderer = new TextInBoxRenderer(ctx);
+
+  textRenderer.addBox({
+    x,
+    y: y + 2,
+    size: cellSize,
+    texts: [
+      {
+        content: text,
+        fontSize: 20,
+        position: "center",
+        fontFamily: "Roboto",
+        color: "white",
+        fontWeight: "700",
+      },
+    ],
+  });
+
+  textRenderer.render();
+}
+
+export function drawStart(
+  ctx: CanvasRenderingContext2D,
+  cell: PolygonCell,
+  cellSize: number,
+) {
+  fillPolygonWithCircle(ctx, cell, colors.START_CELL, cellSize);
+
+  drawTextInCell(ctx, cell, cellSize, "S");
+}
+
+export function drawFinish(
+  ctx: CanvasRenderingContext2D,
+  cell: PolygonCell,
+  cellSize: number,
+) {
+  fillPolygonWithCircle(ctx, cell, colors.END_CELL, cellSize);
+
+  drawTextInCell(ctx, cell, cellSize, "F");
+}
+
+export function drawHoveredCell(
+  ctx: CanvasRenderingContext2D,
+  cell: PolygonCell,
+  cellSize: number,
+) {
+  fillPolygonWithCircle(ctx, cell, colors.HOVERED_CELL, cellSize);
 }
