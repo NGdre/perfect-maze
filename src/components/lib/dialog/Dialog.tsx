@@ -2,10 +2,12 @@ import Button, { ButtonType } from "../button/Button";
 import { Heading } from "../typography/Heading";
 import { Popup, PopupProps } from "./Popup";
 
+export type DialogButton = ButtonType & { text: string };
+
 export interface DialogConfig {
   title: string;
   message: string;
-  buttons: Array<ButtonType & { text: string }>;
+  buttons: Array<DialogButton>;
   onClose?: () => void;
 }
 

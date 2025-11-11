@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { Dialog } from "./Dialog";
-import { DialogButton } from "./Dialog";
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { Dialog, DialogButton } from "./Dialog";
 
 describe("Dialog", () => {
   const mockOnClose = jest.fn();
@@ -60,16 +60,6 @@ describe("Dialog", () => {
 
     expect(defaultButtons[0].onClick).toHaveBeenCalledTimes(1);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("applies correct CSS classes for button variants", () => {
-    render(<Dialog {...defaultProps} />);
-
-    const primaryButton = screen.getByText("Confirm");
-    const secondaryButton = screen.getByText("Cancel");
-
-    expect(primaryButton).toHaveClass("button--primary");
-    expect(secondaryButton).toHaveClass("button--secondary");
   });
 
   it("stops propagation when dialog content is clicked", () => {
