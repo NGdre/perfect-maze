@@ -12,7 +12,7 @@ import { scalePolygonFromCenter } from "@utils";
 import { buildAStarTextConfig } from "src/configs/visual";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import fontForNumbers from "../../assets/fonts/BarlowCondensed-Light.ttf";
 
@@ -24,7 +24,15 @@ export const TextInCellsCanvasLayer = () => {
   const isCellHistoryEmpty = useIsCellHistoryEmpty();
   const columns = useColumnsAmount();
 
+  const rendererRef = useRef<TextInBoxRenderer | null>(null);
+
   useEffect(() => {
+    const isAlreadyLoaded = Array.from(document.fonts).some(
+      (font) => font.family === fontForNumbersName,
+    );
+
+    if (isAlreadyLoaded) return;
+
     const loadFont = async () => {
       try {
         const font = new FontFace(fontForNumbersName, `url(${fontForNumbers})`);
@@ -48,7 +56,14 @@ export const TextInCellsCanvasLayer = () => {
 
       const cellSize = width / columns;
 
-      const renderer = new TextInBoxRenderer(ctx);
+      if (!rendererRef.current) {
+        rendererRef.current = new TextInBoxRenderer(ctx);
+      } else {
+        rendererRef.current.clearBoxes();
+      }
+
+      const renderer = rendererRef.current;
+      const boxesToRender = []; // batching all the boxes for drawing
 
       for (const cellChange of change) {
         const currCell = idToCellMap.get(cellChange.id);
@@ -69,8 +84,6 @@ export const TextInCellsCanvasLayer = () => {
           continue;
         }
 
-        if (!cellChange.text) continue;
-
         const currCellPos = currCell.getPoints(cellSize)[0];
 
         const textInCellConfig = buildAStarTextConfig(
@@ -78,7 +91,12 @@ export const TextInCellsCanvasLayer = () => {
           cellChange.text as AStarText,
         );
 
-        renderer.addBox(textInCellConfig);
+        boxesToRender.push(textInCellConfig);
+      }
+
+      // rendering all boxes with one call
+      if (boxesToRender.length > 0) {
+        renderer.addBoxes(boxesToRender);
         renderer.render();
       }
     },
