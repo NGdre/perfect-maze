@@ -1,16 +1,11 @@
-import { Popup } from "./Popup";
-import "./dialog.css";
-
-export interface DialogButton {
-  text: string;
-  onClick: () => void;
-  variant?: "primary" | "secondary" | "danger";
-}
+import Button, { ButtonType } from "../button/Button";
+import { Heading } from "../typography/Heading";
+import { Popup, PopupProps } from "./Popup";
 
 export interface DialogConfig {
   title: string;
   message: string;
-  buttons: DialogButton[];
+  buttons: Array<ButtonType & { text: string }>;
   onClose?: () => void;
 }
 
@@ -18,34 +13,41 @@ interface DialogProps extends DialogConfig {
   onClose: () => void;
 }
 
-export const Dialog: React.FC<DialogProps> = ({
+export const Dialog: React.FC<DialogProps & Omit<PopupProps, "children">> = ({
   title,
   message,
   buttons,
   onClose,
+  ...popupProps
 }) => {
   return (
-    <Popup onClose={onClose}>
+    <Popup onClose={onClose} {...popupProps}>
       <div
         role="dialog"
         aria-labelledby="dialog-title"
         aria-describedby="dialog-message"
+        className="flex flex-col"
       >
-        <h2 className="dialog-title">{title}</h2>
-        <p className="dialog-message">{message}</p>
+        <Heading level={3} className="!text-xl font-semibold">
+          {title}
+        </Heading>
 
-        <div className="dialog-buttons">
-          {buttons.map((button, index) => (
-            <button
-              key={index}
-              className={`button button--${button.variant || "secondary"}`}
+        <p id="dialog-message" className="mb-6 text-gray-600">
+          {message}
+        </p>
+
+        <div className="mt-5 flex gap-3">
+          {buttons.map((button) => (
+            <Button
+              key={button.text}
               onClick={() => {
-                button.onClick();
+                button.onClick?.();
                 onClose();
               }}
+              variant={button.variant}
             >
               {button.text}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

@@ -4,9 +4,8 @@ import { useEffect } from "react";
 import { FiX } from "react-icons/fi";
 
 import Button from "../button/Button";
-import "./dialog.css";
 
-interface PopupProps {
+export interface PopupProps {
   onClose: () => void;
   isOpen?: boolean;
   className?: string;
@@ -16,7 +15,7 @@ interface PopupProps {
 
 export const Popup: React.FC<PopupProps> = ({
   onClose,
-  isOpen,
+  isOpen = true,
   className,
   showCloseButton = false,
   children,
@@ -35,9 +34,16 @@ export const Popup: React.FC<PopupProps> = ({
   /* stopPropagation is needed so click event on overlay is not fired when 
   there is a click on dialog-content */
   return (
-    <div className="dialog-overlay" onClick={onClose} role="presentation">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+      role="presentation"
+    >
       <div
-        className={clsx("dialog-content relative", className)}
+        className={clsx(
+          "relative max-h-[90vh] max-w-lg overflow-auto rounded-lg bg-white px-10 py-5 shadow-xl",
+          className,
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         {showCloseButton && (

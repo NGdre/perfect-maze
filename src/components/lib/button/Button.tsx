@@ -5,8 +5,7 @@ import { FiLoader } from "react-icons/fi";
 
 import "./button.css";
 
-export interface ButtonProps {
-  children: React.ReactNode;
+export interface ButtonType {
   variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
@@ -15,13 +14,17 @@ export interface ButtonProps {
   defaultActive?: boolean;
   active?: boolean;
   onClick?: (
-    event: React.MouseEvent<HTMLButtonElement>,
-    isActive: boolean,
+    event?: React.MouseEvent<HTMLButtonElement>,
+    isActive?: boolean,
   ) => void;
   type?: "button" | "submit" | "reset";
   ariaLabel?: string;
   title?: string;
   className?: string;
+}
+
+export interface ButtonProps extends ButtonType {
+  children: React.ReactNode;
 }
 
 const Button: React.FC<ButtonProps> = ({
