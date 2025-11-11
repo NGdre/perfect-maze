@@ -9,9 +9,9 @@ export const useDialog = () => {
     setDialog(config);
   }, []);
 
-  const hideDialog = () => {
+  const hideDialog = useCallback(() => {
     setDialog(null);
-  };
+  }, []);
 
   return {
     dialog,

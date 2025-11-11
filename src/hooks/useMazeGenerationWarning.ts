@@ -1,3 +1,4 @@
+import { useDialog } from "@components/lib/dialog/useDialog";
 import { MazeMode } from "@models/algorithm-registry";
 import { useMazeStore } from "@stores";
 import {
@@ -5,13 +6,12 @@ import {
   useMazeMode,
   useSetMazeMode,
 } from "@stores/selectors.ts";
-import { DialogConfig } from "src/components/lib/dialog/Dialog";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
-export function useMazeGenerationWarning(
-  showDialog: (config: DialogConfig) => void,
-) {
+export function useMazeGenerationWarning() {
+  const { dialog, showDialog, hideDialog } = useDialog();
+
   const isMazeGenerationDone = useMazeStore(
     (state) => state.isMazeGenerationDone,
   );
@@ -22,8 +22,12 @@ export function useMazeGenerationWarning(
 
   const mazeMode = useMazeMode();
 
+  const optionSelectedRef = useRef(false);
+
   useEffect(() => {
     if (!isMazeGenerationDone && mazeMode === MazeMode.solving) {
+      optionSelectedRef.current = false;
+
       showDialog({
         title: "Лабиринт не полностью сгенерирован",
         message: "Завершить генерацию автоматически?",
@@ -31,15 +35,33 @@ export function useMazeGenerationWarning(
           {
             text: "Автозавершение",
             variant: "primary",
-            onClick: generateMaze,
+            onClick: () => {
+              optionSelectedRef.current = true;
+              generateMaze();
+            },
           },
           {
             text: "Продолжить генерацию",
             variant: "secondary",
-            onClick: () => setMazeMode(MazeMode.generation),
+            onClick: () => {
+              optionSelectedRef.current = true;
+              setMazeMode(MazeMode.generation);
+            },
           },
         ],
       });
     }
   }, [isMazeGenerationDone, mazeMode, showDialog, generateMaze, setMazeMode]);
+
+  const handleHideDialog = useCallback(() => {
+    if (!optionSelectedRef.current) {
+      setMazeMode(MazeMode.generation);
+    }
+    hideDialog();
+  }, [setMazeMode, hideDialog]);
+
+  return {
+    dialog,
+    hideDialog: handleHideDialog,
+  };
 }

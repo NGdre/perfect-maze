@@ -20,9 +20,7 @@ function Header() {
 }
 
 function App() {
-  const { dialog, showDialog, hideDialog } = useDialog();
-
-  useMazeGenerationWarning(showDialog);
+  const { dialog, hideDialog } = useMazeGenerationWarning();
 
   const isSidebarOnTheRight = false;
 
