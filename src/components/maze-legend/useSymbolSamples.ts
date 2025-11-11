@@ -1,17 +1,10 @@
-import { MazeMode } from "@models/algorithm-registry";
 import { useMazeStore } from "@stores";
-import { useMazeMode } from "@stores/selectors";
+import { useCurrentAlgoId } from "src/hooks/useCurrentAlgoId";
 
 import { LegendSample, legendSampleConfigs } from "./legend-sample-configs";
 
 export function useSymbolSamples(): readonly LegendSample[] {
-  const mazeMode = useMazeMode();
-
-  const currentAlgorithmId = useMazeStore((state) =>
-    mazeMode === MazeMode.generation
-      ? state.mazeGenerationAlgorithmId
-      : state.mazeSolverId,
-  );
+  const currentAlgorithmId = useCurrentAlgoId();
 
   const displayMode = useMazeStore((state) => state.displayMode);
 
