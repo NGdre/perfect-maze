@@ -7,9 +7,22 @@ import { CursorInteractionCanvasLayer } from "./CursorInteractionCanvasLayer";
 import { InnerStateOfAlgoCanvasLayer } from "./InnerStateOfAlgoCanvasLayer";
 import { MazeCanvasLayer } from "./MazeCanvasLayer";
 import { MazePathCanvasLayer } from "./MazePathCanvasLayer";
+import { TextInCellsCanvasLayer } from "./TextInCellsCanvasLayer";
 
 const BGLayer = () => {
   return <CanvasLayer onRender={() => {}} className="!bg-white" />;
+};
+
+const DiplayModeLayer = () => {
+  const displayMode = useMazeStore((state) => state.displayMode);
+
+  switch (displayMode) {
+    case "text":
+      return <TextInCellsCanvasLayer />;
+
+    default:
+      return <InnerStateOfAlgoCanvasLayer />;
+  }
 };
 
 export default function MazeViewport({
@@ -27,7 +40,7 @@ export default function MazeViewport({
       containerClassName={containerClassName}
     >
       <BGLayer />
-      <InnerStateOfAlgoCanvasLayer />
+      <DiplayModeLayer />
       <MazeCanvasLayer />
       <MazePathCanvasLayer />
       <CellMarksCanvasLayer />

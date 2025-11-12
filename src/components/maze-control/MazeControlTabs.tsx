@@ -17,6 +17,7 @@ import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 import { ChoiceChips } from "../lib/choice-chips/ChoiceChips.tsx";
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
 import MazeLegend from "../maze-legend/MazeLegend.tsx";
+import DisplayModes from "./DisplayModes.tsx";
 import VisualizationControls from "./VisualizationControls.tsx";
 
 const tabNameForGeneration = "Генерация";
@@ -48,6 +49,7 @@ function AlgorithmChoiceChips<T extends string>({
         disabled: isMazeRendering,
       }))}
       onChange={(index) => index && updateAlgoritm(algorithmNames[+index])}
+      className="!mb-5"
     />
   );
 }
@@ -189,6 +191,8 @@ export default function MazeControlTabs() {
       <TabPanel className={tabPanelClassName}>
         <TabPanelContentForPathFinding />
       </TabPanel>
+
+      <DisplayModes />
       <MazeLegend />
     </Tabs>
   );

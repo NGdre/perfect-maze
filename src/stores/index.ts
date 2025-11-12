@@ -22,6 +22,7 @@ type State = {
 type Action = {
   setIsMazeRendering: (newStatus: State["isMazeRendering"]) => void;
   setMazeMode: (mazeMode: MazeModeType) => void;
+  setDisplayMode: (displayMode: State["displayMode"]) => void;
 };
 
 export type MainStore = State &
@@ -46,6 +47,10 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
 
         setIsMazeRendering(newStatus) {
           set({ isMazeRendering: newStatus });
+        },
+
+        setDisplayMode(displayMode) {
+          set({ displayMode });
         },
 
         setMazeMode(mazeMode) {

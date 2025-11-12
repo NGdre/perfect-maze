@@ -3,6 +3,7 @@ import { colors } from "@constants";
 import { drawPolygon } from "@models/maze-canvas-rendering";
 import { TextInBoxRenderer } from "@models/text-in-box-renderer";
 import { AStarText } from "@solvers/a-star";
+import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
   useCurrVisualMazeChange,
@@ -23,6 +24,10 @@ export const TextInCellsCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
   const isCellHistoryEmpty = useIsCellHistoryEmpty();
   const columns = useColumnsAmount();
+
+  const cellHistoryState = useMazeStore((state) =>
+    state.cellHistory.getState(),
+  );
 
   const rendererRef = useRef<TextInBoxRenderer | null>(null);
 
@@ -49,12 +54,22 @@ export const TextInCellsCanvasLayer = () => {
   const idToCellMap = useIdToCellMap();
 
   const renderPath = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
+    function (
+      ctx: CanvasRenderingContext2D,
+      width: number,
+      height: number,
+      _dpr: number,
+      isResized: boolean,
+    ) {
       if (isCellHistoryEmpty) ctx.clearRect(0, 0, width, height);
 
       if (width === 0 || columns === 0 || !change || !idToCellMap) return;
 
       const cellSize = width / columns;
+
+      const shouldRedraw = isResized || !rendererRef.current;
+
+      const changes = shouldRedraw ? [...cellHistoryState.values()] : change;
 
       if (!rendererRef.current) {
         rendererRef.current = new TextInBoxRenderer(ctx);
@@ -65,7 +80,7 @@ export const TextInCellsCanvasLayer = () => {
       const renderer = rendererRef.current;
       const boxesToRender = []; // batching all the boxes for drawing
 
-      for (const cellChange of change) {
+      for (const cellChange of changes) {
         const currCell = idToCellMap.get(cellChange.id);
 
         if (!currCell) continue;
