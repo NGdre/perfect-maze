@@ -218,3 +218,12 @@ export function drawHoveredCell(
 ) {
   fillPolygonWithCircle(ctx, cell, colors.HOVERED_CELL, cellSize);
 }
+
+export const clearCellArea = (
+  ctx: CanvasRenderingContext2D,
+  cell: PolygonCell,
+  cellSize: number,
+) => {
+  const firstPoint = cell.getPoints(cellSize)[0];
+  ctx.clearRect(firstPoint.x, firstPoint.y, cellSize, cellSize);
+};

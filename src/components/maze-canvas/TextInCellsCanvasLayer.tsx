@@ -1,6 +1,4 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
-import { colors } from "@constants";
-import { drawPolygon } from "@models/maze-canvas-rendering";
 import { TextInBoxRenderer } from "@models/text-in-box-renderer";
 import { AStarText } from "@solvers/a-star";
 import { useMazeStore } from "@stores";
@@ -9,16 +7,15 @@ import {
   useCurrVisualMazeChange,
   useIsCellHistoryEmpty,
 } from "@stores/selectors";
-import { scalePolygonFromCenter } from "@utils";
 import { buildAStarTextConfig } from "src/configs/visual";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
+import { clearCellArea } from "src/models/maze-canvas-rendering";
 
 import { useCallback, useEffect, useRef } from "react";
 
 import fontForNumbers from "../../assets/fonts/BarlowCondensed-Light.ttf";
 
 const fontForNumbersName = "Barlow Condensed";
-const ERASE_CELL_RATIO = 1;
 
 export const TextInCellsCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
@@ -88,21 +85,13 @@ export const TextInCellsCanvasLayer = () => {
         const isPathCell = cellChange.isPathCell;
 
         if (isPathCell || !cellChange.text) {
-          drawPolygon(
-            ctx,
-            scalePolygonFromCenter(
-              currCell.getPoints(cellSize),
-              ERASE_CELL_RATIO,
-            ),
-            colors.EMPTY_CELL,
-          );
+          clearCellArea(ctx, currCell, cellSize);
+
           continue;
         }
 
-        const currCellPos = currCell.getPoints(cellSize)[0];
-
         const textInCellConfig = buildAStarTextConfig(
-          Object.assign(currCellPos, { size: cellSize }),
+          Object.assign(currCell.getPoints(cellSize)[0], { size: cellSize }),
           cellChange.text as AStarText,
         );
 
@@ -115,7 +104,7 @@ export const TextInCellsCanvasLayer = () => {
         renderer.render();
       }
     },
-    [isCellHistoryEmpty, change, columns, idToCellMap],
+    [isCellHistoryEmpty, change, columns, idToCellMap, cellHistoryState],
   );
 
   return <CanvasLayer onRender={renderPath} />;
