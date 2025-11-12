@@ -4,7 +4,6 @@ import { PROJECT_NAME } from "../constants.ts";
 import "./App.css";
 import Logo from "./Logo.tsx";
 import { Dialog } from "./lib/dialog/Dialog.tsx";
-import { useDialog } from "./lib/dialog/useDialog.ts";
 import MazeViewport from "./maze-canvas/MazeViewport.tsx";
 import MazeControlTabs from "./maze-control/MazeControlTabs.tsx";
 import "./resetCSS.css";

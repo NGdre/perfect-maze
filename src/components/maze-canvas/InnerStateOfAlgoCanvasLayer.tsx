@@ -1,6 +1,6 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
-import { FILL_TO_CELL_RATIO, colors } from "@constants";
-import { drawCell } from "@models/maze-canvas-rendering";
+import { FILL_TO_CELL_RATIO } from "@constants";
+import { clearCellArea, drawCell } from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
@@ -10,8 +10,6 @@ import {
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 
 import { useCallback } from "react";
-
-const ERASE_CELL_RATIO = 1;
 
 export const InnerStateOfAlgoCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
@@ -36,14 +34,13 @@ export const InnerStateOfAlgoCanvasLayer = () => {
     ) {
       if (width === 0) return;
 
-      if (isCellHistoryEmpty || isResized || isUndoOperation)
-        ctx.clearRect(0, 0, width, height);
+      if (isCellHistoryEmpty || isResized) ctx.clearRect(0, 0, width, height);
 
       if (columns === 0 || !change || !idToCellMap) return;
 
       const cellSize = width / columns;
 
-      const shouldRedraw = isResized || isUndoOperation;
+      const shouldRedraw = isResized;
 
       const changes = shouldRedraw ? [...cellHistoryState.values()] : change;
 
@@ -54,17 +51,15 @@ export const InnerStateOfAlgoCanvasLayer = () => {
 
         const isPathCell = cellChange.isPathCell;
 
-        const drawPolygonArgs = isPathCell
-          ? { scaleFactor: ERASE_CELL_RATIO, color: colors.EMPTY_CELL }
-          : {
-              scaleFactor: FILL_TO_CELL_RATIO,
-              color:
-                (cellChange.color as string | undefined) || colors.EMPTY_CELL,
-            };
+        if (isPathCell || !cellChange.color) {
+          clearCellArea(ctx, currCell, cellSize);
+
+          continue;
+        }
 
         drawCell(ctx, currCell, cellSize, {
-          scaleFromCenterFactor: drawPolygonArgs.scaleFactor,
-          background: drawPolygonArgs.color,
+          scaleFromCenterFactor: FILL_TO_CELL_RATIO,
+          background: cellChange.color as string,
         });
       }
     },
