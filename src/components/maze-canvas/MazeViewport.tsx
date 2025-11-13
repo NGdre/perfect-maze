@@ -4,6 +4,7 @@ import { useMazeStore } from "src/stores/maze-store";
 import { CanvasLayer } from "../lib/CanvasLayer";
 import { CellMarksCanvasLayer } from "./CellMarksCanvasLayer";
 import { CursorInteractionCanvasLayer } from "./CursorInteractionCanvasLayer";
+import { HeatmapCanvasLayer } from "./HeatmapCanvasLayer";
 import { InnerStateOfAlgoCanvasLayer } from "./InnerStateOfAlgoCanvasLayer";
 import { MazeCanvasLayer } from "./MazeCanvasLayer";
 import { MazePathCanvasLayer } from "./MazePathCanvasLayer";
@@ -19,6 +20,9 @@ const DiplayModeLayer = () => {
   switch (displayMode) {
     case "text":
       return <TextInCellsCanvasLayer />;
+
+    case "heatmap":
+      return <HeatmapCanvasLayer />;
 
     default:
       return <InnerStateOfAlgoCanvasLayer />;

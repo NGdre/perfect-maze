@@ -1,5 +1,7 @@
 import tailwindColors from "tailwindcss/colors";
 
+import { hexToRgb } from "./models/color-interpolation";
+
 export const DEFAULT_ROWS_AMOUNT = 20;
 export const DEFAULT_COLUMNS_AMOUNT = 40;
 
@@ -24,6 +26,10 @@ export const colors = {
   "text-primary": tailwindColors.gray[600],
   "bg-primary": tailwindColors.indigo[50],
   "blue-25": "#fafcff",
+  heatmapRGBStops: [
+    hexToRgb(tailwindColors.violet[500]),
+    hexToRgb(tailwindColors.teal[500]),
+  ],
 } as const;
 
 export const PATH_WIDTH = 2;

@@ -1,8 +1,9 @@
-import { reconstructPathSerial } from "./reconstruct-path";
-import { type createIdToCellMap } from "../maze";
-import { aStarVisualSchema } from "src/configs/visual";
 import { mapGenerator } from "@utils";
-import { manhattanDistance, type heuristic } from "./heuristics";
+import { aStarVisualSchema } from "src/configs/visual";
+
+import { type createIdToCellMap } from "../maze";
+import { type heuristic, manhattanDistance } from "./heuristics";
+import { reconstructPathSerial } from "./reconstruct-path";
 
 type id = string;
 
@@ -37,6 +38,7 @@ type AStarCell = {
   isPathCell: boolean;
   prevCellId?: id;
   text?: AStarText;
+  heatmapValue?: number;
 };
 
 export function applyAStarVisual(solutionStep: AStarSolutionStep) {
@@ -62,6 +64,7 @@ export function applyAStarVisual(solutionStep: AStarSolutionStep) {
       id,
       text,
       color: aStarVisualSchema.enqueued.colors.background,
+      heatmapValue: +text["h-value"],
       isPathCell: false,
     });
   }
@@ -70,6 +73,7 @@ export function applyAStarVisual(solutionStep: AStarSolutionStep) {
     id: solutionStep.visited.id,
     text: solutionStep.visited.text,
     color: aStarVisualSchema.visited.colors.background,
+    heatmapValue: +solutionStep.visited.text["h-value"],
     isPathCell: false,
   });
 
@@ -117,7 +121,7 @@ export function* aStarSerial(
   startId: string,
   endId: string,
   idToCellMap: ReturnType<typeof createIdToCellMap>,
-  heuristic: heuristic = manhattanDistance
+  heuristic: heuristic = manhattanDistance,
 ) {
   const open: AStarNode[] = [];
   const closed = new Set<string>();
@@ -139,7 +143,7 @@ export function* aStarSerial(
     startX,
     startY,
     0,
-    heuristic({ x: startX, y: startY }, { x: endX, y: endY })
+    heuristic({ x: startX, y: startY }, { x: endX, y: endY }),
   );
 
   open.push(startNode);
@@ -200,7 +204,7 @@ export function* aStarSerial(
       } else {
         const h = heuristic(
           { x: neighborX, y: neighborY },
-          { x: endX, y: endY }
+          { x: endX, y: endY },
         );
 
         const newNeighborNode = new AStarNode(
@@ -208,7 +212,7 @@ export function* aStarSerial(
           neighborX,
           neighborY,
           tentativeG,
-          h
+          h,
         );
 
         neighborData.text = newNeighborNode.getText();
@@ -243,11 +247,11 @@ export function* aStarSerial(
 export function aStarSerialVisual(
   startId: string,
   endId: string,
-  idToCellMap: ReturnType<typeof createIdToCellMap>
+  idToCellMap: ReturnType<typeof createIdToCellMap>,
 ) {
   return mapGenerator(
     aStarSerial(startId, endId, idToCellMap),
-    applyAStarVisual
+    applyAStarVisual,
   );
 }
 

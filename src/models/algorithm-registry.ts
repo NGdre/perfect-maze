@@ -88,6 +88,7 @@ export const RECURSIVE_BACKTRACKING_ID = algoRegistry.push({
 export const A_STAR_DISPLAY_MODES = {
   base: "base",
   text: "text",
+  heatmap: "heatmap",
 };
 
 export const A_STAR_ID = algoRegistry.push({
