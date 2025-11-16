@@ -13,6 +13,7 @@ import {
 } from "src/configs/visual";
 import { colors } from "src/constants";
 
+import { LegendItemProps } from "../lib/legend/LegendItem";
 import { drawColorLegend } from "./draw-color-legend";
 
 export interface LegendSample {
@@ -20,6 +21,7 @@ export interface LegendSample {
   readonly onRender: LegendRenderFunction;
   canvasWidth?: number;
   canvasHeight?: number;
+  labelPosition?: LegendItemProps["namePosition"];
 }
 
 export type LegendRenderFunction = (params: {
@@ -139,6 +141,7 @@ export const legendSampleConfigs: readonly LegendSampleConfig[] = [
         onRender: colorLegendCreator,
         canvasWidth: 200,
         canvasHeight: 50,
+        labelPosition: "top",
       },
     ],
   },

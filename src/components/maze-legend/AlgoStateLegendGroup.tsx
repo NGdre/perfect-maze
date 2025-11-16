@@ -39,6 +39,7 @@ function AlgoStateLegendGroup({
             renderHeight={sample.canvasHeight || cellSize}
             renderWidth={sample.canvasWidth || cellSize}
             key={sample.name}
+            namePosition={sample.labelPosition}
           />
         );
       })}

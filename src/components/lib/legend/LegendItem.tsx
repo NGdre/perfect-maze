@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import { useContext, useEffect, useRef } from "react";
 
 import { LegendContext } from "./LegendGroup";
@@ -8,6 +10,7 @@ interface LegendRenderOptions {
 
 export interface LegendItemProps {
   readonly name: string;
+  namePosition?: "left" | "right" | "top" | "bottom";
   renderWidth?: number;
   renderHeight?: number;
   canvasClassName?: string;
@@ -16,6 +19,7 @@ export interface LegendItemProps {
 
 const LegendItem = ({
   name,
+  namePosition = "right",
   renderWidth = 0,
   renderHeight = 0,
   canvasClassName,
@@ -43,14 +47,26 @@ const LegendItem = ({
   }, [onRender]);
 
   return (
-    <div className="flex items-center gap-3">
+    <div
+      className={clsx(
+        "flex items-center gap-3",
+        (namePosition === "top" || namePosition === "bottom") && "flex-col",
+      )}
+    >
       <canvas
         ref={canvasRef}
         width={canvasSize.width}
         height={canvasSize.height}
         className={canvasClassName}
       />
-      <span className="text-lg">{name}</span>
+      <span
+        className={clsx(
+          "text-lg",
+          (namePosition === "left" || namePosition === "top") && "-order-1",
+        )}
+      >
+        {name}
+      </span>
     </div>
   );
 };
