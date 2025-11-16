@@ -13,7 +13,7 @@ import {
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
 import { manhattanDistance } from "src/models/solvers/heuristics";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 
 export const HeatmapCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
@@ -23,23 +23,48 @@ export const HeatmapCanvasLayer = () => {
   );
 
   const columns = useColumnsAmount();
-
   const idToCellMap = useIdToCellMap();
-
   const endId = useEndId();
   const startId = useStartId();
 
-  const maxRef = useRef(0);
+  const maxPathDistance = useMazeStore((state) => state.maxPathDistance);
+  const setMaxPathDistance = useMazeStore((state) => state.setMaxPathDistance);
 
   useEffect(() => {
-    maxRef.current = 0;
-  }, [endId, startId]);
+    setMaxPathDistance(0);
+  }, [endId, startId, setMaxPathDistance]);
 
-  const goal = idToCellMap.get(endId);
+  useEffect(() => {
+    const goal = idToCellMap.get(endId);
+    if (!goal) throw new Error("can not find goal id");
+    if (columns === 0) return;
 
-  if (!goal) throw new Error("can not find goal id");
+    let currentMax = 0;
 
-  const renderPath = useCallback(
+    // recomputing currentMax value from history state for simplicity even with incremental changes
+    for (const cellChange of cellHistoryState.values()) {
+      if (cellChange.isPathCell || !cellChange.heatmapValue) continue;
+
+      const currCell = idToCellMap.get(cellChange.id);
+      if (!currCell) continue;
+
+      // hardcoded distance function
+      const dist = manhattanDistance(currCell.center, goal.center);
+      currentMax = Math.max(dist, currentMax);
+    }
+
+    if (currentMax !== maxPathDistance) {
+      setMaxPathDistance(currentMax);
+    }
+  }, [
+    cellHistoryState,
+    idToCellMap,
+    columns,
+    maxPathDistance,
+    setMaxPathDistance,
+  ]);
+
+  const renderLayer = useCallback(
     function (
       ctx: CanvasRenderingContext2D,
       width: number,
@@ -56,9 +81,7 @@ export const HeatmapCanvasLayer = () => {
       if (columns === 0 || !change) return;
 
       const cellSize = width / columns;
-
       const shouldRedraw = isResized;
-
       const changes = shouldRedraw ? [...cellHistoryState.values()] : change;
 
       for (const cellChange of changes) {
@@ -71,25 +94,13 @@ export const HeatmapCanvasLayer = () => {
 
         if (isPathCell || !cellChange.heatmapValue) {
           clearCellArea(ctx, currCell, cellSize);
-
           continue;
         }
-
-        const currCellCenter = currCell.center;
-        const currGoalCenter = goal.center;
-
-        // hardcoded distance function
-        const dist = manhattanDistance(
-          { x: currCellCenter.x, y: currCellCenter.y },
-          { x: currGoalCenter.x, y: currGoalCenter.y },
-        );
-
-        maxRef.current = Math.max(dist, maxRef.current);
 
         // min value for heatmapValue is probably always 0
         const cellColor = interpolateColor(
           0,
-          maxRef.current,
+          maxPathDistance,
           colors.heatmapRGBStops,
         )(cellChange.heatmapValue as number);
 
@@ -99,8 +110,15 @@ export const HeatmapCanvasLayer = () => {
         });
       }
     },
-    [change, isCellHistoryEmpty, columns, cellHistoryState, idToCellMap, endId],
+    [
+      change,
+      isCellHistoryEmpty,
+      columns,
+      cellHistoryState,
+      idToCellMap,
+      maxPathDistance,
+    ],
   );
 
-  return <CanvasLayer onRender={renderPath} />;
+  return <CanvasLayer onRender={renderLayer} />;
 };

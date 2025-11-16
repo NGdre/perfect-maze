@@ -54,6 +54,7 @@ type State = {
   mazeSolverId: number;
   isSerialSolverDone: boolean;
   isUndoOperation: boolean;
+  maxPathDistance: number;
 };
 
 type Action = {
@@ -64,6 +65,7 @@ type Action = {
   setStartId: (startId: State["startId"]) => void;
   setEndId: (endId: State["endId"]) => void;
   setMazeSolverId: (mazeSolverName: string) => void;
+  setMaxPathDistance: (max: State["maxPathDistance"]) => void;
 };
 
 export type MazeSolutionSlice = State & Action;
@@ -82,7 +84,7 @@ export const createMazeSolutionSlice: StateCreator<
   mazeSolverId: algoRegistry.getGroup(MazeMode.solving)[0],
   isSerialSolverDone: false,
   isUndoOperation: false,
-
+  maxPathDistance: 0,
   currVisualMazeChange: null,
 
   setCellSelection(cellSelection) {
@@ -207,5 +209,9 @@ export const createMazeSolutionSlice: StateCreator<
     }
 
     return false;
+  },
+
+  setMaxPathDistance(maxPathDistance) {
+    set({ maxPathDistance });
   },
 });
