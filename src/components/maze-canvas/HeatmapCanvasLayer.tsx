@@ -8,6 +8,7 @@ import {
   useCurrVisualMazeChange,
   useEndId,
   useIsCellHistoryEmpty,
+  useMaxPathDistance,
   useStartId,
 } from "@stores/selectors";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
@@ -27,7 +28,7 @@ export const HeatmapCanvasLayer = () => {
   const endId = useEndId();
   const startId = useStartId();
 
-  const maxPathDistance = useMazeStore((state) => state.maxPathDistance);
+  const maxPathDistance = useMaxPathDistance();
   const setMaxPathDistance = useMazeStore((state) => state.setMaxPathDistance);
 
   useEffect(() => {

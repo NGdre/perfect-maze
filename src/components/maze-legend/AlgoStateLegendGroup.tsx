@@ -1,4 +1,5 @@
 import { SquareCell } from "@models/maze";
+import { useMaxPathDistance } from "@stores/selectors";
 
 import LegendGroup from "../lib/legend/LegendGroup";
 import LegendItem from "../lib/legend/LegendItem";
@@ -16,6 +17,7 @@ function AlgoStateLegendGroup({
   className,
 }: CellLegendProps) {
   const samples = useSymbolSamples();
+  const maxDistance = useMaxPathDistance();
 
   const cell = new SquareCell("");
   cell.generateWalls(0, 0);
@@ -31,10 +33,11 @@ function AlgoStateLegendGroup({
                 ctx: renderOptions.ctx,
                 cell,
                 cellSize,
+                maxDistance,
               });
             }}
-            renderHeight={cellSize}
-            renderWidth={cellSize}
+            renderHeight={sample.canvasHeight || cellSize}
+            renderWidth={sample.canvasWidth || cellSize}
             key={sample.name}
           />
         );

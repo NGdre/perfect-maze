@@ -35,3 +35,6 @@ export const useGenerateMaze = () =>
   useMazeStore((state) => state.generateMaze);
 
 export const useMazeMode = () => useMazeStore((state) => state.mazeMode);
+
+export const useMaxPathDistance = () =>
+  useMazeStore((state) => state.maxPathDistance);

@@ -11,16 +11,22 @@ import {
   bfsVisualSchema,
   buildAStarTextConfig,
 } from "src/configs/visual";
+import { colors } from "src/constants";
+
+import { drawColorLegend } from "./draw-color-legend";
 
 export interface LegendSample {
   readonly name: string;
   readonly onRender: LegendRenderFunction;
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 
 export type LegendRenderFunction = (params: {
   ctx: CanvasRenderingContext2D;
   cell: PolygonCell;
   cellSize: number;
+  maxDistance: number;
 }) => void;
 
 export interface LegendSampleConfig {
@@ -56,6 +62,12 @@ const createTextRenderer =
     renderer.addBox(textConfig);
     renderer.render();
   };
+
+const colorLegendCreator: LegendRenderFunction = ({ ctx, maxDistance }) => {
+  drawColorLegend(ctx.canvas, 0, maxDistance, colors.heatmapRGBStops, {
+    tickFont: "14px Arial",
+  });
+};
 
 const activeTextStyles = {
   fontWeight: 700,
@@ -114,6 +126,19 @@ export const legendSampleConfigs: readonly LegendSampleConfig[] = [
           gValueStyles: inactiveTextStyles,
           fValueStyles: activeTextStyles,
         }),
+      },
+    ],
+  },
+
+  {
+    algorithmId: A_STAR_ID,
+    displayMode: A_STAR_DISPLAY_MODES.heatmap,
+    samples: [
+      {
+        name: "Значения h-value (левее — ближе к финишу, правее — ближе к старту)",
+        onRender: colorLegendCreator,
+        canvasWidth: 200,
+        canvasHeight: 50,
       },
     ],
   },
