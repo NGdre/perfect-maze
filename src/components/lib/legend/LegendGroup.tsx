@@ -3,6 +3,7 @@ import { Children } from "react";
 
 import { Heading } from "../typography/Heading";
 import { LegendItemProps } from "./LegendItem";
+import useResizeObserver from "use-resize-observer";
 
 interface LegendGroupProps {
   groupName?: string;
@@ -14,11 +15,16 @@ interface LegendGroupProps {
 }
 
 export const LegendContext = createContext<
-  Required<Pick<LegendGroupProps, "padding" | "itemProps" | "renderOptions">>
+  Required<Pick<LegendGroupProps, "padding" | "itemProps" | "renderOptions">> & {
+    groupWidth: number;
+    groupHeight: number;
+  }
 >({
   padding: 0,
   renderOptions: {},
   itemProps: {},
+  groupWidth: 0,
+  groupHeight: 0,
 });
 
 /*
@@ -32,13 +38,19 @@ function LegendGroup({
   itemProps = {},
   renderOptions = {},
 }: LegendGroupProps) {
+  const ro = useResizeObserver<HTMLDivElement>();
+    
+  const ref = ro.ref;
+  const groupWidth = ro.width  || 0;
+  const groupHeight = ro.height || 0;
+
   if (Children.count(children) === 0) {
     return null;
   }
 
   return (
-    <div className="space-y-5">
-      <LegendContext.Provider value={{ padding, itemProps, renderOptions }}>
+    <div className="space-y-5" ref={ref}>
+      <LegendContext.Provider value={{ padding, itemProps, renderOptions, groupWidth, groupHeight }}>
         {groupName && (
           <Heading level={3} className="text-sm font-normal capitalize">
             {groupName}

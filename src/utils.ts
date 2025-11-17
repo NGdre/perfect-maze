@@ -86,3 +86,23 @@ export function scalePolygonFromCenter(points: Point2d[], scaleFactor: number) {
     };
   });
 }
+
+export const parseSizeValue = (value: number | string, baseSize?: number): number => {
+  if (typeof value === "number") {
+    return Math.max(0, value);
+  }
+  
+  // (?:\.\d+)? - optional decimal part
+  const percentageMatch = value.trim().match(/^(\d+(?:\.\d+)?)\s*%$/);
+  if (percentageMatch && baseSize) {
+    const percentage = parseFloat(percentageMatch[1]);
+
+    if (percentage >= 0 && percentage <= 100) {
+      return baseSize * (percentage / 100);
+    }
+    console.warn(`Percentage value should be between 0 and 100, got: ${percentage}`);
+  }
+  
+  const numericValue = Number(value);
+  return isNaN(numericValue) ? 0 : numericValue;
+};

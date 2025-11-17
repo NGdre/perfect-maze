@@ -1,8 +1,7 @@
 import clsx from "clsx";
-
 import { useContext, useEffect, useRef } from "react";
-
 import { LegendContext } from "./LegendGroup";
+import { parseSizeValue } from "@utils";
 
 interface LegendRenderOptions {
   ctx: CanvasRenderingContext2D;
@@ -11,8 +10,8 @@ interface LegendRenderOptions {
 export interface LegendItemProps {
   readonly name: string;
   namePosition?: "left" | "right" | "top" | "bottom";
-  renderWidth?: number;
-  renderHeight?: number;
+  renderWidth?: number | string; // string type is for percentage values
+  renderHeight?: number | string; 
   canvasClassName?: string;
   onRender: (options: LegendRenderOptions) => void;
 }
@@ -26,11 +25,21 @@ const LegendItem = ({
   onRender,
 }: LegendItemProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { padding, itemProps, renderOptions } = useContext(LegendContext);
+  const { padding, itemProps, renderOptions, groupWidth, groupHeight } = useContext(LegendContext);
+
+  const widthWithoutPadding = parseSizeValue(
+    itemProps?.renderWidth ?? renderWidth,
+    groupWidth
+  );
+  
+  const heightWithoutPadding = parseSizeValue(
+    itemProps?.renderHeight ?? renderHeight,
+    groupHeight
+  );
 
   const canvasSize = {
-    width: (itemProps?.renderWidth || renderWidth) + padding * 2,
-    height: (itemProps?.renderHeight || renderHeight) + padding * 2,
+    width: widthWithoutPadding + padding * 2,
+    height: heightWithoutPadding + padding * 2,
   };
 
   useEffect(() => {
@@ -44,13 +53,13 @@ const LegendItem = ({
     ctx.translate(padding, padding);
 
     onRender({ ctx, ...renderOptions });
-  }, [onRender]);
+  }, [onRender, padding, renderOptions]);
 
   return (
     <div
       className={clsx(
         "flex items-center gap-3",
-        (namePosition === "top" || namePosition === "bottom") && "flex-col",
+        (namePosition === "top" || namePosition === "bottom") && "flex-col !items-start",
       )}
     >
       <canvas

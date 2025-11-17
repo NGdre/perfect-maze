@@ -19,8 +19,8 @@ import { drawColorLegend } from "./draw-color-legend";
 export interface LegendSample {
   readonly name: string;
   readonly onRender: LegendRenderFunction;
-  canvasWidth?: number;
-  canvasHeight?: number;
+  canvasWidth?: number | string;
+  canvasHeight?: number | string;
   labelPosition?: LegendItemProps["namePosition"];
 }
 
@@ -66,8 +66,9 @@ const createTextRenderer =
   };
 
 const colorLegendCreator: LegendRenderFunction = ({ ctx, maxDistance }) => {
-  drawColorLegend(ctx.canvas, 0, maxDistance, colors.heatmapRGBStops, {
+  drawColorLegend(ctx.canvas, 0, Math.max(maxDistance, 1), colors.heatmapRGBStops, {
     tickFont: "14px Arial",
+    showTicks: maxDistance !== 0
   });
 };
 
@@ -139,7 +140,7 @@ export const legendSampleConfigs: readonly LegendSampleConfig[] = [
       {
         name: "Значения h-value (левее — ближе к финишу, правее — ближе к старту)",
         onRender: colorLegendCreator,
-        canvasWidth: 200,
+        canvasWidth: "100%",
         canvasHeight: 50,
         labelPosition: "top",
       },
