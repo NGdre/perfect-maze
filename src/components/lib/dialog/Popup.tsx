@@ -20,16 +20,18 @@ export const Popup: React.FC<PopupProps> = ({
   showCloseButton = false,
   children,
 }) => {
-  if (!isOpen) return null;
-
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
+  }, [onClose, isOpen]);
+
+  if (!isOpen) return null;
 
   /* stopPropagation is needed so click event on overlay is not fired when 
   there is a click on dialog-content */
