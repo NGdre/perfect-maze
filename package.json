@@ -23,6 +23,7 @@
     "react-icons": "^5.5.0",
     "react-tabs": "^6.1.0",
     "react-tooltip": "^5.30.0",
+    "use-resize-observer": "^9.1.0",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
