@@ -160,9 +160,13 @@ export class TextInBoxRenderer {
       return { width: 0, ascent: 0, descent: 0, height: 0 };
     }
 
+    this.measurementCtx.save();
+
     this.applyTextStyles(this.measurementCtx, text);
 
     const metrics = this.measurementCtx.measureText(text.content);
+
+    this.measurementCtx.restore();
     const width = metrics.width;
 
     const ascent = metrics.actualBoundingBoxAscent || text.fontSize * 0.8;
@@ -258,6 +262,8 @@ export class TextInBoxRenderer {
     x: number,
     y: number,
   ): void {
+    ctx.save();
+
     this.applyTextStyles(ctx, text);
 
     // Stroke first, then fill - for correct rendering
@@ -277,6 +283,8 @@ export class TextInBoxRenderer {
         ctx.fillText(text.content, x, y);
       }
     }
+
+    ctx.restore();
   }
 
   private calculateTextPosition(
@@ -314,20 +322,14 @@ export class TextInBoxRenderer {
     this.boxes.forEach((box) => {
       if (box.size <= 0) return;
 
-      this.ctx.save();
-
       box.texts.forEach((text) => {
         if (text.fontSize <= 0 || !text.content) return;
-
-        this.applyTextStyles(this.ctx, text);
 
         const metrics = this.getCachedTextMetrics(text);
         const position = this.calculateTextPosition(box, text, metrics);
 
         this.drawTextElement(this.ctx, text, position.x, position.y);
       });
-
-      this.ctx.restore();
     });
   }
 }
