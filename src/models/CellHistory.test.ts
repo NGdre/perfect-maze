@@ -237,4 +237,170 @@ describe("CellHistory", () => {
       expect(history.isEmpty()).toBe(true);
     });
   });
+
+  describe("getLastPropertyChange", () => {
+    test("should return null when no changes exist", () => {
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result).toBeNull();
+    });
+
+    test("should find last change for specific property", () => {
+      history.applyStep([
+        { id: "cell-1", color: "red" },
+        { id: "cell-2", color: "blue" },
+      ]);
+
+      history.applyStep([{ id: "cell-1", color: "green", size: 10 }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+
+      expect(result).toEqual({
+        value: "green",
+        stepIndex: 1,
+      });
+    });
+
+    test("should find change from correct step index", () => {
+      history.applyStep([{ id: "cell-1", color: "red" }]);
+
+      history.applyStep([{ id: "cell-1", color: "blue" }]);
+
+      history.applyStep([{ id: "cell-1", color: "green" }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result?.stepIndex).toBe(2);
+      expect(result?.value).toBe("green");
+    });
+
+    test("should work with undo/redo operations", () => {
+      history.applyStep([{ id: "cell-1", color: "red" }]);
+
+      history.applyStep([{ id: "cell-1", color: "blue" }]);
+
+      history.undo();
+
+      const resultAfterUndo = history.getLastPropertyChange("cell-1", "color");
+      expect(resultAfterUndo).toEqual({
+        value: "red",
+        stepIndex: 0,
+      });
+
+      history.redo();
+
+      const resultAfterRedo = history.getLastPropertyChange("cell-1", "color");
+      expect(resultAfterRedo).toEqual({
+        value: "blue",
+        stepIndex: 1,
+      });
+    });
+
+    test("should return null when property was never changed", () => {
+      history.applyStep([{ id: "cell-1", size: 10 }]);
+
+      history.applyStep([{ id: "cell-1", shape: "circle" }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result).toBeNull();
+    });
+
+    test("should return null when cell was never changed", () => {
+      history.applyStep([{ id: "cell-2", color: "red" }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result).toBeNull();
+    });
+
+    test("should handle property deletion (undefined value)", () => {
+      history.applyStep([{ id: "cell-1", color: "red", visible: true }]);
+
+      history.applyStep([{ id: "cell-1", color: undefined }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result?.value).toBeUndefined();
+      expect(result?.stepIndex).toBe(1);
+    });
+
+    test("should handle cell deletion", () => {
+      history.applyStep([{ id: "cell-1", color: "red" }]);
+
+      history.applyStep([{ id: "cell-1", $deleted: true }]);
+
+      history.applyStep([{ id: "cell-1", color: "blue" }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result?.value).toBe("blue");
+      expect(result?.stepIndex).toBe(2);
+    });
+
+    test("should find nested object properties", () => {
+      history.applyStep([
+        {
+          id: "cell-1",
+          style: { color: "red", fontSize: 12 },
+        },
+      ]);
+
+      history.applyStep([
+        {
+          id: "cell-1",
+          style: { color: "blue" },
+        },
+      ]);
+
+      const result = history.getLastPropertyChange("cell-1", "style");
+      expect(result?.value).toEqual({ color: "blue" });
+    });
+
+    test("should work with multiple properties in same step", () => {
+      history.applyStep([
+        {
+          id: "cell-1",
+          color: "red",
+          size: 10,
+          visible: true,
+        },
+      ]);
+
+      const colorResult = history.getLastPropertyChange("cell-1", "color");
+      const sizeResult = history.getLastPropertyChange("cell-1", "size");
+      const visibleResult = history.getLastPropertyChange("cell-1", "visible");
+
+      expect(colorResult?.value).toBe("red");
+      expect(sizeResult?.value).toBe(10);
+      expect(visibleResult?.value).toBe(true);
+      expect(colorResult?.stepIndex).toBe(0);
+    });
+
+    test("should handle multiple cells changing same property", () => {
+      history.applyStep([
+        { id: "cell-1", color: "red" },
+        { id: "cell-2", color: "blue" },
+      ]);
+
+      history.applyStep([{ id: "cell-1", color: "green" }]);
+
+      const cell1Result = history.getLastPropertyChange("cell-1", "color");
+      const cell2Result = history.getLastPropertyChange("cell-2", "color");
+
+      expect(cell1Result?.value).toBe("green");
+      expect(cell2Result?.value).toBe("blue");
+    });
+
+    test("should return correct step index after multiple operations", () => {
+      history.applyStep([{ id: "cell-1", color: "red" }]);
+
+      history.applyStep([{ id: "cell-1", color: "blue" }]);
+
+      history.applyStep([{ id: "cell-1", color: "green" }]);
+
+      history.undo();
+      history.undo();
+
+      history.applyStep([{ id: "cell-1", color: "yellow" }]);
+
+      const result = history.getLastPropertyChange("cell-1", "color");
+      expect(result?.value).toBe("yellow");
+      expect(result?.stepIndex).toBe(1);
+    });
+  });
 });

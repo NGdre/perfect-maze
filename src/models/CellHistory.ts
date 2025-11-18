@@ -35,7 +35,7 @@ export default class CellHistory {
 
   private applyPatchToCell(
     current: CellState | undefined,
-    patch: CellPatch
+    patch: CellPatch,
   ): CellState {
     const newState = current ? this.deepClone(current) : { id: patch.id };
 
@@ -56,7 +56,7 @@ export default class CellHistory {
 
   private generateBackwardPatch(
     id: string,
-    currentState: CellState | undefined
+    currentState: CellState | undefined,
   ): CellPatch {
     if (!currentState) {
       return { id, $deleted: true };
@@ -180,5 +180,25 @@ export default class CellHistory {
 
   isEmpty() {
     return this.history.length === 0;
+  }
+
+  getLastPropertyChange(
+    cellId: string,
+    propertyName: string,
+  ): { value: PropertyValue; stepIndex: number } | null {
+    for (let i = this.currentIndex; i >= 0; i--) {
+      const step = this.history[i];
+
+      const patch = step.forward.find((p) => p.id === cellId);
+
+      if (patch && propertyName in patch) {
+        return {
+          value: patch[propertyName],
+          stepIndex: i,
+        };
+      }
+    }
+
+    return null;
   }
 }
