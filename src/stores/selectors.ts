@@ -38,3 +38,6 @@ export const useMazeMode = () => useMazeStore((state) => state.mazeMode);
 
 export const useMaxPathDistance = () =>
   useMazeStore((state) => state.maxPathDistance);
+
+export const useAlgoDisplayMode = () =>
+  useMazeStore((state) => state.displayMode);

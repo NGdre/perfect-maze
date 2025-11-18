@@ -3,15 +3,23 @@ import { CELL_SELECTION_THROTTLE_DELAY, colors } from "@constants";
 import { RectMaze, createCellFinder, generateRectMazeId } from "@models/maze";
 import { fillPolygonWithCircle } from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores/maze-store";
-import { useColumnsAmount, useMazeCells } from "@stores/selectors";
+import {
+  useAlgoDisplayMode,
+  useColumnsAmount,
+  useMazeCells,
+} from "@stores/selectors";
 import { CellSelectionModes } from "@stores/slices/mazeSolutionSlice";
 import { flow, noop, throttle } from "@utils";
 import ow from "ow";
+import { useIdToCellMap } from "src/hooks/useIdToCellMap";
+import { ALGO_DISPLAY_MODES } from "src/models/algorithm-registry";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Tooltip } from "react-tooltip";
 
 export type Position = [row: number, col: number];
 
+// this works only for rect maze
 export const cellPositionOnCanvasHover = (
   canvas: HTMLCanvasElement,
   e: MouseEvent,
@@ -112,24 +120,68 @@ export const CursorInteractionCanvasLayer = () => {
   const cellSelection = useMazeStore((state) => state.cellSelection);
   const setStartId = useMazeStore((state) => state.setStartId);
   const setEndId = useMazeStore((state) => state.setEndId);
+  const cellHistory = useMazeStore((state) => state.cellHistory);
+  const algoDisplayMode = useAlgoDisplayMode();
+  const idToCellMap = useIdToCellMap();
+
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const [cellSize, setCellSize] = useState(0);
+
+  const defaultHeat = 0;
+  const [heat, setHeat] = useState(defaultHeat);
+
+  const cellPatchHeatProperty = "heatmapValue";
+  const tooltipThrottleDelay = 100;
+
+  useEffect(() => {
+    const canvas = ctxRef.current?.canvas;
+
+    if (!canvas || algoDisplayMode !== ALGO_DISPLAY_MODES.heatmap) return;
+
+    const hoverCell = throttle((e: MouseEvent) => {
+      const cell = idToCellMap.get(
+        generateRectMazeId(...cellPositionOnCanvasHover(canvas, e, cellSize)),
+      );
+
+      if (cell) {
+        const lastChange = cellHistory.getLastPropertyChange(
+          cell.id,
+          cellPatchHeatProperty,
+        );
+
+        if (lastChange) setHeat(lastChange.value as number);
+        else setHeat(defaultHeat);
+      }
+    }, tooltipThrottleDelay);
+
+    canvas.addEventListener("mousemove", hoverCell);
+
+    return () => {
+      canvas.removeEventListener("mousemove", hoverCell);
+    };
+  }, [cellSize, idToCellMap, cellHistory, algoDisplayMode]);
 
   const renderCursorInteraction = useCallback(
     function (ctx: CanvasRenderingContext2D, width: number, height: number) {
       if (!ctx || width === 0 || columns === 0) return;
 
-      const cellSize = width / columns;
+      if (ctxRef.current !== ctx) ctxRef.current = ctx;
+
+      const currCellSize = width / columns;
+
+      if (currCellSize !== cellSize) setCellSize(currCellSize);
 
       const cleanUpHoverInteraction = hoverInteraction({
         ctx,
         cells,
-        cellSize,
+        cellSize: currCellSize,
         cellSelection,
         width,
         height,
       });
 
       const cleanUpClickInteraction = clickInteraction({
-        cellSize,
+        cellSize: currCellSize,
         ctx,
         cellSelection,
         onStart: setStartId,
@@ -138,10 +190,45 @@ export const CursorInteractionCanvasLayer = () => {
 
       return flow(cleanUpHoverInteraction, cleanUpClickInteraction);
     },
-    [columns, cellSelection, cells],
+    [
+      columns,
+      cellSelection,
+      cells,
+      setCellSize,
+      setStartId,
+      setEndId,
+      cellSize,
+    ],
   );
 
+  const tooltipContent = () => {
+    return (
+      <div>
+        h-value is <span className="text-base font-bold">{heat}</span>
+      </div>
+    );
+  };
+
   return (
-    <CanvasLayer onRender={renderCursorInteraction} isInteractive={true} />
+    <>
+      <div
+        data-tooltip-id="canvas-tooltip"
+        data-tooltip-float
+        data-tooltip-offset={cellSize}
+        data-tooltip-hidden={
+          algoDisplayMode !== ALGO_DISPLAY_MODES.heatmap || heat === defaultHeat
+        }
+      >
+        <CanvasLayer onRender={renderCursorInteraction} isInteractive />
+      </div>
+
+      <Tooltip
+        id="canvas-tooltip"
+        className="!rounded-lg !bg-black/50 !text-white !text-opacity-100 backdrop-blur-md"
+        noArrow
+        place="right"
+        children={tooltipContent()}
+      />
+    </>
   );
 };

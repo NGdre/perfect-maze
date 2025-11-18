@@ -58,6 +58,7 @@ export const HeatmapCanvasLayer = () => {
       setMaxPathDistance(currentMax);
     }
   }, [
+    endId,
     cellHistoryState,
     idToCellMap,
     columns,

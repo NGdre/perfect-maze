@@ -1,3 +1,5 @@
+import { pick } from "@utils";
+
 import { kruskal } from "./generators/kruskal";
 import { recursiveBacktracking } from "./generators/recursive-backtracking";
 import { aStarSerialVisual } from "./solvers/a-star";
@@ -71,6 +73,12 @@ export class AlgorithmRegistry {
   }
 }
 
+export const ALGO_DISPLAY_MODES = {
+  base: "base",
+  text: "text",
+  heatmap: "heatmap",
+};
+
 export const algoRegistry = new AlgorithmRegistry();
 
 export const KRUSKAL_ID = algoRegistry.push({
@@ -85,11 +93,11 @@ export const RECURSIVE_BACKTRACKING_ID = algoRegistry.push({
   func: recursiveBacktracking,
 });
 
-export const A_STAR_DISPLAY_MODES = {
-  base: "base",
-  text: "text",
-  heatmap: "heatmap",
-};
+export const A_STAR_DISPLAY_MODES = pick(ALGO_DISPLAY_MODES, [
+  "base",
+  "text",
+  "heatmap",
+]);
 
 export const A_STAR_ID = algoRegistry.push({
   name: "A*",

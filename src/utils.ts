@@ -11,6 +11,7 @@ export {
   first,
   throttle,
   noop,
+  pick,
 } from "lodash";
 export { flow } from "lodash/fp";
 
@@ -87,11 +88,14 @@ export function scalePolygonFromCenter(points: Point2d[], scaleFactor: number) {
   });
 }
 
-export const parseSizeValue = (value: number | string, baseSize?: number): number => {
+export const parseSizeValue = (
+  value: number | string,
+  baseSize?: number,
+): number => {
   if (typeof value === "number") {
     return Math.max(0, value);
   }
-  
+
   // (?:\.\d+)? - optional decimal part
   const percentageMatch = value.trim().match(/^(\d+(?:\.\d+)?)\s*%$/);
   if (percentageMatch && baseSize) {
@@ -100,9 +104,11 @@ export const parseSizeValue = (value: number | string, baseSize?: number): numbe
     if (percentage >= 0 && percentage <= 100) {
       return baseSize * (percentage / 100);
     }
-    console.warn(`Percentage value should be between 0 and 100, got: ${percentage}`);
+    console.warn(
+      `Percentage value should be between 0 and 100, got: ${percentage}`,
+    );
   }
-  
+
   const numericValue = Number(value);
   return isNaN(numericValue) ? 0 : numericValue;
 };
