@@ -1,6 +1,7 @@
-import ow from "ow";
-import { sample } from "../../utils";
 import { MAX_COLUMNS, MAX_ROWS } from "@constants";
+import ow from "ow";
+
+import { sampleWithRandom, seededRandom } from "../../utils";
 
 const generateCellId = (i: number, j: number) => `${i},${j}`;
 
@@ -22,9 +23,11 @@ function getNeighbors(i: number, j: number, m: number, n: number) {
 
 const validate = (max: number) => ow.create(ow.number.integer.inRange(2, max));
 
-export function* recursiveBacktracking(m: number, n: number) {
+export function* recursiveBacktracking(m: number, n: number, seed?: number) {
   validate(MAX_ROWS)(m);
   validate(MAX_COLUMNS)(n);
+
+  const random = seed !== undefined ? seededRandom(seed) : Math.random;
 
   const cellsMatrix = new Array(m);
 
@@ -36,7 +39,12 @@ export function* recursiveBacktracking(m: number, n: number) {
     }
   }
 
-  const cells = [sample(sample(cellsMatrix))];
+  const randomRow = sampleWithRandom(cellsMatrix, random);
+
+  const initialCell = randomRow
+    ? sampleWithRandom(randomRow, random)
+    : cellsMatrix[0][0];
+  const cells = [initialCell];
 
   while (cells.length > 0) {
     const currentCell = cells.at(-1);
@@ -51,7 +59,7 @@ export function* recursiveBacktracking(m: number, n: number) {
       })
       .filter((neighbor: { visited: boolean }) => !neighbor.visited);
 
-    const nextCell = sample(unvisitedCells);
+    const nextCell = sampleWithRandom(unvisitedCells, random);
 
     if (nextCell !== undefined) yield [currentCell, nextCell];
 

@@ -1,3 +1,5 @@
+import { seededRandom } from "src/utils.js";
+
 // @ts-ignore
 import UnionFind from "./union-find.js";
 
@@ -8,7 +10,7 @@ export const getAllNeighborsPairs = (m: number, n: number) => {
     for (let j = 0; j < n - 1; j++) {
       pairs.push(
         [`${i},${j}`, `${i},${j + 1}`],
-        [`${i},${j}`, `${i + 1},${j}`]
+        [`${i},${j}`, `${i + 1},${j}`],
       );
     }
   }
@@ -24,8 +26,10 @@ export const getAllNeighborsPairs = (m: number, n: number) => {
   return pairs;
 };
 
-export function* kruskal(m: number, n: number) {
+export function* kruskal(m: number, n: number, seed?: number) {
   const uf = new UnionFind();
+
+  const random = seed !== undefined ? seededRandom(seed) : Math.random;
 
   const cellsMatrix = new Array(m);
 
@@ -41,7 +45,7 @@ export function* kruskal(m: number, n: number) {
 
   while (neighborsPairs.length > 0) {
     const randomNeighborPairIndex = Math.floor(
-      Math.random() * neighborsPairs.length
+      random() * neighborsPairs.length,
     );
 
     const [firstCellId, secondCellId] = neighborsPairs[randomNeighborPairIndex];
