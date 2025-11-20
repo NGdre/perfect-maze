@@ -327,3 +327,320 @@ export function removeWallsBetweenCells(
     removeWallBetweenCells(fcell, scell, fid, sid);
   }
 }
+
+function generatePositions(
+  startPoint: [number, number],
+  angle: number,
+  wallsAmount: number,
+) {
+  const positions = new Array(wallsAmount);
+
+  positions[0] = startPoint;
+  let currAngle = 0;
+
+  for (let i = 1; i < wallsAmount; i++) {
+    const { x, y } = getCirclePoint(1, currAngle, true);
+
+    const [prevX, prevY] = positions[i - 1];
+
+    positions[i] = [Math.floor(prevX + x), Math.floor(prevY + y)];
+
+    currAngle += angle;
+  }
+
+  return positions;
+}
+
+export interface MazeData {
+  x: number[];
+  y: number[];
+  cellIds: string[];
+  visible: number[];
+  indexByCellId: Map<string, number>;
+  wallsAmount: number;
+}
+
+export const getCellIndexFromWallIndex = (
+  wallIndex: number,
+  wallsAmount: number,
+): number => {
+  return Math.floor(wallIndex / wallsAmount);
+};
+
+export const getDefaultMazeData = (): MazeData => {
+  return {
+    x: [],
+    y: [],
+    cellIds: [],
+    visible: [],
+    indexByCellId: new Map(),
+    wallsAmount: 4,
+  };
+};
+
+export const createMaze = (
+  rows: number,
+  cols: number,
+  wallsAmount = 4,
+): MazeData => {
+  validateIntGreaterThanOrEqual(rows, MIN_ROWS);
+  validateIntGreaterThanOrEqual(cols, MIN_COLUMNS);
+  validateIntLessThanOrEqual(rows, MAX_ROWS);
+  validateIntLessThanOrEqual(cols, MAX_COLUMNS);
+
+  const cellIds: string[] = [];
+  const x: number[] = [];
+  const y: number[] = [];
+  const visible: number[] = [];
+  const indexByCellId: Map<string, number> = new Map();
+
+  const angle = 360 / wallsAmount;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const id = generateRectMazeId(i, j);
+      indexByCellId.set(id, cellIds.length);
+
+      cellIds.push(id);
+
+      const positions = generatePositions([j, i], angle, wallsAmount);
+
+      for (let k = 0; k < wallsAmount; k++) {
+        x.push(positions[k][0]);
+        y.push(positions[k][1]);
+        visible.push(1);
+      }
+    }
+  }
+
+  return {
+    x,
+    y,
+    cellIds,
+    visible,
+    indexByCellId,
+    wallsAmount,
+  };
+};
+
+export const getCellCoords = (
+  nums: number[],
+  index: number,
+  wallsAmount: number,
+) => {
+  const points = [];
+
+  let left = index * wallsAmount;
+  const right = left + wallsAmount;
+
+  for (; left < right; left++) points.push(nums[left]);
+
+  return points;
+};
+
+export const getCellPoints = (
+  { x, y, wallsAmount }: Pick<MazeData, "x" | "y" | "wallsAmount">,
+  index: number,
+  scaleFactor = 1,
+) => {
+  const cellXCords = getCellCoords(x, index, wallsAmount);
+  const cellYCords = getCellCoords(y, index, wallsAmount);
+
+  const points = [];
+
+  for (let i = 0; i < wallsAmount; i++) {
+    points.push({
+      x: cellXCords[i] * scaleFactor,
+      y: cellYCords[i] * scaleFactor,
+    });
+  }
+
+  return points;
+};
+
+export const getCellWalls = (
+  { x, y, wallsAmount }: Pick<MazeData, "x" | "y" | "wallsAmount">,
+  index: number,
+) => {
+  const cellXCords = getCellCoords(x, index, wallsAmount);
+  const cellYCords = getCellCoords(y, index, wallsAmount);
+
+  const walls = [];
+
+  for (let i = 0; i < wallsAmount - 1; i++)
+    walls.push([
+      cellXCords[i],
+      cellYCords[i],
+      cellXCords[i + 1],
+      cellYCords[i + 1],
+    ]);
+
+  walls.push([
+    cellXCords[wallsAmount - 1],
+    cellYCords[wallsAmount - 1],
+    cellXCords[0],
+    cellYCords[0],
+  ]);
+
+  return walls;
+};
+
+export const getCellCenter = (
+  { x, y, wallsAmount }: MazeData,
+  index: number,
+) => {
+  const cellXCords = getCellCoords(x, index, wallsAmount);
+  const cellYCords = getCellCoords(y, index, wallsAmount);
+
+  return { x: mean(cellXCords), y: mean(cellYCords) };
+};
+
+export const createWallBetweenCellsSearcher =
+  ({ indexByCellId, x, y, wallsAmount }: MazeData) =>
+  (firstCellId: string, secondCellId: string) => {
+    const firstCellIndex = indexByCellId.get(firstCellId);
+    const secondCellIndex = indexByCellId.get(secondCellId);
+
+    if (firstCellIndex === undefined || secondCellIndex === undefined)
+      return -1;
+
+    const wallsForFirstCell = getCellWalls(
+      { x, y, wallsAmount },
+      firstCellIndex,
+    );
+    const wallsForSecondCell = getCellWalls(
+      { x, y, wallsAmount },
+      secondCellIndex,
+    );
+
+    for (let i = 0; i < wallsAmount; i++) {
+      const [x1, y1, x2, y2] = wallsForFirstCell[i];
+
+      for (let j = 0; j < wallsAmount; j++) {
+        const [a1, b1, a2, b2] = wallsForSecondCell[j];
+
+        if (x1 === a2 && y1 === b2 && x2 === a1 && y2 === b1)
+          return [
+            firstCellIndex * wallsAmount + i,
+            secondCellIndex * wallsAmount + j,
+          ];
+      }
+    }
+
+    return -1;
+  };
+
+// mutates visible
+export const removeWalls = (
+  mazeData: MazeData,
+  wallsToRemove: [string, string][],
+) => {
+  const searchCommonWall = createWallBetweenCellsSearcher(mazeData);
+
+  for (const [firstCellId, secondCellId] of wallsToRemove) {
+    const searchResult = searchCommonWall(firstCellId, secondCellId);
+
+    if (searchResult === -1) {
+      return;
+    }
+
+    const [firstWallPos, secondWallPos] = searchResult;
+
+    const visible = mazeData.visible;
+
+    visible[firstWallPos] = 0;
+    visible[secondWallPos] = 0;
+  }
+};
+
+export type WallsToRemove = [string, string][];
+
+export const removeWallsPure = (
+  mazeData: MazeData,
+  wallsToRemove: WallsToRemove,
+): MazeData => {
+  const clone = { ...mazeData, visible: mazeData.visible.slice(0) };
+
+  removeWalls(clone, wallsToRemove);
+
+  return clone;
+};
+
+export const getWallByPosition = (
+  { x, y, wallsAmount }: Pick<MazeData, "x" | "y" | "wallsAmount">,
+  wallPosition: number,
+) => {
+  const wallPosInCell = wallPosition % wallsAmount;
+
+  const isLastWallPosInCell = wallPosInCell === wallsAmount - 1;
+
+  const left = wallPosition - wallPosInCell;
+  const right = left + wallsAmount - 1;
+
+  if (isLastWallPosInCell) return [x[right], y[right], x[left], y[left]];
+
+  return [
+    x[wallPosition],
+    y[wallPosition],
+    x[wallPosition + 1],
+    y[wallPosition + 1],
+  ];
+};
+
+export const getVisibleWalls = ({ x, y, wallsAmount, visible }: MazeData) => {
+  const visibleWalls = [];
+
+  for (let i = 0; i < x.length; i++) {
+    if (visible[i]) {
+      visibleWalls.push(getWallByPosition({ x, y, wallsAmount }, i));
+    }
+  }
+
+  return visibleWalls;
+};
+
+export const mapPairsToNeighbors = (
+  { cellIds, indexByCellId }: MazeData,
+  wallsToRemove: WallsToRemove,
+): string[][] => {
+  const neighbors = new Array(cellIds.length);
+
+  for (const [firstCellId, secondCellId] of wallsToRemove) {
+    const firstCellIndex = indexByCellId.get(firstCellId);
+    const secondCellIndex = indexByCellId.get(secondCellId);
+
+    if (firstCellIndex === undefined || secondCellIndex === undefined)
+      throw new Error("bad data");
+
+    if (neighbors[firstCellIndex] === undefined) neighbors[firstCellIndex] = [];
+
+    neighbors[firstCellIndex].push(secondCellId);
+
+    if (neighbors[secondCellIndex] === undefined)
+      neighbors[secondCellIndex] = [];
+
+    neighbors[secondCellIndex].push(firstCellId);
+  }
+
+  return neighbors;
+};
+
+export const _createCellFinder = (
+  mazeData: MazeData,
+  neighbors: string[][],
+) => {
+  return (id: string) => {
+    const cellIndex = mazeData.indexByCellId.get(id);
+
+    if (cellIndex === undefined) return null;
+
+    return {
+      id,
+      center: getCellCenter(mazeData, cellIndex),
+      neighbors,
+      numberOfWalls: mazeData.wallsAmount,
+      getPoints: (scaleFactor: number) =>
+        getCellPoints(mazeData, cellIndex, scaleFactor),
+    };
+  };
+};
