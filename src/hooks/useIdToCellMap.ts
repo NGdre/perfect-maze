@@ -1,17 +1,8 @@
-import { _createCellFinder, createIdToCellMap } from "@models/maze";
-import { useMazeCells } from "@stores/selectors";
-import { getHistoryState } from "src/models/wall-history";
-import { useMazeStore } from "src/stores";
+import { _createCellFinder, mapPairsToNeighbors } from "@models/maze";
+import { getHistoryState } from "@models/wall-history";
+import { useMazeStore } from "@stores";
 
 import { useMemo } from "react";
-
-// export function useIdToCellMap() {
-//   const cells = useMazeCells() || [];
-
-//   return useMemo(() => {
-//     return createIdToCellMap(cells);
-//   }, [cells]);
-// }
 
 export function useIdToCellMap() {
   const mazeData = useMazeStore((state) => state.mazeData);
@@ -19,7 +10,10 @@ export function useIdToCellMap() {
     getHistoryState(state.wallHistory),
   );
 
-  const cellFinder = _createCellFinder(mazeData, wallHistoryState);
+  const cellFinder = _createCellFinder(
+    mazeData,
+    mapPairsToNeighbors(mazeData, wallHistoryState),
+  );
 
   return useMemo(() => {
     return {

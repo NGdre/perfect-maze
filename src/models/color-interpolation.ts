@@ -1,5 +1,3 @@
-import ow from "ow";
-
 export type RGB = readonly [number, number, number] | [number, number, number];
 
 export function interpolateColor(
@@ -7,14 +5,14 @@ export function interpolateColor(
   max: number,
   colors: readonly RGB[],
 ) {
+  // Нужно перенести в другое место для производительсно
+  // ow(
+  //   colors,
+  //   ow.array
+  //     .minLength(2)
+  //     .message("colors in interpolateColor must be at least length of 2"),
+  // );
   return (value: number) => {
-    ow(
-      colors,
-      ow.array
-        .minLength(2)
-        .message("colors in interpolateColor must be at least length of 2"),
-    );
-
     if (value <= min) return rgbToCss(colors[0]);
     if (value >= max) return rgbToCss(colors[colors.length - 1]);
 

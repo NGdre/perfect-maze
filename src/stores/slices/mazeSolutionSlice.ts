@@ -1,37 +1,40 @@
 import { type CellPatch } from "@models/CellHistory";
 import { MazeMode, algoRegistry } from "@models/algorithm-registry";
 import {
+  MazeData,
   type PolygonCell,
-  RectMaze,
-  createIdToCellMap,
+  _createCellFinder,
   generateRectMazeId,
-  removeWallsBetweenCells,
+  mapPairsToNeighbors,
+  removeWallsPure,
 } from "@models/maze";
 import { WallHistoryState } from "@models/wall-history";
 import { MainStore } from "@stores/index";
-import { cloneDeep } from "lodash";
 import { StateCreator } from "zustand";
 
 function initSerialSolver(
   startId: string,
   endId: string,
   mazeSolverId: number,
-  mazeInstance: RectMaze | null,
+  mazeData: MazeData,
   wallsToRemove: WallHistoryState,
 ) {
   const mazeSolver = algoRegistry.findAlgoById(mazeSolverId);
 
-  const maze = mazeInstance;
+  if (!mazeSolver || mazeData.cellIds.length === 0) return null;
 
-  if (!mazeSolver || !maze) return null;
+  removeWallsPure(mazeData, wallsToRemove);
 
-  const cells = cloneDeep(maze.cells);
+  const cellFinder = _createCellFinder(
+    mazeData,
+    mapPairsToNeighbors(mazeData, wallsToRemove),
+  );
 
-  removeWallsBetweenCells(cells, wallsToRemove);
-
-  const map = createIdToCellMap(cells);
-
-  return mazeSolver(startId, endId, map);
+  return mazeSolver(startId, endId, {
+    get(id: string) {
+      return cellFinder(id);
+    },
+  });
 }
 
 export type TimeDirection = "backward" | "forward";
@@ -128,7 +131,7 @@ export const createMazeSolutionSlice: StateCreator<
         startId,
         endId,
         get().mazeSolverId,
-        get().mazeInstance,
+        get().mazeData,
         get().wallHistory.history,
       );
       set({ serialSolver });
@@ -182,7 +185,7 @@ export const createMazeSolutionSlice: StateCreator<
         startId,
         endId,
         get().mazeSolverId,
-        get().mazeInstance,
+        get().mazeData,
         get().wallHistory.history,
       );
 

@@ -1,13 +1,13 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
-import { createCellFinder } from "@models/maze";
+import { getCellCenter, getCellPoints } from "@models/maze";
 import { drawFinish, drawStart } from "@models/maze-canvas-rendering";
+import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
   useEndId,
   useMazeCells,
   useStartId,
 } from "@stores/selectors";
-import { identity } from "lodash";
 
 import { useCallback } from "react";
 
@@ -15,12 +15,9 @@ export const CellMarksCanvasLayer = () => {
   const cells = useMazeCells();
   const startId = useStartId();
   const endId = useEndId();
+  const mazeData = useMazeStore((state) => state.mazeData);
 
   const columns = useColumnsAmount();
-
-  const findCell = useCallback(cells ? createCellFinder(cells) : identity, [
-    cells,
-  ]);
 
   const renderCellMarks = useCallback(
     function (ctx: CanvasRenderingContext2D, width: number, height: number) {
@@ -30,15 +27,32 @@ export const CellMarksCanvasLayer = () => {
 
       ctx.clearRect(0, 0, width, height);
 
-      const startCell = findCell(startId);
+      const drawMark = (
+        cellId: string,
+        drawingFn: (
+          ctx: CanvasRenderingContext2D,
+          cell: Object,
+          cellSize: number,
+        ) => void,
+      ) => {
+        const cellIndex = mazeData.indexByCellId.get(cellId);
 
-      if (startCell) drawStart(ctx, startCell, cellSize);
+        if (cellIndex !== undefined) {
+          const cellCenter = getCellCenter(mazeData, cellIndex);
+          const cellData = {
+            center: cellCenter,
+            getPoints: (scaleFactor: number) =>
+              getCellPoints(mazeData, cellIndex, scaleFactor),
+          };
 
-      const endCell = findCell(endId);
+          drawingFn(ctx, cellData, cellSize);
+        }
+      };
 
-      if (endCell) drawFinish(ctx, endCell, cellSize);
+      drawMark(startId, drawStart);
+      drawMark(endId, drawFinish);
     },
-    [cells, startId, endId, columns],
+    [cells, startId, endId, columns, mazeData],
   );
 
   return <CanvasLayer onRender={renderCellMarks} />;

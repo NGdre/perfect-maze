@@ -3,7 +3,6 @@ import {
   MazeData,
   RectMaze,
   createMaze,
-  createRectMaze,
   generateRectMazeId,
   getDefaultMazeData,
 } from "@models/maze";
@@ -25,7 +24,6 @@ import { StateCreator } from "zustand";
 import { TimeDirection } from "./mazeSolutionSlice";
 
 type State = {
-  mazeInstance: RectMaze | null;
   mazeData: MazeData;
   mazeGenerationAlgorithmId: number;
   rowsAmount: RectMaze["rows"];
@@ -87,9 +85,7 @@ export const createMazeGenerationSlice: StateCreator<
 
     const mazeData = createMaze(rows, cols);
 
-    const maze = createRectMaze(rows, cols);
-
-    set({ mazeInstance: maze, mazeData });
+    set({ mazeData });
   },
 
   resetMaze() {

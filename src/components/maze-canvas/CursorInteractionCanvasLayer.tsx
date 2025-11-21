@@ -1,18 +1,19 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { CELL_SELECTION_THROTTLE_DELAY, colors } from "@constants";
-import { RectMaze, createCellFinder, generateRectMazeId } from "@models/maze";
+import { ALGO_DISPLAY_MODES } from "@models/algorithm-registry";
+import {
+  MazeData,
+  _createCellFinder,
+  generateRectMazeId,
+  getCellCenter,
+} from "@models/maze";
 import { fillPolygonWithCircle } from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores/maze-store";
-import {
-  useAlgoDisplayMode,
-  useColumnsAmount,
-  useMazeCells,
-} from "@stores/selectors";
+import { useAlgoDisplayMode, useColumnsAmount } from "@stores/selectors";
 import { CellSelectionModes } from "@stores/slices/mazeSolutionSlice";
 import { flow, noop, throttle } from "@utils";
 import ow from "ow";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
-import { ALGO_DISPLAY_MODES } from "src/models/algorithm-registry";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip";
@@ -46,19 +47,16 @@ const selectCellColor = {
 
 function hoverInteraction(config: {
   ctx: CanvasRenderingContext2D;
-  cells: RectMaze["cells"] | undefined;
+  mazeData: MazeData;
   cellSize: number;
   cellSelection: CellSelectionModes;
   width: number;
   height: number;
 }) {
-  const { ctx, cells, cellSize, cellSelection, width, height } = config;
-
-  if (!cells) return noop;
+  const { ctx, mazeData, cellSize, cellSelection, width, height } = config;
 
   const canvas = ctx.canvas;
 
-  const findCell = createCellFinder(cells);
   const cellColor = selectCellColor[cellSelection];
 
   const clearHoveredCell = () => {
@@ -66,13 +64,14 @@ function hoverInteraction(config: {
   };
 
   const hoverCell = throttle((e: MouseEvent) => {
-    const cell = findCell(
+    const cellIndex = mazeData.indexByCellId.get(
       generateRectMazeId(...cellPositionOnCanvasHover(canvas, e, cellSize)),
     );
 
-    if (cell) {
+    if (cellIndex !== undefined) {
+      const cellCenter = getCellCenter(mazeData, cellIndex);
       clearHoveredCell();
-      fillPolygonWithCircle(ctx, cell, cellColor, cellSize);
+      fillPolygonWithCircle(ctx, { center: cellCenter }, cellColor, cellSize);
     }
   }, CELL_SELECTION_THROTTLE_DELAY);
 
@@ -115,7 +114,7 @@ function clickInteraction(config: {
 }
 
 export const CursorInteractionCanvasLayer = () => {
-  const cells = useMazeCells();
+  const mazeData = useMazeStore((state) => state.mazeData);
   const columns = useColumnsAmount();
   const cellSelection = useMazeStore((state) => state.cellSelection);
   const setStartId = useMazeStore((state) => state.setStartId);
@@ -173,7 +172,7 @@ export const CursorInteractionCanvasLayer = () => {
 
       const cleanUpHoverInteraction = hoverInteraction({
         ctx,
-        cells,
+        mazeData,
         cellSize: currCellSize,
         cellSelection,
         width,
@@ -193,7 +192,7 @@ export const CursorInteractionCanvasLayer = () => {
     [
       columns,
       cellSelection,
-      cells,
+      mazeData,
       setCellSize,
       setStartId,
       setEndId,

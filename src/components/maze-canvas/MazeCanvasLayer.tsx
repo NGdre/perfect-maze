@@ -1,17 +1,10 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { WALLS_WIDTH, colors } from "@constants";
-import { drawWalls, drawWallsNew } from "@models/maze-canvas-rendering";
+import { getVisibleWalls, removeWallsPure } from "@models/maze";
+import { drawWallsNew } from "@models/maze-canvas-rendering";
+import { getHistoryState } from "@models/wall-history";
 import { useMazeStore } from "@stores/maze-store";
 import { useColumnsAmount, useMazeCells } from "@stores/selectors";
-import { cloneDeep } from "lodash";
-import {
-  getVisibleWalls,
-  mapPairsToNeighbors,
-  removeWalls,
-  removeWallsBetweenCells,
-  removeWallsPure,
-} from "src/models/maze";
-import { getHistoryState } from "src/models/wall-history";
 
 import { useCallback } from "react";
 
@@ -50,17 +43,6 @@ export const MazeCanvasLayer = () => {
         wallColor: colors.WALL_COLOR,
         scaleFactor: cellSize,
       });
-
-      // cloning because methods mutating cells
-      // const cellsCopy = cloneDeep(cells);
-
-      // removeWallsBetweenCells(cellsCopy, wallHistoryState);
-
-      // drawWalls(ctx, cellsCopy, {
-      //   lineWidth: WALLS_WIDTH,
-      //   wallColor: colors.WALL_COLOR,
-      //   scaleFactor: cellSize,
-      // });
     },
     [columns, cells, wallHistoryState, mazeData],
   );

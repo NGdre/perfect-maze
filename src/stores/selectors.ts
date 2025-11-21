@@ -1,7 +1,9 @@
 import { useMazeStore } from "./maze-store";
 
 export const useMazeCells = () =>
-  useMazeStore((state) => state.mazeInstance?.cells);
+  useMazeStore((state) =>
+    state.mazeData.cellIds.length > 0 ? state.mazeData.cellIds.length : null,
+  );
 
 export const useCurrVisualMazeChange = () =>
   useMazeStore((state) => state.currVisualMazeChange);

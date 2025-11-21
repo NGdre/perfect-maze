@@ -1,11 +1,9 @@
-import { flow, mean } from "@utils";
+import { mean } from "@utils";
 
 import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../constants";
 import {
-  validateEqualNumbers,
   validateIntGreaterThanOrEqual,
   validateIntLessThanOrEqual,
-  validateNotNullObject,
 } from "../validation/utils";
 
 const FRACTION_DIGITS = 2;
@@ -185,8 +183,6 @@ export class HexagonCell extends PolygonCell {
   }
 }
 
-type cellsIdPair = [firstCellId: string, secondCellId: string];
-
 type RectMazeCells = Array<SquareCell>;
 
 type MazeCells = PolygonCell[];
@@ -203,35 +199,6 @@ export type RectMaze = {
   cols: number;
 };
 
-export const createRectMaze = (
-  rows: RectMaze["rows"],
-  cols: RectMaze["cols"],
-): RectMaze => {
-  validateIntGreaterThanOrEqual(rows, MIN_ROWS);
-  validateIntGreaterThanOrEqual(cols, MIN_COLUMNS);
-  validateIntLessThanOrEqual(rows, MAX_ROWS);
-  validateIntLessThanOrEqual(cols, MAX_COLUMNS);
-
-  const cells: RectMazeCells = [];
-
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      const id = generateRectMazeId(i, j);
-      const cell = new SquareCell(id);
-
-      cell.generateWalls(j, i);
-
-      cells.push(cell);
-    }
-  }
-
-  return {
-    rows,
-    cols,
-    cells,
-  };
-};
-
 export type idToCellMap = Map<cellId, PolygonCell>;
 
 export const createIdToCellMap = (cells: MazeCells): idToCellMap => {
@@ -244,89 +211,6 @@ export const createIdToCellMap = (cells: MazeCells): idToCellMap => {
 
   return map;
 };
-
-export function findCell(map: idToCellMap) {
-  return function (cellId: cellId) {
-    const found = map.get(cellId);
-
-    return found !== undefined ? found : null;
-  };
-}
-
-export const createCellFinder = flow(createIdToCellMap, findCell);
-
-// отдельно лучше не использовать, так как свойство neighbors будет некорректно
-export function removeWallBetweenCells(
-  firstCell: PolygonCell,
-  secondCell: PolygonCell,
-  fid: string,
-  sid: string,
-) {
-  const firstWalls = firstCell.walls;
-  const secondWalls = secondCell.walls;
-
-  const numberOfWalls = firstWalls.length;
-
-  validateEqualNumbers(numberOfWalls, secondWalls.length);
-
-  let firstWall, secondWall;
-
-  for (let i = 0; i < numberOfWalls; i++) {
-    for (let j = 0; j < numberOfWalls; j++) {
-      if (Wall.isSameWall(firstWalls[i], secondWalls[j])) {
-        firstWall = firstWalls[i];
-        secondWall = secondWalls[j];
-        break;
-      }
-    }
-  }
-
-  if (!firstWall || !secondWall) {
-    throw Error("can not find wall for removal");
-  }
-
-  firstWall.visible = false;
-  secondWall.visible = false;
-
-  if (!firstCell.neighbors.includes(sid)) {
-    firstCell.neighbors.push(sid);
-  }
-
-  if (!secondCell.neighbors.includes(fid)) {
-    secondCell.neighbors.push(fid);
-  }
-}
-
-export function removeWallsBetweenCells(
-  cells: MazeCells,
-  pairs: Array<cellsIdPair>,
-) {
-  const pairsLength = pairs.length;
-
-  const findCell = createCellFinder(cells);
-
-  // reset neighbors
-  for (let i = 0; i < cells.length; i++) {
-    cells[i].neighbors.length = 0;
-  }
-
-  for (let i = 0; i < pairsLength; i++) {
-    const fid = pairs[i][0];
-    const sid = pairs[i][1];
-    const fcell = findCell(fid);
-    const scell = findCell(sid);
-
-    validateNotNullObject(fcell, {
-      label: `invalid pairs to remove: cell with id ${fid} is not found`,
-    });
-
-    validateNotNullObject(scell, {
-      label: `invalid pairs to remove: cell with id ${sid} is not found`,
-    });
-
-    removeWallBetweenCells(fcell, scell, fid, sid);
-  }
-}
 
 function generatePositions(
   startPoint: [number, number],
@@ -637,7 +521,7 @@ export const _createCellFinder = (
     return {
       id,
       center: getCellCenter(mazeData, cellIndex),
-      neighbors,
+      neighbors: neighbors[cellIndex],
       numberOfWalls: mazeData.wallsAmount,
       getPoints: (scaleFactor: number) =>
         getCellPoints(mazeData, cellIndex, scaleFactor),
