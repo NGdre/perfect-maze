@@ -47,6 +47,40 @@ export function drawLine(config: {
   }
 }
 
+export function drawWallsNew(
+  ctx: context2d,
+  visibleWalls: number[][],
+  opts: { wallColor?: string; lineWidth?: number; scaleFactor: number },
+) {
+  const color = opts.wallColor;
+  const lineWidth = opts.lineWidth;
+  const scaleFactor = opts.scaleFactor;
+
+  const line = drawLine({
+    ctx,
+    strokeStyle: color,
+    lineWidth,
+    batching: true,
+    scaleFactor,
+  });
+
+  ctx.beginPath();
+
+  const len = visibleWalls.length;
+
+  for (let i = 0; i < len; i++) {
+    line(
+      visibleWalls[i][0],
+      visibleWalls[i][1],
+      visibleWalls[i][2],
+      visibleWalls[i][3],
+    );
+  }
+
+  ctx.stroke();
+  ctx.closePath();
+}
+
 export function drawWalls(
   ctx: context2d,
   cells: PolygonCell[],

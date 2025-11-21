@@ -89,8 +89,13 @@ export const HeatmapCanvasLayer = () => {
       for (const cellChange of changes) {
         const currCell = idToCellMap.get(cellChange.id);
 
-        if (!currCell)
-          throw new Error("can not find current cell in HeatmapCanvasLayer");
+        if (!currCell) {
+          console.log(cellChange.id);
+          continue;
+        }
+
+        // if (!currCell)
+        //   throw new Error("can not find current cell in HeatmapCanvasLayer");
 
         const isPathCell = cellChange.isPathCell;
 

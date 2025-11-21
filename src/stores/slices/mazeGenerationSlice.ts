@@ -1,5 +1,12 @@
 import { DEFAULT_COLUMNS_AMOUNT, DEFAULT_ROWS_AMOUNT } from "@constants";
-import { RectMaze, createRectMaze, generateRectMazeId } from "@models/maze";
+import {
+  MazeData,
+  RectMaze,
+  createMaze,
+  createRectMaze,
+  generateRectMazeId,
+  getDefaultMazeData,
+} from "@models/maze";
 import { MainStore } from "@stores";
 import { mapGenerator } from "@utils";
 import { MazeMode, algoRegistry } from "src/models/algorithm-registry";
@@ -19,6 +26,7 @@ import { TimeDirection } from "./mazeSolutionSlice";
 
 type State = {
   mazeInstance: RectMaze | null;
+  mazeData: MazeData;
   mazeGenerationAlgorithmId: number;
   rowsAmount: RectMaze["rows"];
   columnsAmount: RectMaze["cols"];
@@ -54,6 +62,7 @@ export const createMazeGenerationSlice: StateCreator<
   serialGenerator: null,
   wallHistory: createWallHistory(),
   isMazeGenerationDone: false,
+  mazeData: getDefaultMazeData(),
 
   updateRowsAmount: (newRowsAmount) => set({ rowsAmount: newRowsAmount }),
 
@@ -76,13 +85,18 @@ export const createMazeGenerationSlice: StateCreator<
       endId: generateRectMazeId(rows - 1, cols - 1),
     });
 
+    const mazeData = createMaze(rows, cols);
+
     const maze = createRectMaze(rows, cols);
 
-    set({ mazeInstance: maze });
+    set({ mazeInstance: maze, mazeData });
   },
 
   resetMaze() {
-    set({ wallHistory: clearHistory(), isMazeGenerationDone: false });
+    set({
+      wallHistory: clearHistory(),
+      isMazeGenerationDone: false,
+    });
   },
 
   // return true if serialGenerator is done, otherwise false
@@ -146,7 +160,7 @@ export const createMazeGenerationSlice: StateCreator<
 
       const mazeGenerator = algoRegistry.findAlgoById(currGeneratorAlgoId);
 
-      serialGenerator = mapGenerator(mazeGenerator(rows, cols), (pair) => [
+      serialGenerator = mapGenerator(mazeGenerator(rows, cols, 10), (pair) => [
         pair[0].id,
         pair[1].id,
       ]);
