@@ -2,9 +2,7 @@ import { INITIAL_MAX_PATH_DISTANCE } from "@constants";
 import { type CellPatch } from "@models/CellHistory";
 import { algoRegistry } from "@models/algorithm-registry";
 import {
-  MazeData,
   type PolygonCell,
-  WallsToRemove,
   createCellFinder,
   mapPairsToNeighbors,
   removeWallsPure,
@@ -13,31 +11,6 @@ import { MainStore } from "@stores/index";
 import { StateCreator } from "zustand";
 
 export type SerialSolver = Generator<CellPatch[], void, any> | null;
-
-function initSerialSolver(
-  startId: string,
-  endId: string,
-  mazeSolverId: number,
-  mazeData: MazeData,
-  wallsToRemove: WallsToRemove,
-): SerialSolver {
-  const mazeSolver = algoRegistry.findAlgoById(mazeSolverId);
-
-  if (!mazeSolver || mazeData.cellIds.length === 0) return null;
-
-  removeWallsPure(mazeData, wallsToRemove);
-
-  const cellFinder = createCellFinder(
-    mazeData,
-    mapPairsToNeighbors(mazeData, wallsToRemove),
-  );
-
-  return mazeSolver(startId, endId, {
-    get(id: string) {
-      return cellFinder(id);
-    },
-  });
-}
 
 export type TimeDirection = "backward" | "forward";
 
@@ -65,6 +38,33 @@ export const createMazeSolutionSlice: StateCreator<
   [["zustand/immer", never]],
   MazeSolutionSlice
 > = (set, get) => {
+  function initSerialSolver(): SerialSolver {
+    const {
+      startId,
+      endId,
+      mazeSolverId,
+      mazeData,
+      wallHistory: { history: wallsToRemove },
+    } = get();
+
+    const mazeSolver = algoRegistry.findAlgoById(mazeSolverId);
+
+    if (!mazeSolver || mazeData.cellIds.length === 0) return null;
+
+    removeWallsPure(mazeData, wallsToRemove);
+
+    const cellFinder = createCellFinder(
+      mazeData,
+      mapPairsToNeighbors(mazeData, wallsToRemove),
+    );
+
+    return mazeSolver(startId, endId, {
+      get(id: string) {
+        return cellFinder(id);
+      },
+    });
+  }
+
   return {
     serialSolver: null,
     mazeSolution: [],
@@ -84,19 +84,11 @@ export const createMazeSolutionSlice: StateCreator<
     },
 
     solveMaze() {
-      const startId = get().startId;
-      const endId = get().endId;
       const cellHistory = get().cellHistory;
       let { serialSolver } = get();
 
       if (serialSolver === null) {
-        serialSolver = initSerialSolver(
-          startId,
-          endId,
-          get().mazeSolverId,
-          get().mazeData,
-          get().wallHistory.history,
-        );
+        serialSolver = initSerialSolver();
         set({ serialSolver });
       }
       cellHistory.applyMultipleSteps([...serialSolver!]);
@@ -108,8 +100,6 @@ export const createMazeSolutionSlice: StateCreator<
     },
 
     takeStepInSolution(direction) {
-      const startId = get().startId;
-      const endId = get().endId;
       const cellHistory = get().cellHistory;
 
       // do not change the order of cellHistory.undo() and cellHistory.redo() with set function
@@ -144,34 +134,27 @@ export const createMazeSolutionSlice: StateCreator<
       let serialSolver = get().serialSolver;
 
       if (cellHistory.isEmpty()) {
-        serialSolver = initSerialSolver(
-          startId,
-          endId,
-          get().mazeSolverId,
-          get().mazeData,
-          get().wallHistory.history,
-        );
+        serialSolver = initSerialSolver();
 
         set({ serialSolver, isSerialSolverDone: false });
       }
 
-      const next = serialSolver?.next();
+      if (serialSolver) {
+        const next = serialSolver.next();
 
-      if (next && next.done) {
-        set({
-          isSerialSolverDone: true,
-        });
-        return false;
-      }
+        if (next.done) {
+          set({
+            isSerialSolverDone: true,
+          });
+        } else {
+          cellHistory.applyStep(next.value);
 
-      if (next && !next.done) {
-        cellHistory.applyStep(next.value);
+          set({
+            currVisualMazeChange: next.value,
+          });
+        }
 
-        set({
-          currVisualMazeChange: next.value,
-        });
-
-        return true;
+        return !next.done;
       }
 
       return false;

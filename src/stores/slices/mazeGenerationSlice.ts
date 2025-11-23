@@ -101,17 +101,16 @@ export const createMazeGenerationSlice: StateCreator<
       set({ serialGenerator, isMazeGenerationDone: false });
     }
 
-    const next = serialGenerator?.next();
+    if (serialGenerator) {
+      const next = serialGenerator.next();
 
-    if (next && next.done) {
-      set({ isMazeGenerationDone: true });
-      return false;
-    }
+      if (next.done) {
+        set({ isMazeGenerationDone: true });
+      } else {
+        set({ wallHistory: saveHistoryChange(wallHistory, next.value) });
+      }
 
-    if (next && !next.done) {
-      set({ wallHistory: saveHistoryChange(wallHistory, next.value) });
-
-      return true;
+      return !next.done;
     }
 
     return false;
