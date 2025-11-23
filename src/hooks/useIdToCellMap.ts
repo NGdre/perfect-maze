@@ -1,4 +1,4 @@
-import { _createCellFinder, mapPairsToNeighbors } from "@models/maze";
+import { createCellFinder, mapPairsToNeighbors } from "@models/maze";
 import { getHistoryState } from "@models/wall-history";
 import { useMazeStore } from "@stores";
 
@@ -10,7 +10,7 @@ export function useIdToCellMap() {
     getHistoryState(state.wallHistory),
   );
 
-  const cellFinder = _createCellFinder(
+  const cellFinder = createCellFinder(
     mazeData,
     mapPairsToNeighbors(mazeData, wallHistoryState),
   );

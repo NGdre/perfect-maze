@@ -119,3 +119,7 @@ export const generatorNames = algoRegistry
 export const mazeSolversNames = algoRegistry
   .getGroup(MazeMode.solving)
   .map((id) => algoRegistry.getName(id));
+
+export const DEFAULT_MAZE_SOLVER_ID = algoRegistry.getGroup(
+  MazeMode.solving,
+)[0];

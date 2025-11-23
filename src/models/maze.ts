@@ -509,10 +509,7 @@ export const mapPairsToNeighbors = (
   return neighbors;
 };
 
-export const _createCellFinder = (
-  mazeData: MazeData,
-  neighbors: string[][],
-) => {
+export const createCellFinder = (mazeData: MazeData, neighbors: string[][]) => {
   return (id: string) => {
     const cellIndex = mazeData.indexByCellId.get(id);
 

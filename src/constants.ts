@@ -46,8 +46,14 @@ export const CELL_SELECTION_THROTTLE_DELAY = 0;
 
 export const CELL_ID_DELIMITER = ",";
 
-export const workTypes = {
-  mazeGeneration: "mazeGeneration",
-  renderOnly: "renderOnly",
-  idle: "idle",
+export const cellSelectionMode = {
+  none: "none",
+  start: "start",
+  end: "end",
 } as const;
+
+export type CellSelectionMode = keyof typeof cellSelectionMode;
+
+export const DEFAULT_CELL_SELECTION = cellSelectionMode.none;
+
+export const INITIAL_MAX_PATH_DISTANCE = 0;

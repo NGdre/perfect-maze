@@ -4,6 +4,10 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 import {
+  MazeConfigSlice,
+  createMazeConfigSlice,
+} from "./slices/mazeConfigSlice";
+import {
   MazeGenerationSlice,
   createMazeGenerationSlice,
 } from "./slices/mazeGenerationSlice";
@@ -16,19 +20,18 @@ type State = {
   isMazeRendering: boolean;
   cellHistory: CellHistory;
   mazeMode: MazeModeType;
-  displayMode: null | string;
 };
 
 type Action = {
   setIsMazeRendering: (newStatus: State["isMazeRendering"]) => void;
   setMazeMode: (mazeMode: MazeModeType) => void;
-  setDisplayMode: (displayMode: State["displayMode"]) => void;
 };
 
 export type MainStore = State &
   Action &
   MazeGenerationSlice &
-  MazeSolutionSlice;
+  MazeSolutionSlice &
+  MazeConfigSlice;
 
 export const createMazeStore = (initialState: Partial<State> = {}) =>
   create<MainStore>()(
@@ -39,18 +42,14 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
         cellHistory,
         isMazeRendering: false,
         mazeMode: MazeMode.generation,
-        displayMode: null,
         ...initialState,
 
         ...createMazeGenerationSlice(set, get, api),
         ...createMazeSolutionSlice(set, get, api),
+        ...createMazeConfigSlice(set, get, api),
 
         setIsMazeRendering(newStatus) {
           set({ isMazeRendering: newStatus });
-        },
-
-        setDisplayMode(displayMode) {
-          set({ displayMode });
         },
 
         setMazeMode(mazeMode) {

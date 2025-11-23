@@ -1,14 +1,10 @@
-import { DEFAULT_COLUMNS_AMOUNT, DEFAULT_ROWS_AMOUNT } from "@constants";
+import { algoRegistry } from "@models/algorithm-registry";
 import {
   MazeData,
-  RectMaze,
   createMaze,
   generateRectMazeId,
   getDefaultMazeData,
 } from "@models/maze";
-import { MainStore } from "@stores";
-import { mapGenerator } from "@utils";
-import { MazeMode, algoRegistry } from "src/models/algorithm-registry";
 import {
   WallHistorySnapshot,
   backwardHistory,
@@ -18,27 +14,21 @@ import {
   isHistoryEmpty,
   saveHistoryChange,
   saveHistoryChanges,
-} from "src/models/wall-history";
+} from "@models/wall-history";
+import { MainStore } from "@stores";
+import { mapGenerator } from "@utils";
 import { StateCreator } from "zustand";
 
 import { TimeDirection } from "./mazeSolutionSlice";
 
 type State = {
   mazeData: MazeData;
-  mazeGenerationAlgorithmId: number;
-  rowsAmount: RectMaze["rows"];
-  columnsAmount: RectMaze["cols"];
   serialGenerator: Generator<any, void, any> | null;
   wallHistory: WallHistorySnapshot;
   isMazeGenerationDone: boolean;
 };
 
 type Action = {
-  updateRowsAmount: (newRowsAmount: State["rowsAmount"]) => void;
-  updateColumnsAmount: (newColumnsAmount: State["columnsAmount"]) => void;
-
-  updateMazeGenerationAlgorithm: (newAlgorithm: string) => void;
-
   initMaze: () => void;
   generateMaze: () => void;
   takeStepInGeneration: (direction: TimeDirection) => boolean;
@@ -53,27 +43,10 @@ export const createMazeGenerationSlice: StateCreator<
   [["zustand/immer", never]],
   MazeGenerationSlice
 > = (set, get) => ({
-  rowsAmount: DEFAULT_ROWS_AMOUNT,
-  columnsAmount: DEFAULT_COLUMNS_AMOUNT,
-  mazeGenerationAlgorithmId: algoRegistry.getGroup(MazeMode.generation)[0],
-  mazeInstance: null,
   serialGenerator: null,
   wallHistory: createWallHistory(),
   isMazeGenerationDone: false,
   mazeData: getDefaultMazeData(),
-
-  updateRowsAmount: (newRowsAmount) => set({ rowsAmount: newRowsAmount }),
-
-  updateColumnsAmount: (newColumnsAmount) =>
-    set({ columnsAmount: newColumnsAmount }),
-
-  updateMazeGenerationAlgorithm: (newAlgorithm) =>
-    set({
-      mazeGenerationAlgorithmId: algoRegistry.getIdByName(newAlgorithm),
-      wallHistory: clearHistory(),
-      serialGenerator: null,
-      isMazeGenerationDone: false,
-    }),
 
   initMaze() {
     const rows = get().rowsAmount;

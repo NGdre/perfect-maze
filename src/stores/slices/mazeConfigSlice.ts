@@ -1,0 +1,92 @@
+import {
+  CellSelectionMode,
+  DEFAULT_CELL_SELECTION,
+  DEFAULT_COLUMNS_AMOUNT,
+  DEFAULT_ROWS_AMOUNT,
+} from "@constants";
+import {
+  DEFAULT_MAZE_SOLVER_ID,
+  MazeMode,
+  algoRegistry,
+} from "@models/algorithm-registry";
+import { RectMaze, generateRectMazeId } from "@models/maze";
+import { clearHistory } from "@models/wall-history";
+import { MainStore } from "@stores/index";
+import { StateCreator } from "zustand";
+
+type State = {
+  startId: string;
+  endId: string;
+  cellSelection: CellSelectionMode;
+  mazeSolverId: number;
+  displayMode: null | string;
+  mazeGenerationAlgorithmId: number;
+  rowsAmount: RectMaze["rows"];
+  columnsAmount: RectMaze["cols"];
+};
+
+type Action = {
+  setCellSelection: (cellSelection: State["cellSelection"]) => void;
+  setStartId: (startId: State["startId"]) => void;
+  setEndId: (endId: State["endId"]) => void;
+  setMazeSolverId: (mazeSolverName: string) => void;
+  setDisplayMode: (displayMode: State["displayMode"]) => void;
+  updateRowsAmount: (newRowsAmount: State["rowsAmount"]) => void;
+  updateColumnsAmount: (newColumnsAmount: State["columnsAmount"]) => void;
+  updateMazeGenerationAlgorithm: (newAlgorithm: string) => void;
+};
+
+export type MazeConfigSlice = State & Action;
+
+export const createMazeConfigSlice: StateCreator<
+  MainStore,
+  [["zustand/immer", never]],
+  [["zustand/immer", never]],
+  MazeConfigSlice
+> = (set, get) => ({
+  startId: generateRectMazeId(0, 0),
+  endId: generateRectMazeId(0, 0),
+  cellSelection: DEFAULT_CELL_SELECTION,
+  mazeSolverId: DEFAULT_MAZE_SOLVER_ID,
+  displayMode: null,
+  rowsAmount: DEFAULT_ROWS_AMOUNT,
+  columnsAmount: DEFAULT_COLUMNS_AMOUNT,
+  mazeGenerationAlgorithmId: algoRegistry.getGroup(MazeMode.generation)[0],
+
+  setCellSelection(cellSelection) {
+    set({ cellSelection });
+  },
+
+  setStartId(startId) {
+    set({ startId });
+  },
+
+  setEndId(endId) {
+    set({ endId });
+  },
+
+  setMazeSolverId: (mazeSolverName) => {
+    get().resetSolution();
+
+    set({
+      mazeSolverId: algoRegistry.getIdByName(mazeSolverName),
+    });
+  },
+
+  setDisplayMode(displayMode) {
+    set({ displayMode });
+  },
+
+  updateRowsAmount: (newRowsAmount) => set({ rowsAmount: newRowsAmount }),
+
+  updateColumnsAmount: (newColumnsAmount) =>
+    set({ columnsAmount: newColumnsAmount }),
+
+  updateMazeGenerationAlgorithm: (newAlgorithm) =>
+    set({
+      mazeGenerationAlgorithmId: algoRegistry.getIdByName(newAlgorithm),
+      wallHistory: clearHistory(),
+      serialGenerator: null,
+      isMazeGenerationDone: false,
+    }),
+});

@@ -1,16 +1,11 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { CELL_SELECTION_THROTTLE_DELAY, colors } from "@constants";
+import { CellSelectionMode, cellSelectionMode } from "@constants";
 import { ALGO_DISPLAY_MODES } from "@models/algorithm-registry";
-import {
-  MazeData,
-  _createCellFinder,
-  generateRectMazeId,
-  getCellCenter,
-} from "@models/maze";
+import { MazeData, generateRectMazeId, getCellCenter } from "@models/maze";
 import { fillPolygonWithCircle } from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores/maze-store";
 import { useAlgoDisplayMode, useColumnsAmount } from "@stores/selectors";
-import { CellSelectionModes } from "@stores/slices/mazeSolutionSlice";
 import { flow, noop, throttle } from "@utils";
 import ow from "ow";
 import { useIdToCellMap } from "src/hooks/useIdToCellMap";
@@ -49,7 +44,7 @@ function hoverInteraction(config: {
   ctx: CanvasRenderingContext2D;
   mazeData: MazeData;
   cellSize: number;
-  cellSelection: CellSelectionModes;
+  cellSelection: CellSelectionMode;
   width: number;
   height: number;
 }) {
@@ -87,13 +82,13 @@ function hoverInteraction(config: {
 function clickInteraction(config: {
   ctx: CanvasRenderingContext2D;
   cellSize: number;
-  cellSelection: CellSelectionModes;
+  cellSelection: CellSelectionMode;
   onStart: (startId: string) => void;
   onEnd: (endId: string) => void;
 }) {
   const { ctx, cellSize, cellSelection, onStart, onEnd } = config;
 
-  if (cellSize === 0 || cellSelection === "none") return noop;
+  if (cellSize === 0 || cellSelection === cellSelectionMode.none) return noop;
 
   const canvas = ctx.canvas;
 
@@ -102,8 +97,8 @@ function clickInteraction(config: {
       ...cellPositionOnCanvasHover(canvas, e, cellSize),
     );
 
-    if (cellSelection === "start") onStart(id);
-    if (cellSelection === "end") onEnd(id);
+    if (cellSelection === cellSelectionMode.start) onStart(id);
+    if (cellSelection === cellSelectionMode.end) onEnd(id);
   };
 
   canvas.addEventListener("click", markCell);
