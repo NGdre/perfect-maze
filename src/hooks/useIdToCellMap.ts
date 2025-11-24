@@ -1,21 +1,19 @@
 import { createCellFinder, mapPairsToNeighbors } from "@models/maze";
-import { getHistoryState } from "@models/wall-history";
 import { useMazeStore } from "@stores";
+import { useWallHistoryState } from "@stores/selectors";
 
 import { useMemo } from "react";
 
 export function useIdToCellMap() {
   const mazeData = useMazeStore((state) => state.mazeData);
-  const wallHistoryState = useMazeStore((state) =>
-    getHistoryState(state.wallHistory),
-  );
-
-  const cellFinder = createCellFinder(
-    mazeData,
-    mapPairsToNeighbors(mazeData, wallHistoryState),
-  );
+  const wallHistoryState = useWallHistoryState();
 
   return useMemo(() => {
+    const cellFinder = createCellFinder(
+      mazeData,
+      mapPairsToNeighbors(mazeData, wallHistoryState),
+    );
+
     return {
       get(id: string) {
         return cellFinder(id);

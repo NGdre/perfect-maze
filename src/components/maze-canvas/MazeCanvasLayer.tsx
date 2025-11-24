@@ -2,9 +2,12 @@ import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { WALLS_WIDTH, colors } from "@constants";
 import { getVisibleWalls, removeWallsPure } from "@models/maze";
 import { drawWallsNew } from "@models/maze-canvas-rendering";
-import { getHistoryState } from "@models/wall-history";
 import { useMazeStore } from "@stores/maze-store";
-import { useColumnsAmount, useMazeCells } from "@stores/selectors";
+import {
+  useColumnsAmount,
+  useMazeCells,
+  useWallHistoryState,
+} from "@stores/selectors";
 
 import { useCallback } from "react";
 
@@ -14,9 +17,7 @@ export const MazeCanvasLayer = () => {
 
   const initMaze = useMazeStore((state) => state.initMaze);
 
-  const wallHistoryState = useMazeStore((state) =>
-    getHistoryState(state.wallHistory),
-  );
+  const wallHistoryState = useWallHistoryState();
 
   const mazeData = useMazeStore((state) => state.mazeData);
 

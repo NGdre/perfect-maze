@@ -1,3 +1,6 @@
+import { getHistoryState } from "@models/wall-history";
+import { useShallow } from "zustand/react/shallow";
+
 import { useMazeStore } from "./maze-store";
 
 export const useMazeCells = () =>
@@ -43,3 +46,6 @@ export const useMaxPathDistance = () =>
 
 export const useAlgoDisplayMode = () =>
   useMazeStore((state) => state.displayMode);
+
+export const useWallHistoryState = () =>
+  useMazeStore(useShallow((state) => getHistoryState(state.wallHistory)));
