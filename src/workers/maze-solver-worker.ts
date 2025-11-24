@@ -7,34 +7,50 @@ import {
   mapPairsToNeighbors,
   removeWalls,
 } from "@models/maze";
-import { SerialSolver } from "@stores/slices/mazeSolutionSlice";
 import * as Comlink from "comlink";
+
+export type SerialSolver = Generator<CellPatch[], void, any> | null;
+
+export interface MazeSolverInitData {
+  startId: string;
+  endId: string;
+  mazeSolverId: number;
+  mazeData: MazeData;
+  wallsToRemove: WallsToRemove;
+}
+
+export type SolveMazeResult = CellPatch[][] | void;
+export type TakeStepResult = IteratorResult<CellPatch[], void> | undefined;
 
 export interface MazeSolverWorker {
   serialSolver: SerialSolver;
 
-  init({
+  initSerialSolver({
     startId,
     endId,
     mazeSolverId,
     mazeData,
     wallsToRemove,
-  }: {
-    startId: string;
-    endId: string;
-    mazeSolverId: number;
-    mazeData: MazeData;
-    wallsToRemove: WallsToRemove;
-  }): void;
+  }: MazeSolverInitData): void;
 
-  solveMaze(): CellPatch[][] | undefined;
-  takeStep(): IteratorResult<CellPatch[], void> | undefined;
+  solveMaze(): SolveMazeResult;
+  takeStep(): TakeStepResult;
 }
+
+export const INIT_SERIAL_SOLVER_WORKER_METHOD = "initSerialSolver";
+export const SOLVE_MAZE_WORKER_METHOD = "solveMaze";
+export const TAKE_STEP_WORKER_METHOD = "takeStep";
 
 const api: MazeSolverWorker = {
   serialSolver: null,
 
-  init({ mazeData, mazeSolverId, startId, endId, wallsToRemove }) {
+  [INIT_SERIAL_SOLVER_WORKER_METHOD]({
+    mazeData,
+    mazeSolverId,
+    startId,
+    endId,
+    wallsToRemove,
+  }) {
     const mazeSolver = algoRegistry.findAlgoById(mazeSolverId);
 
     if (!mazeSolver || mazeData.cellIds.length === 0) return null;
@@ -53,13 +69,13 @@ const api: MazeSolverWorker = {
     });
   },
 
-  solveMaze() {
+  [SOLVE_MAZE_WORKER_METHOD]() {
     if (this.serialSolver) {
       return [...this.serialSolver];
     }
   },
 
-  takeStep() {
+  [TAKE_STEP_WORKER_METHOD]() {
     return this.serialSolver?.next();
   },
 };

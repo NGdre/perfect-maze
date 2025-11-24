@@ -1,23 +1,18 @@
 import { INITIAL_MAX_PATH_DISTANCE } from "@constants";
 import { type CellPatch } from "@models/CellHistory";
 import { type PolygonCell } from "@models/maze";
-import { MainStore } from "@stores/index";
-import { MazeSolverWorker } from "@workers/maze-solver-worker";
-import * as Comlink from "comlink";
+import { MainStore } from "@stores";
+import { MazeSolverWorkerManager } from "@workers/maze-solver-worker-manager";
 import { StateCreator } from "zustand";
 
-export type SerialSolver = Generator<CellPatch[], void, any> | null;
 export type TimeDirection = "backward" | "forward";
 
 type State = {
   mazeSolution: Array<PolygonCell>;
   currVisualMazeChange: CellPatch[] | null;
-  mazeSolutionWorker: Worker | null;
-  workerProxy: Comlink.Remote<MazeSolverWorker> | null;
   isSerialSolverDone: boolean;
   isUndoOperation: boolean;
   maxPathDistance: number;
-  isInitializing: boolean;
 };
 
 type Action = {
@@ -35,73 +30,44 @@ export const createMazeSolutionSlice: StateCreator<
   [["zustand/immer", never]],
   MazeSolutionSlice
 > = (set, get) => {
-  async function initSerialSolver() {
-    // Проверяем, не инициализируем ли мы уже воркер
-    if (get().isInitializing || get().mazeSolutionWorker) {
-      return;
+  let mazeSolver: MazeSolverWorkerManager | null = null;
+
+  const getSolver = async (): Promise<MazeSolverWorkerManager> => {
+    if (mazeSolver?.isReady) return mazeSolver;
+
+    if (!mazeSolver) {
+      mazeSolver = new MazeSolverWorkerManager();
     }
 
-    set({ isInitializing: true });
+    const { startId, endId, mazeSolverId, mazeData, wallHistory } = get();
 
-    try {
-      const {
-        startId,
-        endId,
-        mazeSolverId,
-        mazeData,
-        wallHistory: { history: wallsToRemove },
-      } = get();
+    await mazeSolver.init({
+      startId,
+      endId,
+      mazeSolverId,
+      mazeData,
+      wallsToRemove: wallHistory.history,
+    });
 
-      const worker = new Worker(
-        new URL("../../workers/maze-solver-worker", import.meta.url),
-        { type: "module" },
-      );
-
-      const workerProxy = Comlink.wrap<MazeSolverWorker>(worker);
-
-      await workerProxy.init({
-        startId,
-        endId,
-        mazeSolverId,
-        mazeData,
-        wallsToRemove,
-      });
-
-      set({
-        mazeSolutionWorker: worker,
-        workerProxy,
-        isInitializing: false,
-      });
-    } catch (error) {
-      set({ isInitializing: false });
-      console.error("Failed to initialize worker:", error);
-      throw error;
-    }
-  }
+    return mazeSolver;
+  };
 
   return {
-    workerProxy: null,
     mazeSolution: [],
     isSerialSolverDone: false,
     isUndoOperation: false,
     maxPathDistance: INITIAL_MAX_PATH_DISTANCE,
     currVisualMazeChange: null,
-    isInitializing: false,
-    mazeSolutionWorker: null,
 
     resetSolution: () => {
-      const { mazeSolutionWorker } = get();
-
-      mazeSolutionWorker?.terminate();
+      mazeSolver?.terminate();
+      mazeSolver = null;
 
       get().cellHistory.clear();
       set({
-        mazeSolutionWorker: null,
-        workerProxy: null,
         currVisualMazeChange: null,
         mazeSolution: [],
         isSerialSolverDone: false,
-        isInitializing: false,
       });
     },
 
@@ -109,16 +75,8 @@ export const createMazeSolutionSlice: StateCreator<
       try {
         const cellHistory = get().cellHistory;
 
-        if (!get().mazeSolutionWorker) {
-          await initSerialSolver();
-        }
-
-        const workerProxy = get().workerProxy;
-        if (!workerProxy) {
-          throw new Error("Worker proxy not available");
-        }
-
-        const patches = await workerProxy.solveMaze();
+        const solver = await getSolver();
+        const patches = await solver.solveMaze();
 
         if (patches) {
           cellHistory.applyMultipleSteps(patches);
@@ -130,6 +88,7 @@ export const createMazeSolutionSlice: StateCreator<
         }
       } catch (error) {
         console.error("Error in solveMaze:", error);
+        get().resetSolution();
         throw error;
       }
     },
@@ -163,22 +122,17 @@ export const createMazeSolutionSlice: StateCreator<
       }
 
       try {
-        if (!get().mazeSolutionWorker && !get().isInitializing) {
-          await initSerialSolver();
-        }
+        const solver = await getSolver();
 
-        const worker = get().mazeSolutionWorker;
-        const workerProxy = get().workerProxy;
-
-        if (worker && workerProxy) {
-          const next = await workerProxy.takeStep();
+        if (solver) {
+          const next = await solver.takeStep();
 
           if (next) {
             if (next.done) {
-              worker.terminate();
+              mazeSolver?.terminate();
+              mazeSolver = null;
+
               set({
-                workerProxy: null,
-                mazeSolutionWorker: null,
                 isSerialSolverDone: true,
               });
             } else {
@@ -193,6 +147,7 @@ export const createMazeSolutionSlice: StateCreator<
       } catch (error) {
         console.error("Error in takeStepInSolution:", error);
         get().resetSolution();
+        return false;
       }
 
       return false;
