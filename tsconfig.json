@@ -15,7 +15,8 @@
       "@models/*": ["src/models/*"],
       "@stores/*": ["src/stores/*"],
       "@stores": ["src/stores/index"],
-      "@constants": ["src/constants"]
+      "@constants": ["src/constants"],
+      "@workers/*": ["./src/workers/*"]
     }
   },
   "include": ["src"]
