@@ -1,16 +1,32 @@
 import { FILL_TO_CELL_RATIO, colors } from "@constants";
-import { loopPairs, scalePolygonFromCenter } from "@utils";
+import { scalePolygonFromCenter } from "@utils";
 import ow from "ow";
 
-import { Point2d, type PolygonCell } from "./maze";
 import { TextInBoxRenderer } from "./text-in-box-renderer";
 
-type context2d = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
+export type LineCords = [number, number, number, number];
 
-type lineCords = [number, number, number, number];
+export interface Point2dCoords {
+  x: number;
+  y: number;
+}
 
-export function drawLine(config: {
-  ctx: context2d;
+export interface ObjectWithGetPoints {
+  getPoints(scaleFactor: number): Point2dCoords[];
+}
+
+export interface ObjectWithCenter {
+  center: Point2dCoords;
+}
+
+export type ObjectWithGetPointsAndCenter = ObjectWithGetPoints &
+  ObjectWithCenter;
+
+const PI2 = Math.PI * 2;
+const DEFAULT_FILL_FRACTION = 0.9;
+
+export function drawLine(options: {
+  ctx: CanvasRenderingContext2D;
   strokeStyle?: string;
   lineWidth?: number;
   batching?: boolean;
@@ -22,12 +38,12 @@ export function drawLine(config: {
     ctx,
     batching = false,
     scaleFactor = 1,
-  } = config;
+  } = options;
 
   if (lineWidth) ctx.lineWidth = lineWidth;
   if (strokeStyle) ctx.strokeStyle = strokeStyle;
 
-  function line(...cords: lineCords) {
+  function line(...cords: LineCords) {
     const [x1, y1, x2, y2] = cords.map((c) => c * scaleFactor);
 
     ctx.moveTo(x1, y1);
@@ -36,7 +52,7 @@ export function drawLine(config: {
 
   if (batching) return line;
   else {
-    return function (...cords: lineCords) {
+    return function (...cords: LineCords) {
       ctx.beginPath();
 
       line(...cords);
@@ -47,14 +63,14 @@ export function drawLine(config: {
   }
 }
 
-export function drawWallsNew(
-  ctx: context2d,
-  visibleWalls: number[][],
-  opts: { wallColor?: string; lineWidth?: number; scaleFactor: number },
+export function drawWalls(
+  ctx: CanvasRenderingContext2D,
+  visibleWalls: LineCords[],
+  options: { wallColor?: string; lineWidth?: number; scaleFactor?: number },
 ) {
-  const color = opts.wallColor;
-  const lineWidth = opts.lineWidth;
-  const scaleFactor = opts.scaleFactor;
+  const color = options.wallColor;
+  const lineWidth = options.lineWidth;
+  const scaleFactor = options.scaleFactor;
 
   const line = drawLine({
     ctx,
@@ -78,61 +94,10 @@ export function drawWallsNew(
   }
 
   ctx.stroke();
-  ctx.closePath();
 }
-
-export function drawWalls(
-  ctx: context2d,
-  cells: PolygonCell[],
-  opts: { wallColor?: string; lineWidth?: number; scaleFactor: number },
-) {
-  const color = opts.wallColor;
-  const lineWidth = opts.lineWidth;
-  const scaleFactor = opts.scaleFactor;
-
-  const line = drawLine({
-    ctx,
-    strokeStyle: color,
-    lineWidth,
-    batching: true,
-    scaleFactor,
-  });
-
-  ctx.beginPath();
-
-  const len = cells.length;
-
-  for (let i = 0; i < len; i++) {
-    for (const wall of cells[i].walls) {
-      if (!wall.visible) continue;
-
-      line(wall.start.x, wall.start.y, wall.end.x, wall.end.y);
-    }
-  }
-
-  ctx.stroke();
-  ctx.closePath();
-}
-
-export function drawPath(
-  ctx: context2d,
-  path: PolygonCell[],
-  opts: { pathColor?: string; lineWidth?: number },
-) {
-  const color = opts.pathColor;
-  const lineWidth = opts.lineWidth;
-
-  const connectDots = drawLine({ ctx, strokeStyle: color, lineWidth });
-
-  loopPairs(path, (prev, curr) => {
-    connectDots(prev.center.x, prev.center.y, curr.center.x, curr.center.y);
-  });
-}
-
-const PI2 = Math.PI * 2;
 
 export function fillWithCircle(
-  ctx: context2d,
+  ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   radius: number,
@@ -144,10 +109,13 @@ export function fillWithCircle(
 
   ctx.arc(x, y, radius, 0, PI2);
   ctx.fill();
-  ctx.closePath(); //это нужно?
 }
 
-export function drawPolygon(ctx: context2d, points: Point2d[], color: string) {
+export function drawPolygon(
+  ctx: CanvasRenderingContext2D,
+  points: Point2dCoords[],
+  color: string,
+) {
   ctx.fillStyle = color;
   ctx.beginPath();
 
@@ -162,11 +130,11 @@ export function drawPolygon(ctx: context2d, points: Point2d[], color: string) {
 }
 
 export function fillPolygonWithCircle(
-  ctx: context2d,
-  cell: PolygonCell,
+  ctx: CanvasRenderingContext2D,
+  cell: ObjectWithCenter,
   color: string,
   cellSize: number,
-  fillFraction = 0.9,
+  fillFraction = DEFAULT_FILL_FRACTION,
 ) {
   ow(fillFraction, ow.number.positive.lessThanOrEqual(1));
 
@@ -181,14 +149,15 @@ export function fillPolygonWithCircle(
 
 export function drawCell(
   ctx: CanvasRenderingContext2D,
-  cell: PolygonCell,
+  cell: ObjectWithGetPoints,
   cellSize: number,
-  opt: {
-    background: string;
+  options: {
+    background?: string;
     scaleFromCenterFactor?: number;
   },
 ) {
-  const { background, scaleFromCenterFactor = FILL_TO_CELL_RATIO } = opt;
+  const { background = "black", scaleFromCenterFactor = FILL_TO_CELL_RATIO } =
+    options;
 
   drawPolygon(
     ctx,
@@ -199,7 +168,7 @@ export function drawCell(
 
 function drawTextInCell(
   ctx: CanvasRenderingContext2D,
-  cell: PolygonCell,
+  cell: ObjectWithGetPoints,
   cellSize: number,
   text: string,
 ) {
@@ -213,7 +182,7 @@ function drawTextInCell(
     texts: [
       {
         content: text,
-        fontSize: 20,
+        fontSize: Math.max(12, cellSize * 0.4),
         position: "center",
         fontFamily: "Roboto",
         color: "white",
@@ -227,7 +196,7 @@ function drawTextInCell(
 
 export function drawStart(
   ctx: CanvasRenderingContext2D,
-  cell: PolygonCell,
+  cell: ObjectWithGetPointsAndCenter,
   cellSize: number,
 ) {
   fillPolygonWithCircle(ctx, cell, colors.START_CELL, cellSize);
@@ -237,7 +206,7 @@ export function drawStart(
 
 export function drawFinish(
   ctx: CanvasRenderingContext2D,
-  cell: PolygonCell,
+  cell: ObjectWithGetPointsAndCenter,
   cellSize: number,
 ) {
   fillPolygonWithCircle(ctx, cell, colors.END_CELL, cellSize);
@@ -247,7 +216,7 @@ export function drawFinish(
 
 export function drawHoveredCell(
   ctx: CanvasRenderingContext2D,
-  cell: PolygonCell,
+  cell: ObjectWithCenter,
   cellSize: number,
 ) {
   fillPolygonWithCircle(ctx, cell, colors.HOVERED_CELL, cellSize);
@@ -255,7 +224,7 @@ export function drawHoveredCell(
 
 export const clearCellArea = (
   ctx: CanvasRenderingContext2D,
-  cell: PolygonCell,
+  cell: ObjectWithGetPoints,
   cellSize: number,
 ) => {
   const firstPoint = cell.getPoints(cellSize)[0];

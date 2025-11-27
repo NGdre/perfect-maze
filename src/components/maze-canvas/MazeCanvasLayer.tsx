@@ -1,7 +1,7 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { WALLS_WIDTH, colors } from "@constants";
 import { getVisibleWalls, removeWallsPure } from "@models/maze";
-import { drawWallsNew } from "@models/maze-canvas-rendering";
+import { drawWalls } from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores/maze-store";
 import {
   useColumnsAmount,
@@ -39,7 +39,7 @@ export const MazeCanvasLayer = () => {
         wallHistoryState,
       );
 
-      drawWallsNew(ctx, getVisibleWalls(mazeDataWithRemovedWalls), {
+      drawWalls(ctx, getVisibleWalls(mazeDataWithRemovedWalls), {
         lineWidth: WALLS_WIDTH,
         wallColor: colors.WALL_COLOR,
         scaleFactor: cellSize,

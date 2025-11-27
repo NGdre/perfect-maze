@@ -1,6 +1,10 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { getCellCenter, getCellPoints } from "@models/maze";
-import { drawFinish, drawStart } from "@models/maze-canvas-rendering";
+import {
+  ObjectWithGetPointsAndCenter,
+  drawFinish,
+  drawStart,
+} from "@models/maze-canvas-rendering";
 import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
@@ -31,7 +35,7 @@ export const CellMarksCanvasLayer = () => {
         cellId: string,
         drawingFn: (
           ctx: CanvasRenderingContext2D,
-          cell: Object,
+          cell: ObjectWithGetPointsAndCenter,
           cellSize: number,
         ) => void,
       ) => {
