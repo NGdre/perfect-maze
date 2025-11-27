@@ -16,7 +16,7 @@ import PlayButton from "./PlayButton.tsx";
 
 interface VisualizationControlsProps {
   onReset: () => void;
-  onStep: (direction: TimeDirection) => boolean;
+  onStep: (direction: TimeDirection) => Promise<boolean>;
   onComplete: () => void;
   resetTooltipContent?: string;
   completeTooltipContent?: string;

@@ -1,7 +1,7 @@
 import { VISIALIZATION_ANIMATION_DELAY } from "@constants";
 import { useIsMazeRendering, useSetIsMazeRendering } from "@stores/selectors";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { FiPause, FiPlay } from "react-icons/fi";
 
 import Button, { ButtonProps } from "../lib/button/Button";
@@ -11,29 +11,39 @@ import "./play-button.css";
 const PlayButton = ({
   onStep,
   ...rest
-}: { onStep: () => boolean } & Omit<ButtonProps, "children">) => {
+}: { onStep: () => Promise<boolean> } & Omit<ButtonProps, "children">) => {
   const isMazeRendering = useIsMazeRendering();
   const setIsMazeRendering = useSetIsMazeRendering();
 
-  useEffect((): (() => void) => {
+  // this is needed there is always at most one call to onStep at the same time
+  const isPrevStepFinished = useRef(true);
+
+  useEffect(() => {
     if (!isMazeRendering) return () => {};
 
     let animationId: number | undefined;
     let accumulatedTime = 0;
     let previousTime = performance.now();
 
-    const animate = (currentTime: DOMHighResTimeStamp): void => {
+    const animate = async (currentTime: DOMHighResTimeStamp) => {
       const deltaTime = currentTime - previousTime;
       previousTime = currentTime;
       accumulatedTime += deltaTime;
 
-      if (accumulatedTime >= VISIALIZATION_ANIMATION_DELAY) {
-        const success = onStep();
+      if (
+        accumulatedTime >= VISIALIZATION_ANIMATION_DELAY &&
+        isPrevStepFinished.current
+      ) {
+        isPrevStepFinished.current = false;
+
+        const success = await onStep();
         if (!success) {
           setIsMazeRendering(false);
           return;
         }
         accumulatedTime = 0;
+
+        isPrevStepFinished.current = true;
       }
 
       if (isMazeRendering) {
