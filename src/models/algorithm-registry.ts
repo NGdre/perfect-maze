@@ -10,6 +10,8 @@ export const MazeMode = {
   solving: "solving",
 } as const;
 
+export type MazeGenerator = Generator<[string, string], void, any>;
+
 export type MazeModeType = (typeof MazeMode)[keyof typeof MazeMode];
 
 type AlgoConfig = Readonly<{

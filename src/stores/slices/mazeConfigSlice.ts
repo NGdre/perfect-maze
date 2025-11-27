@@ -45,7 +45,10 @@ export const createMazeConfigSlice: StateCreator<
   MazeConfigSlice
 > = (set, get) => ({
   startId: generateRectMazeId(0, 0),
-  endId: generateRectMazeId(0, 0),
+  endId: generateRectMazeId(
+    DEFAULT_ROWS_AMOUNT - 1,
+    DEFAULT_COLUMNS_AMOUNT - 1,
+  ),
   cellSelection: DEFAULT_CELL_SELECTION,
   mazeSolverId: DEFAULT_MAZE_SOLVER_ID,
   displayMode: null,

@@ -1,38 +1,30 @@
-import { algoRegistry } from "@models/algorithm-registry";
-import {
-  MazeData,
-  createMaze,
-  generateRectMazeId,
-  getDefaultMazeData,
-} from "@models/maze";
+import { MazeData, getDefaultMazeData } from "@models/maze";
 import {
   WallHistorySnapshot,
   backwardHistory,
   clearHistory,
   createWallHistory,
   forwardHistory,
-  isHistoryEmpty,
   saveHistoryChange,
   saveHistoryChanges,
 } from "@models/wall-history";
 import { MainStore } from "@stores";
-import { mapGenerator } from "@utils";
+import { MazeGeneratorWorkerManager } from "@workers/maze-generator-worker-manager";
 import { StateCreator } from "zustand";
 
 import { TimeDirection } from "./mazeSolutionSlice";
 
 type State = {
   mazeData: MazeData;
-  serialGenerator: Generator<any, void, any> | null;
   wallHistory: WallHistorySnapshot;
   isMazeGenerationDone: boolean;
 };
 
 type Action = {
-  initMaze: () => void;
-  generateMaze: () => void;
-  takeStepInGeneration: (direction: TimeDirection) => boolean;
-  resetMaze: () => void;
+  initMaze: () => Promise<void>;
+  generateMaze: () => Promise<void>;
+  takeStepInGeneration: (direction: TimeDirection) => Promise<boolean>;
+  resetMaze: () => Promise<void>;
 };
 
 export type MazeGenerationSlice = State & Action;
@@ -42,103 +34,132 @@ export const createMazeGenerationSlice: StateCreator<
   [["zustand/immer", never]],
   [["zustand/immer", never]],
   MazeGenerationSlice
-> = (set, get) => ({
-  serialGenerator: null,
-  wallHistory: createWallHistory(),
-  isMazeGenerationDone: false,
-  mazeData: getDefaultMazeData(),
+> = (set, get) => {
+  let mazeGenerator: MazeGeneratorWorkerManager | null = null;
 
-  initMaze() {
-    const rows = get().rowsAmount;
-    const cols = get().columnsAmount;
+  const getMazeGenerator = async () => {
+    if (mazeGenerator?.isReady) return mazeGenerator;
 
-    set({
-      endId: generateRectMazeId(rows - 1, cols - 1),
+    if (!mazeGenerator) {
+      mazeGenerator = new MazeGeneratorWorkerManager();
+    }
+
+    return mazeGenerator;
+  };
+
+  const initializeIfNeeded = async (generator: MazeGeneratorWorkerManager) => {
+    if (await generator.isMazeGeneratorInitialized()) return;
+
+    const { columnsAmount, rowsAmount, mazeGenerationAlgorithmId } = get();
+    await generator.initMazeGenerator({
+      cols: columnsAmount,
+      rows: rowsAmount,
+      mazeGeneratorAlgoId: mazeGenerationAlgorithmId,
     });
+  };
 
-    const mazeData = createMaze(rows, cols);
+  return {
+    wallHistory: createWallHistory(),
+    isMazeGenerationDone: false,
+    mazeData: getDefaultMazeData(),
 
-    set({ mazeData });
-  },
+    async initMaze() {
+      const rows = get().rowsAmount;
+      const cols = get().columnsAmount;
 
-  resetMaze() {
-    set({
-      wallHistory: clearHistory(),
-      isMazeGenerationDone: false,
-    });
-  },
+      try {
+        const generator = await getMazeGenerator();
 
-  // return true if serialGenerator is done, otherwise false
-  takeStepInGeneration: (direction: TimeDirection) => {
-    const wallHistory = get().wallHistory;
+        const mazeData = await generator.createMazeGrid(rows, cols);
 
-    if (direction === "backward") {
-      set({ wallHistory: backwardHistory(wallHistory) });
-      return true;
-    }
+        set({ mazeData });
+      } catch (error) {
+        console.error("Error in initMaze:", error);
+        throw error;
+      }
+    },
 
-    const canRedo = wallHistory.currentIndex < wallHistory.history.length - 1;
+    async resetMaze() {
+      try {
+        const generator = await getMazeGenerator();
+        await generator.reset();
 
-    if (canRedo) {
-      set({ wallHistory: forwardHistory(wallHistory) });
-      return true;
-    }
+        set({
+          wallHistory: clearHistory(),
+          isMazeGenerationDone: false,
+        });
+      } catch (error) {
+        console.error("Error in resetMaze:", error);
+        throw error;
+      }
+    },
 
-    const rows = get().rowsAmount;
-    const cols = get().columnsAmount;
-    let serialGenerator = get().serialGenerator;
+    // return true if serialGenerator is done, otherwise false
+    takeStepInGeneration: async (direction: TimeDirection) => {
+      const wallHistory = get().wallHistory;
 
-    if (isHistoryEmpty(wallHistory)) {
-      const currGeneratorAlgoId = get().mazeGenerationAlgorithmId;
-
-      const mazeGenerator = algoRegistry.findAlgoById(currGeneratorAlgoId);
-
-      serialGenerator = mapGenerator(mazeGenerator(rows, cols), (pair) => [
-        pair[0].id,
-        pair[1].id,
-      ]);
-
-      set({ serialGenerator, isMazeGenerationDone: false });
-    }
-
-    if (serialGenerator) {
-      const next = serialGenerator.next();
-
-      if (next.done) {
-        set({ isMazeGenerationDone: true });
-      } else {
-        set({ wallHistory: saveHistoryChange(wallHistory, next.value) });
+      if (direction === "backward") {
+        set({ wallHistory: backwardHistory(wallHistory) });
+        return true;
       }
 
-      return !next.done;
-    }
+      const canRedo = wallHistory.currentIndex < wallHistory.history.length - 1;
 
-    return false;
-  },
+      if (canRedo) {
+        set({ wallHistory: forwardHistory(wallHistory) });
+        return true;
+      }
 
-  generateMaze() {
-    const rows = get().rowsAmount;
-    const cols = get().columnsAmount;
-    const wallHistory = get().wallHistory;
+      if (get().isMazeGenerationDone) return false;
 
-    let serialGenerator = get().serialGenerator;
+      try {
+        const generator = await getMazeGenerator();
 
-    if (isHistoryEmpty(wallHistory)) {
-      const currGeneratorAlgoId = get().mazeGenerationAlgorithmId;
+        await initializeIfNeeded(generator);
 
-      const mazeGenerator = algoRegistry.findAlgoById(currGeneratorAlgoId);
+        const next = await generator.takeStep();
 
-      serialGenerator = mapGenerator(mazeGenerator(rows, cols, 10), (pair) => [
-        pair[0].id,
-        pair[1].id,
-      ]);
+        if (next) {
+          if (next.done) {
+            set({ isMazeGenerationDone: true });
+          } else {
+            if (next.value) {
+              set({
+                wallHistory: saveHistoryChange(wallHistory, next.value),
+              });
+            }
+          }
 
-      set({ serialGenerator, isMazeGenerationDone: false });
-    }
+          return !next.done;
+        }
+      } catch (error) {
+        console.error("Error in generateMaze:", error);
+        throw error;
+      }
 
-    set({
-      wallHistory: saveHistoryChanges(wallHistory, [...serialGenerator!]),
-      isMazeGenerationDone: true,
-    });
-  },
-});
+      return false;
+    },
+
+    async generateMaze() {
+      const { wallHistory } = get();
+
+      try {
+        const generator = await getMazeGenerator();
+
+        await initializeIfNeeded(generator);
+
+        const wallChanges = await generator.generateMaze();
+
+        if (wallChanges) {
+          set({
+            wallHistory: saveHistoryChanges(wallHistory, wallChanges),
+            isMazeGenerationDone: true,
+          });
+        }
+      } catch (error) {
+        console.error("Error in generateMaze:", error);
+        throw error;
+      }
+    },
+  };
+};
