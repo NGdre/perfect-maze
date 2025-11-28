@@ -1,17 +1,22 @@
 {
-  "name": "maze-app",
+  "name": "perfect-maze",
   "private": true,
   "version": "0.0.0",
+  "description": "maze generator and path finder app with visualization controls",
+  "repository": "https://github.com/NGdre/perfect-maze",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "npm run build:favicons && tsc -b && vite build",
+    "build:favicons": "node scripts/generate-favicon.cjs",
+    "clean": "rm -rf dist node_modules/.cache",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "type-check": "tsc --noemit",
+    "pre-build": "npm run type-check && npm run lint",
     "preview": "vite preview",
     "test": "jest",
     "test-ts-only": "jest --testPathPattern .ts$",
-    "test-react-only": "jest --testPathPattern .tsx$",
-    "build:favicons": "node scripts/generate-favicon.cjs"
+    "test-react-only": "jest --testPathPattern .tsx$"
   },
   "dependencies": {
     "clsx": "^2.1.1",
