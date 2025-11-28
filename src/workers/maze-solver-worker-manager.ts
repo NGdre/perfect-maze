@@ -3,20 +3,17 @@ import { BaseWorkerManager } from "@models/base-worker-manager";
 import {
   INIT_SERIAL_SOLVER_WORKER_METHOD,
   MazeSolverInitData,
-  MazeSolverWorker,
+  MazeSolverWorker as MazeSolverWorkerI,
   SOLVE_MAZE_WORKER_METHOD,
   SolveMazeResult,
   TAKE_STEP_WORKER_METHOD,
   TakeStepResult,
 } from "./maze-solver-worker";
+import MazeSolverWorker from "./maze-solver-worker.ts?worker";
 
-export class MazeSolverWorkerManager extends BaseWorkerManager<MazeSolverWorker> {
-  protected getWorkerUrl(): URL {
-    return new URL("./maze-solver-worker", import.meta.url);
-  }
-
-  protected getWorkerOptions(): WorkerOptions {
-    return { type: "module" };
+export class MazeSolverWorkerManager extends BaseWorkerManager<MazeSolverWorkerI> {
+  protected getWorker(): Worker {
+    return new MazeSolverWorker();
   }
 
   async init(initData: MazeSolverInitData): Promise<void> {

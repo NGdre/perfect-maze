@@ -1,7 +1,8 @@
+import { bfsVisualSchema } from "@configs/visual";
 import { mapGenerator } from "@utils";
+
 import { createIdToCellMap } from "../maze";
 import { reconstructPathSerial } from "./reconstruct-path";
-import { bfsVisualSchema } from "src/configs/visual";
 
 type id = string;
 
@@ -60,7 +61,7 @@ export function applyBfsVisual(solutionStep: BFSSolutionStep) {
 export function* bfsSerial(
   startId: id,
   endId: id,
-  idToCellMap: ReturnType<typeof createIdToCellMap>
+  idToCellMap: ReturnType<typeof createIdToCellMap>,
 ) {
   const queue = [startId];
 
@@ -123,7 +124,7 @@ export function* bfsSerial(
 export function bfsSerialVisual(
   startId: string,
   endId: string,
-  idToCellMap: ReturnType<typeof createIdToCellMap>
+  idToCellMap: ReturnType<typeof createIdToCellMap>,
 ) {
   return mapGenerator(bfsSerial(startId, endId, idToCellMap), applyBfsVisual);
 }
@@ -131,7 +132,7 @@ export function bfsSerialVisual(
 export function bfsVisual(
   startId: string,
   endId: string,
-  idToCellMap: ReturnType<typeof createIdToCellMap>
+  idToCellMap: ReturnType<typeof createIdToCellMap>,
 ) {
   const res = [];
 

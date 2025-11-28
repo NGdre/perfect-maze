@@ -1,5 +1,5 @@
+import { aStarVisualSchema } from "@configs/visual";
 import { mapGenerator } from "@utils";
-import { aStarVisualSchema } from "src/configs/visual";
 
 import { type createIdToCellMap } from "../maze";
 import { type heuristic, manhattanDistance } from "./heuristics";

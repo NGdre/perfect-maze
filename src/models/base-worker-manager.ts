@@ -6,8 +6,7 @@ export abstract class BaseWorkerManager<T> {
   protected _isInitializing = false;
   protected _isTerminated = false;
 
-  protected abstract getWorkerUrl(): URL;
-  protected abstract getWorkerOptions(): WorkerOptions;
+  protected abstract getWorker(): Worker;
 
   async initWorker(): Promise<void> {
     if (this._isInitializing || this.workerProxy) {
@@ -23,7 +22,7 @@ export abstract class BaseWorkerManager<T> {
     this._isInitializing = true;
 
     try {
-      this.worker = new Worker(this.getWorkerUrl(), this.getWorkerOptions());
+      this.worker = this.getWorker();
       this.workerProxy = Comlink.wrap<T>(this.worker);
     } catch (error) {
       this.terminate();

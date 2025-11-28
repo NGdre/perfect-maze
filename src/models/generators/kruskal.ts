@@ -1,4 +1,4 @@
-import { seededRandom } from "src/utils.js";
+import { seededRandom } from "@utils";
 
 // @ts-ignore
 import UnionFind from "./union-find.js";

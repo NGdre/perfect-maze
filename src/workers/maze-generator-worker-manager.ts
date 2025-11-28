@@ -6,18 +6,15 @@ import {
   INIT_MAZE_GENERATOR_WORKER_METHOD,
   IS_MAZE_GENERATOR_EXIST_WORKER_METHOD,
   MazeGeneratorInitData,
-  MazeGeneratorWorker,
+  MazeGeneratorWorker as MazeGeneratorWorkerI,
   RESET_MAZE_GENERATOR_WORKER_METHOD,
   TAKE_STEP_WORKER_METHOD,
 } from "./maze-generator-worker";
+import MazeGeneratorWorker from "./maze-generator-worker.ts?worker";
 
-export class MazeGeneratorWorkerManager extends BaseWorkerManager<MazeGeneratorWorker> {
-  protected getWorkerUrl(): URL {
-    return new URL("./maze-generator-worker.ts", import.meta.url);
-  }
-
-  protected getWorkerOptions(): WorkerOptions {
-    return { type: "module" };
+export class MazeGeneratorWorkerManager extends BaseWorkerManager<MazeGeneratorWorkerI> {
+  protected getWorker(): Worker {
+    return new MazeGeneratorWorker();
   }
 
   async initMazeGenerator(initData: MazeGeneratorInitData) {
