@@ -1,148 +1,16 @@
-import { useMazeStore } from "@stores";
-import {
-  useMazeMode,
-  useSetMazeMode,
-  useTakeStepInSolution,
-} from "@stores/selectors.ts";
-import {
-  MazeMode,
-  MazeModeType,
-  generatorNames,
-  mazeSolversNames,
-} from "src/models/algorithm-registry.ts";
+import { useMazeMode, useSetMazeMode } from "@stores/selectors.ts";
+import { MazeMode, MazeModeType } from "@models/algorithm-registry.ts";
 
-import { FiFlag, FiMapPin } from "react-icons/fi";
 import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 
-import { ChoiceChips } from "../lib/choice-chips/ChoiceChips.tsx";
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
 import MazeLegend from "../maze-legend/MazeLegend.tsx";
 import DisplayModes from "./DisplayModes.tsx";
-import VisualizationControls from "./VisualizationControls.tsx";
+import { MazeGenerationPanel } from "./MazeGenerationPanel.tsx";
+import { PathFindingPanel } from "./PathFindingPanel.tsx";
 
 const tabNameForGeneration = "Генерация";
 const tabNameForPathFinding = "Нахождение пути";
-const headingForGenerators = "Алгоритмы";
-const headingForPathFinders = "Алгоритмы";
-
-/*
-  Возможно текущий код не удовлетворяет SRP.
-  Оба TabPanel независимые компоненты, а значит должны быть отделены
-  Если h2 нужно поменять на h3, то придется менять код в двух местах.
-  TabList зависит от контента в TabPanel, поэтому его не нужно отделять
-*/
-
-function AlgorithmChoiceChips<T extends string>({
-  algorithmNames,
-  updateAlgoritm,
-}: {
-  algorithmNames: T[];
-  updateAlgoritm: (algorithm: T) => void;
-}) {
-  const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
-
-  return (
-    <ChoiceChips
-      options={algorithmNames.map((label, i) => ({
-        value: String(i),
-        label,
-        disabled: isMazeRendering,
-      }))}
-      onChange={(index) => index && updateAlgoritm(algorithmNames[+index])}
-      className="!mb-5"
-    />
-  );
-}
-
-function StartOrEndChoiceChips() {
-  const setCellSelection = useMazeStore((state) => state.setCellSelection);
-  const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
-  const options = [
-    {
-      value: "0",
-      label: "выбрать старт",
-      icon: <FiFlag />,
-      disabled: isMazeRendering,
-    },
-    {
-      value: "1",
-      label: "выбрать конец",
-      icon: <FiMapPin />,
-      disabled: isMazeRendering,
-    },
-  ];
-
-  return (
-    <ChoiceChips
-      isToggle={true}
-      options={options}
-      onChange={(value) => {
-        if (value === options[0].value) setCellSelection("start");
-        if (value === options[1].value) setCellSelection("end");
-        if (value === null) setCellSelection("none");
-      }}
-      value={null}
-    />
-  );
-}
-
-export function TabPanelContentForMazeGeneration() {
-  const updateMazeGenerator = useMazeStore(
-    (state) => state.updateMazeGenerationAlgorithm,
-  );
-
-  const takeStepInGeneration = useMazeStore(
-    (state) => state.takeStepInGeneration,
-  );
-
-  const resetMaze = useMazeStore((state) => state.resetMaze);
-  const generateMaze = useMazeStore((state) => state.generateMaze);
-
-  return (
-    <>
-      <VisualizationControls
-        onStep={takeStepInGeneration}
-        onReset={resetMaze}
-        onComplete={generateMaze}
-        resetTooltipContent="сбросить лабиринт"
-        completeTooltipContent="сгенерировать лабиринт"
-      />
-      <MazeControlsHeading>{headingForGenerators}</MazeControlsHeading>
-      <AlgorithmChoiceChips
-        algorithmNames={generatorNames}
-        updateAlgoritm={updateMazeGenerator}
-      />
-    </>
-  );
-}
-
-export function TabPanelContentForPathFinding() {
-  const setMazeSolverId = useMazeStore((state) => state.setMazeSolverId);
-  const takeStepInSolution = useTakeStepInSolution();
-  const resetSolution = useMazeStore((state) => state.resetSolution);
-  const solveMaze = useMazeStore((state) => state.solveMaze);
-
-  return (
-    <>
-      <VisualizationControls
-        onStep={takeStepInSolution}
-        onReset={resetSolution}
-        onComplete={solveMaze}
-        resetTooltipContent="сбросить путь"
-        completeTooltipContent="найти путь"
-      />
-
-      <StartOrEndChoiceChips />
-
-      <MazeControlsHeading>{headingForPathFinders}</MazeControlsHeading>
-
-      <AlgorithmChoiceChips
-        algorithmNames={mazeSolversNames}
-        updateAlgoritm={(algo) => setMazeSolverId(algo)}
-      />
-    </>
-  );
-}
 
 export default function MazeControlTabs() {
   const setMazeMode = useSetMazeMode();
@@ -167,6 +35,7 @@ export default function MazeControlTabs() {
      flex-1 text-center min-w-0 capitalize tracking-wider`;
 
   const tabPanelClassName = "space-y-5";
+
   return (
     <Tabs
       selectedTabClassName="!border-primary-500 text-primary-500 font-bold"
@@ -185,11 +54,11 @@ export default function MazeControlTabs() {
       </TabList>
 
       <TabPanel className={tabPanelClassName}>
-        <TabPanelContentForMazeGeneration />
+        <MazeGenerationPanel />
       </TabPanel>
 
       <TabPanel className={tabPanelClassName}>
-        <TabPanelContentForPathFinding />
+        <PathFindingPanel />
       </TabPanel>
 
       <DisplayModes />
