@@ -89,7 +89,6 @@ export const createMazeConfigSlice: StateCreator<
     set({
       mazeGenerationAlgorithmId: algoRegistry.getIdByName(newAlgorithm),
       wallHistory: clearHistory(),
-      serialGenerator: null,
       isMazeGenerationDone: false,
     }),
 });

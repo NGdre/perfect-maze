@@ -5,6 +5,7 @@ import {
   validateIntGreaterThanOrEqual,
   validateIntLessThanOrEqual,
 } from "../validation/utils";
+import { LineCords } from "./maze-canvas-rendering";
 
 const FRACTION_DIGITS = 2;
 
@@ -453,7 +454,7 @@ export const removeWallsPure = (
 export const getWallByPosition = (
   { x, y, wallsAmount }: Pick<MazeData, "x" | "y" | "wallsAmount">,
   wallPosition: number,
-) => {
+): LineCords => {
   const wallPosInCell = wallPosition % wallsAmount;
 
   const isLastWallPosInCell = wallPosInCell === wallsAmount - 1;
@@ -471,7 +472,12 @@ export const getWallByPosition = (
   ];
 };
 
-export const getVisibleWalls = ({ x, y, wallsAmount, visible }: MazeData) => {
+export const getVisibleWalls = ({
+  x,
+  y,
+  wallsAmount,
+  visible,
+}: MazeData): LineCords[] => {
   const visibleWalls = [];
 
   for (let i = 0; i < x.length; i++) {
