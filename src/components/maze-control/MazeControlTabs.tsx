@@ -8,6 +8,8 @@ import MazeLegend from "../maze-legend/MazeLegend.tsx";
 import DisplayModes from "./DisplayModes.tsx";
 import { MazeGenerationPanel } from "./MazeGenerationPanel.tsx";
 import { PathFindingPanel } from "./PathFindingPanel.tsx";
+import { useMazeGenerationWarning } from "../../hooks/useMazeGenerationWarning.ts";
+import { Dialog } from "../lib/dialog/Dialog.tsx";
 
 const tabNameForGeneration = "Генерация";
 const tabNameForPathFinding = "Нахождение пути";
@@ -15,6 +17,8 @@ const tabNameForPathFinding = "Нахождение пути";
 export default function MazeControlTabs() {
   const setMazeMode = useSetMazeMode();
   const mazeMode = useMazeMode();
+
+  const { dialog, hideDialog } = useMazeGenerationWarning();
 
   const handleTabSelect: TabsProps["onSelect"] = (
     _index,
@@ -63,6 +67,8 @@ export default function MazeControlTabs() {
 
       <DisplayModes />
       <MazeLegend />
+
+      {dialog && <Dialog {...dialog} onClose={hideDialog} />}
     </Tabs>
   );
 }

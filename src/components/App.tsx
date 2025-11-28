@@ -1,9 +1,6 @@
-import { useMazeGenerationWarning } from "src/hooks/useMazeGenerationWarning.ts";
-
 import { PROJECT_NAME } from "../constants.ts";
 import "./App.css";
 import Logo from "./Logo.tsx";
-import { Dialog } from "./lib/dialog/Dialog.tsx";
 import MazeViewport from "./maze-canvas/MazeViewport.tsx";
 import MazeControlTabs from "./maze-control/MazeControlTabs.tsx";
 import "./resetCSS.css";
@@ -19,8 +16,6 @@ function Header() {
 }
 
 function App() {
-  const { dialog, hideDialog } = useMazeGenerationWarning();
-
   const isSidebarOnTheRight = false;
 
   return (
@@ -40,8 +35,6 @@ function App() {
           <MazeControlTabs />
         </aside>
       </div>
-
-      {dialog && <Dialog {...dialog} onClose={hideDialog} />}
     </div>
   );
 }
