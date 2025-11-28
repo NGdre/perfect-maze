@@ -212,7 +212,7 @@ export const createIdToCellMap = (cells: MazeCells): idToCellMap => {
   return map;
 };
 
-function generatePositions(
+export function generatePositions(
   startPoint: [number, number],
   angle: number,
   wallsAmount: number,

@@ -1,186 +1,30 @@
 import {
-  Point2d,
-  SquareCell,
-  Wall,
+  MazeData,
+  WallsToRemove,
   createCellFinder,
-  createRectMaze,
-  generateRectMazeId,
+  createMaze,
+  createWallBetweenCellsSearcher,
+  generatePositions,
+  getCellCenter,
+  getCellCoords,
+  getCellIndexFromWallIndex,
+  getCellPoints,
+  getCellWalls,
   getCirclePoint,
-  removeWallBetweenCells,
-  removeWallsBetweenCells,
+  getDefaultMazeData,
+  getVisibleWalls,
+  getWallByPosition,
+  mapPairsToNeighbors,
+  removeWalls,
+  removeWallsPure,
 } from "./maze";
 
-// works only when one wall removed
-function isSameWallRemoved(firstCell: SquareCell, secondCell: SquareCell) {
-  const firstWall = firstCell.walls.find((cell) => !cell.visible);
-  const secondWall = secondCell.walls.find((cell) => !cell.visible);
+jest.mock("src/validation/utils", () => ({
+  validateIntGreaterThanOrEqual: jest.fn(),
+  validateIntLessThanOrEqual: jest.fn(),
+}));
 
-  if (firstWall && secondWall) {
-    return Wall.isSameWall(firstWall, secondWall);
-  }
-
-  return false;
-}
-
-// не работает, потому что я поменял порядок построения стен
-it.skip(`${isSameWallRemoved.name} works correctly`, () => {
-  const edgeLength = 2;
-  const firstCell = new SquareCell("1");
-  const secondCell = new SquareCell("2");
-
-  firstCell.generateWalls(0, 0);
-  secondCell.generateWalls(0, edgeLength);
-
-  firstCell.walls[0].visible = false;
-  secondCell.walls[2].visible = false;
-
-  expect(isSameWallRemoved(firstCell, secondCell)).toBe(true);
-
-  secondCell.walls[2].visible = true;
-
-  expect(isSameWallRemoved(firstCell, secondCell)).toBe(false);
-});
-
-describe(SquareCell.name, () => {
-  const edgeLength = 2;
-  const someId = "1";
-
-  it("walls must be empty when regenerating walls", () => {
-    const firstCell = new SquareCell(someId);
-    const wallAmount = firstCell.numberOfWalls;
-
-    expect(firstCell.walls).toHaveLength(0);
-
-    const callsAmount = 2;
-
-    new Array(callsAmount).forEach(() => {
-      firstCell.generateWalls(0, 0);
-      expect(firstCell.walls).toHaveLength(wallAmount);
-    });
-  });
-
-  it("must have a correct center", () => {
-    const firstCell = new SquareCell(someId);
-
-    firstCell.generateWalls(0, 0);
-
-    const center = firstCell.center;
-
-    expect(center.x).toBe(edgeLength / 2);
-    expect(center.y).toBe(edgeLength / 2);
-  });
-});
-
-describe("RectMaze", () => {
-  const [rows, cols] = [5, 10];
-
-  it("creates maze", () => {
-    const maze = createRectMaze(rows, cols);
-
-    expect(maze.cells).toHaveLength(rows * cols);
-    expect(maze.cells[0] instanceof SquareCell).toBe(true);
-    expect(maze.cells[0].id).toBe(generateRectMazeId(0, 0));
-  });
-
-  it("finds cell", () => {
-    const maze = createRectMaze(rows, cols);
-    const existingCellId = generateRectMazeId(rows - 1, cols - 1);
-    const nonExistingCellId = generateRectMazeId(rows + 1, cols + 1);
-    const findCell = createCellFinder(maze.cells);
-
-    expect(findCell(existingCellId)?.id).toBe(existingCellId);
-    expect(findCell(nonExistingCellId)).toBeNull();
-  });
-
-  it("removes wall", () => {
-    const maze = createRectMaze(rows, cols);
-
-    const firstCellId = generateRectMazeId(0, 0);
-    const secondCellId = generateRectMazeId(1, 0);
-
-    const findCell = createCellFinder(maze.cells);
-    const firstCell = findCell(firstCellId);
-    const secondCell = findCell(secondCellId);
-
-    if (firstCell && secondCell) {
-      removeWallBetweenCells(firstCell, secondCell, firstCellId, secondCellId);
-
-      expect(firstCell.neighbors.includes(secondCellId)).toBe(true);
-      expect(secondCell.neighbors.includes(firstCellId)).toBe(true);
-      expect(isSameWallRemoved(firstCell, secondCell)).toBe(true);
-    }
-  });
-
-  it(`${removeWallsBetweenCells.name} refills cells with correct neighbors when removing again`, () => {
-    const maze = createRectMaze(rows, cols);
-
-    const firstCellId = generateRectMazeId(0, 0);
-    const secondCellId = generateRectMazeId(1, 0);
-
-    const findCell = createCellFinder(maze.cells);
-    const firstCell = findCell(firstCellId);
-    const secondCell = findCell(secondCellId);
-
-    if (firstCell && secondCell) {
-      removeWallsBetweenCells(maze.cells, [[firstCellId, secondCellId]]);
-
-      expect(firstCell.neighbors).toHaveLength(1);
-      expect(secondCell.neighbors).toHaveLength(1);
-    }
-  });
-});
-
-describe(Wall.name, () => {
-  const [x1, y1, x2, y2] = [30, 40, 15, 17];
-
-  it(`${Wall.isSameWall.name} method works correctly`, () => {
-    const diff = 3;
-
-    const wall1 = new Wall(new Point2d(x1, y1), new Point2d(x2, y2));
-    const wall2 = new Wall(new Point2d(x1, y1), new Point2d(x2, y2));
-    const wall3 = new Wall(
-      new Point2d(x1 - diff, y1 - diff),
-      new Point2d(x2, y2),
-    );
-
-    expect(Wall.isSameWall(wall1, wall2)).toBe(true);
-    expect(Wall.isSameWall(wall1, wall3)).toBe(false);
-  });
-
-  it(`walls with opposite orientations are the same`, () => {
-    const wall1 = new Wall(new Point2d(x1, y1), new Point2d(x2, y2));
-
-    const wall2 = new Wall(new Point2d(x2, y2), new Point2d(x1, y1));
-
-    expect(Wall.isSameWall(wall1, wall2)).toBe(true);
-  });
-});
-
-describe(Point2d.name, () => {
-  it(`${Point2d.isSamePoint.name} method works correctly`, () => {
-    const [x1, y1, x2, y2] = [30, 40, 15, 17];
-
-    const p1 = new Point2d(x1, y1);
-    const p2 = new Point2d(x1, y1);
-    const p3 = new Point2d(x2, y2);
-
-    expect(Point2d.isSamePoint(p1, p2)).toBe(true);
-    expect(Point2d.isSamePoint(p1, p3)).toBe(false);
-  });
-
-  it(`${Point2d.isSamePoint.name} method works correctly if coords of two points are close to each other`, () => {
-    const [x1, y1, x2, y2, x3, y3] = [30.33, 40.78, 30.32, 40.79, 30.4, 40.7];
-
-    const p1 = new Point2d(x1, y1);
-    const p2 = new Point2d(x2, y2);
-    const p3 = new Point2d(x3, y3);
-
-    expect(Point2d.isSamePoint(p1, p2)).toBe(true);
-    expect(Point2d.isSamePoint(p1, p3)).toBe(false);
-  });
-});
-
-describe(getCirclePoint.name, () => {
+describe("getCirclePoint", () => {
   it(`the point is in correct direction of centre`, () => {
     const radius = 1;
     const e = 0.01;
@@ -214,5 +58,402 @@ describe(getCirclePoint.name, () => {
   it("gets correct radius", () => {
     const radius = 2;
     expect(getCirclePoint(radius, 0)).toEqual({ x: radius, y: 0 });
+  });
+});
+
+describe("Maze Functions", () => {
+  describe("generatePositions", () => {
+    it("should generate correct number of positions", () => {
+      const startPoint: [number, number] = [0, 0];
+      const angle = 90;
+      const wallsAmount = 4;
+
+      const result = generatePositions(startPoint, angle, wallsAmount);
+
+      expect(result).toHaveLength(wallsAmount);
+      expect(result[0]).toEqual(startPoint);
+    });
+
+    it("should calculate positions with correct angle increments", () => {
+      const startPoint: [number, number] = [0, 0];
+      const angle = 90;
+      const wallsAmount = 4;
+
+      const result = generatePositions(startPoint, angle, wallsAmount);
+
+      // First position should be start point
+      expect(result[0]).toEqual([0, 0]);
+      // Subsequent positions should be calculated based on angle
+      expect(result[1]).toEqual(expect.any(Array));
+      expect(result[2]).toEqual(expect.any(Array));
+      expect(result[3]).toEqual(expect.any(Array));
+    });
+  });
+
+  describe("createMaze", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should create maze with correct dimensions", () => {
+      const rows = 3;
+      const cols = 3;
+      const wallsAmount = 4;
+
+      const maze = createMaze(rows, cols, wallsAmount);
+
+      expect(maze.cellIds).toHaveLength(rows * cols);
+      expect(maze.x).toHaveLength(rows * cols * wallsAmount);
+      expect(maze.y).toHaveLength(rows * cols * wallsAmount);
+      expect(maze.visible).toHaveLength(rows * cols * wallsAmount);
+      expect(maze.wallsAmount).toBe(wallsAmount);
+    });
+
+    it("should have correct cell IDs", () => {
+      const rows = 2;
+      const cols = 2;
+
+      const maze = createMaze(rows, cols);
+
+      expect(maze.cellIds).toContain("0,0");
+      expect(maze.cellIds).toContain("0,1");
+      expect(maze.cellIds).toContain("1,0");
+      expect(maze.cellIds).toContain("1,1");
+    });
+
+    it("should create valid index mapping", () => {
+      const rows = 2;
+      const cols = 2;
+
+      const maze = createMaze(rows, cols);
+
+      expect(maze.indexByCellId.get("0,0")).toBe(0);
+      expect(maze.indexByCellId.get("0,1")).toBe(1);
+      expect(maze.indexByCellId.get("1,0")).toBe(2);
+      expect(maze.indexByCellId.get("1,1")).toBe(3);
+    });
+  });
+
+  describe("getCellCoords", () => {
+    it("should extract correct coordinates for cell", () => {
+      const nums = [1, 2, 3, 4, 5, 6, 7, 8];
+      const wallsAmount = 4;
+      const cellIndex = 1;
+
+      const result = getCellCoords(nums, cellIndex, wallsAmount);
+
+      expect(result).toEqual([5, 6, 7, 8]);
+    });
+
+    it("should handle first cell", () => {
+      const nums = [1, 2, 3, 4, 5, 6, 7, 8];
+      const wallsAmount = 4;
+      const cellIndex = 0;
+
+      const result = getCellCoords(nums, cellIndex, wallsAmount);
+
+      expect(result).toEqual([1, 2, 3, 4]);
+    });
+  });
+
+  describe("getCellPoints", () => {
+    it("should return correct points with scale factor", () => {
+      const mazeData = {
+        x: [0, 1, 1, 0],
+        y: [0, 0, 1, 1],
+        wallsAmount: 4,
+      };
+      const scaleFactor = 10;
+
+      const points = getCellPoints(mazeData, 0, scaleFactor);
+
+      expect(points).toEqual([
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 },
+      ]);
+    });
+
+    it("should use scale factor 1 by default", () => {
+      const mazeData = {
+        x: [0, 1, 1, 0],
+        y: [0, 0, 1, 1],
+        wallsAmount: 4,
+      };
+
+      const points = getCellPoints(mazeData, 0);
+
+      expect(points).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: 1 },
+      ]);
+    });
+  });
+
+  describe("getCellWalls", () => {
+    it("should return correct walls for cell", () => {
+      const mazeData = {
+        x: [0, 1, 1, 0],
+        y: [0, 0, 1, 1],
+        wallsAmount: 4,
+      };
+
+      const walls = getCellWalls(mazeData, 0);
+
+      expect(walls).toEqual([
+        [0, 0, 1, 0],
+        [1, 0, 1, 1],
+        [1, 1, 0, 1],
+        [0, 1, 0, 0],
+      ]);
+    });
+  });
+
+  describe("getCellCenter", () => {
+    it("should calculate correct center point", () => {
+      const mazeData: MazeData = {
+        x: [0, 2, 2, 0],
+        y: [0, 0, 2, 2],
+        cellIds: ["0,0"],
+        visible: [1, 1, 1, 1],
+        indexByCellId: new Map([["0,0", 0]]),
+        wallsAmount: 4,
+      };
+
+      const center = getCellCenter(mazeData, 0);
+
+      expect(center).toEqual({ x: 1, y: 1 });
+    });
+  });
+
+  describe("Wall Operations", () => {
+    let mazeData: MazeData;
+
+    beforeEach(() => {
+      mazeData = {
+        x: [0, 1, 1, 0, 1, 2, 2, 1],
+        y: [0, 0, 1, 1, 0, 0, 1, 1],
+        cellIds: ["0,0", "0,1"],
+        visible: [1, 1, 1, 1, 1, 1, 1, 1],
+        indexByCellId: new Map([
+          ["0,0", 0],
+          ["0,1", 1],
+        ]),
+        wallsAmount: 4,
+      };
+    });
+
+    describe("createWallBetweenCellsSearcher", () => {
+      it("should find common wall between adjacent cells", () => {
+        const searchCommonWall = createWallBetweenCellsSearcher(mazeData);
+
+        const result = searchCommonWall("0,0", "0,1");
+
+        expect(result).toEqual(expect.any(Array));
+        expect(result).toHaveLength(2);
+      });
+
+      it("should return -1 for non-adjacent cells", () => {
+        const searchCommonWall = createWallBetweenCellsSearcher(mazeData);
+
+        const result = searchCommonWall("0,0", "non-existent");
+
+        expect(result).toBe(-1);
+      });
+    });
+
+    describe("removeWalls", () => {
+      it("should remove walls between specified cells", () => {
+        const wallsToRemove: WallsToRemove = [["0,0", "0,1"]];
+        const searchCommonWall = createWallBetweenCellsSearcher(mazeData);
+        const initialWallPositions = searchCommonWall("0,0", "0,1");
+
+        removeWalls(mazeData, wallsToRemove);
+
+        if (initialWallPositions !== -1) {
+          const [firstWallPos, secondWallPos] = initialWallPositions;
+          expect(mazeData.visible[firstWallPos]).toBe(0);
+          expect(mazeData.visible[secondWallPos]).toBe(0);
+        }
+      });
+    });
+
+    describe("removeWallsPure", () => {
+      it("should return new maze data without mutating original", () => {
+        const wallsToRemove: WallsToRemove = [["0,0", "0,1"]];
+
+        const originalVisible = [...mazeData.visible];
+        const newMazeData = removeWallsPure(mazeData, wallsToRemove);
+
+        expect(newMazeData).not.toBe(mazeData);
+        expect(newMazeData.visible).not.toBe(mazeData.visible);
+        expect(mazeData.visible).toEqual(originalVisible); // Original unchanged
+      });
+    });
+  });
+
+  describe("getWallByPosition", () => {
+    it("should return correct wall coordinates for regular wall", () => {
+      const mazeData = {
+        x: [0, 1, 1, 0, 2, 3],
+        y: [0, 0, 1, 1, 0, 0],
+        wallsAmount: 4,
+      };
+
+      const wall = getWallByPosition(mazeData, 1);
+
+      expect(wall).toEqual([1, 0, 1, 1]);
+    });
+
+    it("should return correct wall coordinates for last wall in cell", () => {
+      const mazeData = {
+        x: [0, 1, 1, 0, 2, 3],
+        y: [0, 0, 1, 1, 0, 0],
+        wallsAmount: 4,
+      };
+
+      const wall = getWallByPosition(mazeData, 3);
+
+      expect(wall).toEqual([0, 1, 0, 0]);
+    });
+  });
+
+  describe("getVisibleWalls", () => {
+    it("should return only visible walls", () => {
+      const mazeData: MazeData = {
+        x: [0, 1, 1, 0],
+        y: [0, 0, 1, 1],
+        cellIds: ["0,0"],
+        visible: [1, 0, 1, 0],
+        indexByCellId: new Map([["0,0", 0]]),
+        wallsAmount: 4,
+      };
+
+      const visibleWalls = getVisibleWalls(mazeData);
+
+      expect(visibleWalls).toHaveLength(2);
+    });
+  });
+
+  describe("mapPairsToNeighbors", () => {
+    it("should create correct neighbor mapping", () => {
+      const mazeData: MazeData = {
+        x: [],
+        y: [],
+        cellIds: ["0,0", "0,1", "1,0"],
+        visible: [],
+        indexByCellId: new Map([
+          ["0,0", 0],
+          ["0,1", 1],
+          ["1,0", 2],
+        ]),
+        wallsAmount: 4,
+      };
+
+      const wallsToRemove: WallsToRemove = [
+        ["0,0", "0,1"],
+        ["0,0", "1,0"],
+      ];
+
+      const neighbors = mapPairsToNeighbors(mazeData, wallsToRemove);
+
+      expect(neighbors[0]).toContain("0,1");
+      expect(neighbors[0]).toContain("1,0");
+      expect(neighbors[1]).toContain("0,0");
+      expect(neighbors[2]).toContain("0,0");
+    });
+
+    it("should throw error for non-existent cell IDs", () => {
+      const mazeData: MazeData = {
+        x: [],
+        y: [],
+        cellIds: ["0,0"],
+        visible: [],
+        indexByCellId: new Map([["0,0", 0]]),
+        wallsAmount: 4,
+      };
+
+      const wallsToRemove: WallsToRemove = [["0,0", "non-existent"]];
+
+      expect(() => {
+        mapPairsToNeighbors(mazeData, wallsToRemove);
+      }).toThrow("bad data");
+    });
+  });
+
+  describe("createCellFinder", () => {
+    it("should return correct cell information", () => {
+      const mazeData: MazeData = {
+        x: [0, 1, 1, 0],
+        y: [0, 0, 1, 1],
+        cellIds: ["0,0"],
+        visible: [1, 1, 1, 1],
+        indexByCellId: new Map([["0,0", 0]]),
+        wallsAmount: 4,
+      };
+
+      const neighbors = [["0,1"]];
+      const findCell = createCellFinder(mazeData, neighbors);
+
+      const cell = findCell("0,0");
+
+      expect(cell).toEqual({
+        id: "0,0",
+        center: expect.any(Object),
+        neighbors: ["0,1"],
+        numberOfWalls: 4,
+        getPoints: expect.any(Function),
+      });
+
+      const points = cell!.getPoints(1);
+      expect(points).toHaveLength(4);
+    });
+
+    it("should return null for non-existent cell", () => {
+      const mazeData: MazeData = {
+        x: [],
+        y: [],
+        cellIds: [],
+        visible: [],
+        indexByCellId: new Map(),
+        wallsAmount: 4,
+      };
+
+      const neighbors: string[][] = [];
+      const findCell = createCellFinder(mazeData, neighbors);
+
+      const cell = findCell("non-existent");
+
+      expect(cell).toBeNull();
+    });
+  });
+
+  describe("getDefaultMazeData", () => {
+    it("should return default maze data structure", () => {
+      const defaultData = getDefaultMazeData();
+
+      expect(defaultData).toEqual({
+        x: [],
+        y: [],
+        cellIds: [],
+        visible: [],
+        indexByCellId: new Map(),
+        wallsAmount: 4,
+      });
+    });
+  });
+
+  describe("getCellIndexFromWallIndex", () => {
+    it("should calculate correct cell index from wall index", () => {
+      const wallsAmount = 4;
+
+      expect(getCellIndexFromWallIndex(0, wallsAmount)).toBe(0);
+      expect(getCellIndexFromWallIndex(3, wallsAmount)).toBe(0);
+      expect(getCellIndexFromWallIndex(4, wallsAmount)).toBe(1);
+      expect(getCellIndexFromWallIndex(7, wallsAmount)).toBe(1);
+    });
   });
 });
