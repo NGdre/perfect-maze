@@ -1,8 +1,7 @@
 import { PROJECT_NAME } from "../constants.ts";
+import AppRouter from "../router/AppRouter.tsx";
 import "./App.css";
 import Logo from "./Logo.tsx";
-import MazeViewport from "./maze-canvas/MazeViewport.tsx";
-import MazeControlTabs from "./maze-control/MazeControlTabs.tsx";
 import "./resetCSS.css";
 
 function Header() {
@@ -16,25 +15,10 @@ function Header() {
 }
 
 function App() {
-  const isSidebarOnTheRight = false;
-
   return (
     <div className="flex min-h-screen flex-col bg-blue-50/50 text-text-primary">
       <Header />
-
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <main
-          className={`w-full flex-1 px-between-header-main-sidebar ${isSidebarOnTheRight ? "lg:order-1" : "lg:order-2"}`}
-        >
-          <MazeViewport containerClassName="stripes my-between-header-main-sidebar !border-primary-100" />
-        </main>
-
-        <aside
-          className={`w-full border-r border-primary-100 bg-blue-25 p-between-header-main-sidebar lg:max-w-[28rem] ${isSidebarOnTheRight ? "lg:order-2" : "lg:order-1"}`}
-        >
-          <MazeControlTabs />
-        </aside>
-      </div>
+      <AppRouter />
     </div>
   );
 }
