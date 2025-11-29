@@ -1,15 +1,17 @@
-import { useMazeMode, useSetMazeMode } from "@stores/selectors.ts";
 import { MazeMode, MazeModeType } from "@models/algorithm-registry.ts";
+import { useMazeMode, useSetMazeMode } from "@stores/selectors.ts";
 
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 
+import { useMazeGenerationWarning } from "../../hooks/useMazeGenerationWarning.ts";
+import { Dialog } from "../lib/dialog/Dialog.tsx";
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
 import MazeLegend from "../maze-legend/MazeLegend.tsx";
 import DisplayModes from "./DisplayModes.tsx";
 import { MazeGenerationPanel } from "./MazeGenerationPanel.tsx";
 import { PathFindingPanel } from "./PathFindingPanel.tsx";
-import { useMazeGenerationWarning } from "../../hooks/useMazeGenerationWarning.ts";
-import { Dialog } from "../lib/dialog/Dialog.tsx";
 
 const tabNameForGeneration = "Генерация";
 const tabNameForPathFinding = "Нахождение пути";
@@ -17,6 +19,11 @@ const tabNameForPathFinding = "Нахождение пути";
 export default function MazeControlTabs() {
   const setMazeMode = useSetMazeMode();
   const mazeMode = useMazeMode();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const routes = ["generation", "path-finding"];
 
   const { dialog, hideDialog } = useMazeGenerationWarning();
 
@@ -28,8 +35,27 @@ export default function MazeControlTabs() {
     const tabElement = event.target as HTMLElement;
     const mazeMode = tabElement.dataset.mazeMode;
 
-    if (mazeMode) setMazeMode(mazeMode as MazeModeType);
+    if (mazeMode) {
+      setMazeMode(mazeMode as MazeModeType);
+
+      const selectedIndex = mazeMode === MazeMode.generation ? 0 : 1;
+
+      navigate("/visualization/" + routes[selectedIndex]);
+    }
   };
+
+  useEffect(() => {
+    switch (location.pathname) {
+      case "/visualization/generation":
+        setMazeMode(MazeMode.generation);
+        break;
+      case "/visualization/path-finding":
+        setMazeMode(MazeMode.solving);
+        break;
+      default:
+        setMazeMode(MazeMode.generation);
+    }
+  }, [location, mazeMode]);
 
   const selectedIndex = mazeMode === MazeMode.generation ? 0 : 1;
 

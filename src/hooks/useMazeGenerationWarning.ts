@@ -8,6 +8,7 @@ import {
 } from "@stores/selectors.ts";
 
 import { useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 
 export function useMazeGenerationWarning() {
   const { dialog, showDialog, hideDialog } = useDialog();
@@ -23,6 +24,8 @@ export function useMazeGenerationWarning() {
   const mazeMode = useMazeMode();
 
   const optionSelectedRef = useRef(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isMazeGenerationDone && mazeMode === MazeMode.solving) {
@@ -46,6 +49,7 @@ export function useMazeGenerationWarning() {
             onClick: () => {
               optionSelectedRef.current = true;
               setMazeMode(MazeMode.generation);
+              navigate("/visualization/generation");
             },
           },
         ],
