@@ -25,7 +25,7 @@ export default function MazeControlTabs() {
 
   const routes = ["generation", "path-finding"];
 
-  const { dialog, hideDialog } = useMazeGenerationWarning();
+  const { dialogConfig, isOpen } = useMazeGenerationWarning();
 
   const handleTabSelect: TabsProps["onSelect"] = (
     _index,
@@ -94,7 +94,7 @@ export default function MazeControlTabs() {
       <DisplayModes />
       <MazeLegend />
 
-      {dialog && <Dialog {...dialog} onClose={hideDialog} />}
+      <Dialog {...dialogConfig} isOpen={isOpen} />
     </Tabs>
   );
 }
