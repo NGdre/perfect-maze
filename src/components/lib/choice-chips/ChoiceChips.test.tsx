@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-//@ts-ignore
 import React from "react";
 
 import { ChipOption, ChoiceChips } from "./ChoiceChips";
 
-const MockIcon = () => <span data-testid="mock-icon">📱</span>;
+const MockIcon = () => <span data-testid="mock-icon"></span>;
 
 const defaultOptions: ChipOption[] = [
   {
@@ -31,7 +30,7 @@ const getEnabledChips = () =>
 const getChipByValue = (value: string) => screen.getByTestId(`chip-${value}`);
 
 describe("ChoiceChips", () => {
-  test("рендерит все опции", () => {
+  test("renders all options", () => {
     render(<ChoiceChips options={defaultOptions} />);
 
     expect(screen.getByText("Option 1")).toBeInTheDocument();
@@ -39,7 +38,7 @@ describe("ChoiceChips", () => {
     expect(screen.getByText("Disabled Option")).toBeInTheDocument();
   });
 
-  test("отображает иконки когда они предоставлены", () => {
+  test("displays icons when provided", () => {
     render(<ChoiceChips options={defaultOptions} />);
 
     const icons = screen.getAllByTestId("mock-icon");
@@ -47,7 +46,7 @@ describe("ChoiceChips", () => {
     expect(icons[0]).toBeInTheDocument();
   });
 
-  test("вызывает onChange при клике на неактивную кнопку", async () => {
+  test("calls onChange when clicking on a non-selected chip", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
@@ -60,8 +59,8 @@ describe("ChoiceChips", () => {
     expect(handleChange).toHaveBeenCalledWith("2");
   });
 
-  test("выделяет активную кнопку", () => {
-    render(<ChoiceChips options={defaultOptions} value="1" />);
+  test("highlights the selected chip", () => {
+    render(<ChoiceChips options={defaultOptions} initialValue="1" />);
 
     const option1 = getChipByValue("1");
     const option2 = getChipByValue("2");
@@ -70,16 +69,15 @@ describe("ChoiceChips", () => {
     expect(option2).toHaveAttribute("data-selected", "false");
   });
 
-  test("при isToggle=true и неактивной кнопке вызывает onChange со значением кнопки", async () => {
+  test("when allowDeselect=true and clicking on non-selected chip, calls onChange with chip value", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
     render(
       <ChoiceChips
         options={defaultOptions}
-        value={null}
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
@@ -87,33 +85,33 @@ describe("ChoiceChips", () => {
     expect(handleChange).toHaveBeenCalledWith("1");
   });
 
-  test("при isToggle=true и активной кнопке вызывает onChange с null", async () => {
+  test("when allowDeselect=true and clicking on selected chip, calls onChange with undefined", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
     render(
       <ChoiceChips
         options={defaultOptions}
-        value="1"
+        initialValue="1"
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
     await user.click(screen.getByText("Option 1"));
-    expect(handleChange).toHaveBeenCalledWith(null);
+    expect(handleChange).toHaveBeenCalledWith(undefined);
   });
 
-  test("не сбрасывает выбор при клике на активную кнопку когда isToggle=false", async () => {
+  test("does not deselect when clicking on selected chip with allowDeselect=false", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
     render(
       <ChoiceChips
         options={defaultOptions}
-        value="1"
+        initialValue="1"
         onChange={handleChange}
-        isToggle={false}
+        allowDeselect={false}
       />,
     );
 
@@ -121,7 +119,7 @@ describe("ChoiceChips", () => {
     expect(handleChange).toHaveBeenCalledWith("1");
   });
 
-  test("не вызывает onChange при клике на disabled кнопку", async () => {
+  test("does not call onChange when clicking on disabled chip", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
@@ -133,7 +131,7 @@ describe("ChoiceChips", () => {
     expect(handleChange).not.toHaveBeenCalled();
   });
 
-  test("disabled кнопка имеет правильные атрибуты", () => {
+  test("disabled chip has correct attributes", () => {
     render(<ChoiceChips options={defaultOptions} />);
 
     const disabledChip = getChipByValue("3");
@@ -141,7 +139,7 @@ describe("ChoiceChips", () => {
     expect(disabledChip).toHaveAttribute("data-disabled", "true");
   });
 
-  test("применяет custom className и style", () => {
+  test("applies custom className and style", () => {
     const { container } = render(
       <ChoiceChips
         options={defaultOptions}
@@ -155,7 +153,7 @@ describe("ChoiceChips", () => {
     expect(containerElement).toHaveStyle("background-color: red");
   });
 
-  test("применяет custom chipClassName и chipStyle", () => {
+  test("applies custom chipClassName and chipStyle", () => {
     render(
       <ChoiceChips
         options={defaultOptions}
@@ -169,81 +167,79 @@ describe("ChoiceChips", () => {
     expect(chip).toHaveStyle("color: blue");
   });
 
-  // Исправленные тесты для клавиатурной навигации
-
-  test("поддерживает клавиатурную навигацию между enabled кнопками", async () => {
-    const user = userEvent.setup();
-    render(<ChoiceChips options={defaultOptions} />);
-
-    const enabledChips = getEnabledChips();
-    expect(enabledChips).toHaveLength(2); // Проверим, что действительно 2 enabled кнопки
-
-    // Фокусируем первую enabled кнопку через Tab
-    await user.tab();
-    expect(enabledChips[0]).toHaveFocus();
-    expect(enabledChips[0]).toHaveAttribute("data-focused", "true");
-
-    // Переход на следующую enabled кнопку с помощью ArrowRight
-    await user.keyboard("{ArrowRight}");
-    expect(enabledChips[1]).toHaveFocus();
-    expect(enabledChips[1]).toHaveAttribute("data-focused", "true");
-    expect(enabledChips[0]).toHaveAttribute("data-focused", "false");
-
-    // Переход обратно на первую с помощью ArrowLeft
-    await user.keyboard("{ArrowLeft}");
-    expect(enabledChips[0]).toHaveFocus();
-    expect(enabledChips[0]).toHaveAttribute("data-focused", "true");
-    expect(enabledChips[1]).toHaveAttribute("data-focused", "false");
-  });
-
-  test("циклическая навигация по клавиатуре пропускает disabled кнопки", async () => {
+  test("supports keyboard navigation between enabled chips", async () => {
     const user = userEvent.setup();
     render(<ChoiceChips options={defaultOptions} />);
 
     const enabledChips = getEnabledChips();
     expect(enabledChips).toHaveLength(2);
 
-    // Фокусируем первую enabled кнопку
+    // Focus first enabled chip via Tab
+    await user.tab();
+    expect(enabledChips[0]).toHaveFocus();
+    expect(enabledChips[0]).toHaveAttribute("data-focused", "true");
+
+    // Navigate to next enabled chip with ArrowRight
+    await user.keyboard("{ArrowRight}");
+    expect(enabledChips[1]).toHaveFocus();
+    expect(enabledChips[1]).toHaveAttribute("data-focused", "true");
+    expect(enabledChips[0]).toHaveAttribute("data-focused", "false");
+
+    // Navigate back with ArrowLeft
+    await user.keyboard("{ArrowLeft}");
+    expect(enabledChips[0]).toHaveFocus();
+    expect(enabledChips[0]).toHaveAttribute("data-focused", "true");
+    expect(enabledChips[1]).toHaveAttribute("data-focused", "false");
+  });
+
+  test("keyboard navigation cycles and skips disabled chips", async () => {
+    const user = userEvent.setup();
+    render(<ChoiceChips options={defaultOptions} />);
+
+    const enabledChips = getEnabledChips();
+    expect(enabledChips).toHaveLength(2);
+
+    // Focus first enabled chip
     await user.tab();
     expect(enabledChips[0]).toHaveFocus();
 
-    // Переход на следующую enabled кнопку
+    // Navigate to next enabled chip
     await user.keyboard("{ArrowRight}");
     expect(enabledChips[1]).toHaveFocus();
 
-    // Переход с последней enabled кнопки на первую (циклически)
+    // Navigate from last enabled chip to first (cycle)
     await user.keyboard("{ArrowRight}");
     expect(enabledChips[0]).toHaveFocus();
 
-    // Переход с первой кнопки на последнюю enabled (циклически)
+    // Navigate from first chip to last enabled (cycle)
     await user.keyboard("{ArrowLeft}");
     expect(enabledChips[1]).toHaveFocus();
   });
 
-  test("disabled кнопки не получают фокус при навигации", async () => {
+  test("disabled chips do not receive focus during navigation", async () => {
     const user = userEvent.setup();
     render(<ChoiceChips options={defaultOptions} />);
 
     const disabledChip = getChipByValue("3");
     const enabledChips = getEnabledChips();
 
-    // Фокусируем первую enabled кнопку
+    // Focus first enabled chip
     await user.tab();
     expect(enabledChips[0]).toHaveFocus();
 
-    // Переход на следующую enabled кнопку (минуя disabled)
+    // Navigate to next enabled chip (skipping disabled)
     await user.keyboard("{ArrowRight}");
     expect(enabledChips[1]).toHaveFocus();
     expect(disabledChip).not.toHaveFocus();
 
-    // Еще раз ArrowRight - должен циклически вернуться к первой enabled кнопке
+    // Another ArrowRight - should cycle back to first enabled chip
     await user.keyboard("{ArrowRight}");
     expect(enabledChips[0]).toHaveFocus();
     expect(disabledChip).not.toHaveFocus();
   });
 
-  test("правильные ARIA атрибуты", () => {
-    render(<ChoiceChips options={defaultOptions} value="1" />);
+  test("has correct ARIA attributes", () => {
+    render(<ChoiceChips options={defaultOptions} initialValue="1" />);
 
     const container = screen.getByRole("radiogroup");
     expect(container).toBeInTheDocument();
@@ -258,7 +254,7 @@ describe("ChoiceChips", () => {
     expect(unselectedChip).toHaveAttribute("aria-checked", "false");
   });
 
-  test("обработка фокуса и blur", async () => {
+  test("handles focus and blur correctly", async () => {
     const user = userEvent.setup();
     render(<ChoiceChips options={defaultOptions} />);
 
@@ -270,59 +266,43 @@ describe("ChoiceChips", () => {
 
     await user.tab();
     expect(option1).not.toHaveFocus();
-    // После blur focusedIndex становится -1, поэтому data-focused="false"
+    // After blur, focusedIndex becomes -1, so data-focused="false"
     expect(option1).toHaveAttribute("data-focused", "false");
   });
 
-  test("работа с пустым массивом опций", () => {
+  test("handles empty options array", () => {
     render(<ChoiceChips options={[]} />);
 
     const chips = screen.queryAllByRole("radio");
     expect(chips).toHaveLength(0);
   });
 
-  test("сохранение выбора при перерендере", () => {
-    const { rerender } = render(
-      <ChoiceChips options={defaultOptions} value="1" />,
-    );
-
-    let option1 = getChipByValue("1");
-    expect(option1).toHaveAttribute("data-selected", "true");
-
-    rerender(<ChoiceChips options={defaultOptions} value="2" />);
-
-    option1 = getChipByValue("1");
-    const option2 = getChipByValue("2");
-
-    expect(option1).toHaveAttribute("data-selected", "false");
-    expect(option2).toHaveAttribute("data-selected", "true");
-  });
-
-  test("сбрасывает выбор при клике на активную кнопку когда isToggle=true", async () => {
+  test("deselects when clicking on selected chip with allowDeselect=true", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
     render(
       <ChoiceChips
         options={defaultOptions}
-        value="1"
+        initialValue="1"
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
     const option1 = getChipByValue("1");
     expect(option1).toHaveAttribute("data-selected", "true");
 
-    // Кликаем на активную кнопку - должен сбросить выбор
+    // Click on selected chip - should deselect
     await user.click(screen.getByText("Option 1"));
 
-    // Проверяем, что кнопка больше не выбрана
+    // Check that chip is no longer selected
     expect(option1).toHaveAttribute("data-selected", "false");
-    expect(handleChange).toHaveBeenCalledWith(null);
+    // onChange should be called with undefined when deselecting
+    expect(handleChange).toHaveBeenCalledWith(undefined);
   });
 
-  test("toggle функциональность работает корректно", async () => {
+  test("toggle functionality works correctly", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
@@ -330,78 +310,106 @@ describe("ChoiceChips", () => {
       <ChoiceChips
         options={defaultOptions}
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
     const option1 = screen.getByText("Option 1").closest("button");
     const option2 = screen.getByText("Option 2").closest("button");
 
-    // Выбираем Option 1
+    // Select Option 1
     await user.click(screen.getByText("Option 1"));
     expect(option1).toHaveAttribute("data-selected", "true");
     expect(handleChange).toHaveBeenCalledWith("1");
+    handleChange.mockClear();
 
-    // Кликаем еще раз - должен сбросить
+    // Click again - should deselect
     await user.click(screen.getByText("Option 1"));
     expect(option1).toHaveAttribute("data-selected", "false");
-    expect(handleChange).toHaveBeenCalledWith(null);
+    // onChange should be called with undefined when deselecting
+    expect(handleChange).toHaveBeenCalledWith(undefined);
+    handleChange.mockClear();
 
-    // Выбираем Option 2
+    // Select Option 2
     await user.click(screen.getByText("Option 2"));
     expect(option2).toHaveAttribute("data-selected", "true");
     expect(handleChange).toHaveBeenCalledWith("2");
+    handleChange.mockClear();
 
-    // Кликаем на Option 1 - должен переключиться
+    // Click on Option 1 - should switch selection
     await user.click(screen.getByText("Option 1"));
     expect(option1).toHaveAttribute("data-selected", "true");
     expect(option2).toHaveAttribute("data-selected", "false");
     expect(handleChange).toHaveBeenCalledWith("1");
   });
 
-  test("toggle функциональность вызывает onChange с правильными значениями", async () => {
+  test("toggle functionality calls onChange with correct values", async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
 
-    // Тестируем выбор неактивной кнопки
+    // Test selecting a non-selected chip
     const { rerender } = render(
       <ChoiceChips
         options={defaultOptions}
-        value={null}
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
-    // Выбираем Option 1
+    // Select Option 1
     await user.click(screen.getByText("Option 1"));
     expect(handleChange).toHaveBeenCalledWith("1");
+    handleChange.mockClear();
 
-    // Тестируем сброс выбора активной кнопки
+    // Test deselecting selected chip
     rerender(
       <ChoiceChips
         options={defaultOptions}
-        value="1"
+        initialValue="1"
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
-    // Кликаем на активную Option 1 - должен сбросить
+    // Click on selected Option 1 - should deselect
     await user.click(screen.getByText("Option 1"));
-    expect(handleChange).toHaveBeenCalledWith(null);
+    // onChange should be called with undefined when deselecting
+    expect(handleChange).toHaveBeenCalledWith(undefined);
+    handleChange.mockClear();
 
-    // Выбираем Option 2
+    // Select Option 2
     rerender(
       <ChoiceChips
         options={defaultOptions}
-        value={null}
         onChange={handleChange}
-        isToggle={true}
+        allowDeselect={true}
       />,
     );
 
     await user.click(screen.getByText("Option 2"));
     expect(handleChange).toHaveBeenCalledWith("2");
+  });
+
+  test("does not call onChange when initialValue is undefined and no chip is selected", () => {
+    const handleChange = jest.fn();
+    render(<ChoiceChips options={defaultOptions} onChange={handleChange} />);
+
+    // No interaction, so onChange should not be called
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  test("maintains internal state when onChange is not provided", async () => {
+    const user = userEvent.setup();
+    render(<ChoiceChips options={defaultOptions} allowDeselect={true} />);
+
+    const option1 = getChipByValue("1");
+
+    // Click to select
+    await user.click(screen.getByText("Option 1"));
+    expect(option1).toHaveAttribute("data-selected", "true");
+
+    // Click again to deselect
+    await user.click(screen.getByText("Option 1"));
+    expect(option1).toHaveAttribute("data-selected", "false");
   });
 });
