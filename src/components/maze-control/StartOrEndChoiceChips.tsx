@@ -1,5 +1,8 @@
-import { FiFlag, FiMapPin } from "react-icons/fi";
+import { cellSelectionMode } from "@constants";
 import { useMazeStore } from "@stores";
+
+import { FiFlag, FiMapPin } from "react-icons/fi";
+
 import { ChoiceChips } from "../lib/choice-chips/ChoiceChips";
 
 export function StartOrEndChoiceChips() {
@@ -7,13 +10,13 @@ export function StartOrEndChoiceChips() {
   const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
   const options = [
     {
-      value: "0",
+      value: cellSelectionMode.start,
       label: "выбрать старт",
       icon: <FiFlag />,
       disabled: isMazeRendering,
     },
     {
-      value: "1",
+      value: cellSelectionMode.end,
       label: "выбрать конец",
       icon: <FiMapPin />,
       disabled: isMazeRendering,
@@ -22,14 +25,15 @@ export function StartOrEndChoiceChips() {
 
   return (
     <ChoiceChips
-      isToggle={true}
+      allowDeselect
       options={options}
-      onChange={(value) => {
-        if (value === options[0].value) setCellSelection("start");
-        if (value === options[1].value) setCellSelection("end");
-        if (value === null) setCellSelection("none");
+      onChange={(currMode) => {
+        if (currMode === cellSelectionMode.start)
+          setCellSelection(cellSelectionMode.start);
+        if (currMode === cellSelectionMode.end)
+          setCellSelection(cellSelectionMode.end);
+        if (!currMode) setCellSelection(cellSelectionMode.none);
       }}
-      value={null}
     />
   );
 }

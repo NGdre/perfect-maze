@@ -28,8 +28,8 @@ function DisplayModes() {
       <MazeControlsHeading>режимы отображения</MazeControlsHeading>
 
       <ChoiceChips
-        options={modes.map((mode, i) => ({ value: String(i), label: mode }))}
-        onChange={(i) => i !== null && setDisplayMode(modes[+i])}
+        options={modes.map((mode) => ({ value: mode, label: mode }))}
+        onChange={(mode) => mode && setDisplayMode(mode)}
       />
     </div>
   );

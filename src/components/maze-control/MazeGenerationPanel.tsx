@@ -1,5 +1,6 @@
 import { generatorNames } from "@models/algorithm-registry";
 import { useMazeStore } from "@stores";
+
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading";
 import { AlgorithmChoiceChips } from "./AlgorithmChoiceChips";
 import VisualizationControls from "./VisualizationControls";
@@ -30,7 +31,8 @@ export function MazeGenerationPanel() {
       <MazeControlsHeading>{headingForGenerators}</MazeControlsHeading>
       <AlgorithmChoiceChips
         algorithmNames={generatorNames}
-        updateAlgorithm={updateMazeGenerator}
+        onAlgorithmChange={updateMazeGenerator}
+        selectedAlgorithm={generatorNames[0]}
       />
     </>
   );

@@ -1,23 +1,28 @@
 import { useMazeStore } from "@stores";
+
 import { ChoiceChips } from "../lib/choice-chips/ChoiceChips";
 
 export function AlgorithmChoiceChips<T extends string>({
   algorithmNames,
-  updateAlgorithm,
+  selectedAlgorithm,
+  onAlgorithmChange,
 }: {
   algorithmNames: T[];
-  updateAlgorithm: (algorithm: T) => void;
+  selectedAlgorithm: T;
+  onAlgorithmChange: (algorithm: T) => void;
+  disabled?: boolean;
 }) {
   const isMazeRendering = useMazeStore((state) => state.isMazeRendering);
 
   return (
     <ChoiceChips
-      options={algorithmNames.map((label, i) => ({
-        value: String(i),
-        label,
+      options={algorithmNames.map((algorithm) => ({
+        value: algorithm,
+        label: algorithm,
         disabled: isMazeRendering,
       }))}
-      onChange={(index) => index && updateAlgorithm(algorithmNames[+index])}
+      initialValue={selectedAlgorithm}
+      onChange={(algorithm) => algorithm && onAlgorithmChange(algorithm)}
       className="!mb-5"
     />
   );

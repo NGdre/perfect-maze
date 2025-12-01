@@ -1,6 +1,7 @@
 import { mazeSolversNames } from "@models/algorithm-registry";
 import { useMazeStore } from "@stores";
 import { useTakeStepInSolution } from "@stores/selectors";
+
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading";
 import { AlgorithmChoiceChips } from "./AlgorithmChoiceChips";
 import { StartOrEndChoiceChips } from "./StartOrEndChoiceChips";
@@ -30,7 +31,8 @@ export function PathFindingPanel() {
 
       <AlgorithmChoiceChips
         algorithmNames={mazeSolversNames}
-        updateAlgorithm={(algo) => setMazeSolverId(algo)}
+        onAlgorithmChange={(algo) => setMazeSolverId(algo)}
+        selectedAlgorithm={mazeSolversNames[0]}
       />
     </>
   );
