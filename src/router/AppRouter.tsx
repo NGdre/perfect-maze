@@ -1,22 +1,20 @@
 import VisualizationPage from "src/pages/VisualizationPage";
 
-import { Navigate } from "react-router";
-import { Route, Routes } from "react-router";
+import { Navigate, createBrowserRouter } from "react-router";
 
-function AppRouter() {
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Navigate to="/visualization/generation" replace />}
-      />
-      <Route path="/visualization/generation" element={<VisualizationPage />} />
-      <Route
-        path="/visualization/path-finding"
-        element={<VisualizationPage />}
-      />
-    </Routes>
-  );
-}
+const AppRouter = createBrowserRouter([
+  {
+    path: "/",
+    element: <Navigate to="/visualization/generation" replace />,
+  },
+  {
+    path: "/visualization/generation",
+    element: <VisualizationPage />,
+  },
+  {
+    path: "/visualization/path-finding",
+    element: <VisualizationPage />,
+  },
+]);
 
 export default AppRouter;

@@ -1,3 +1,5 @@
+import { RouterProvider } from "react-router";
+
 import { PROJECT_NAME } from "../constants.ts";
 import AppRouter from "../router/AppRouter.tsx";
 import "./App.css";
@@ -18,7 +20,7 @@ function App() {
   return (
     <div className="flex min-h-screen flex-col bg-blue-50/50 text-text-primary">
       <Header />
-      <AppRouter />
+      <RouterProvider router={AppRouter} />
     </div>
   );
 }
