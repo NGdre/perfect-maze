@@ -69,11 +69,15 @@ export const createMazeConfigSlice: StateCreator<
   },
 
   setMazeSolverId: (mazeSolverName) => {
-    get().resetSolution();
+    const newMazeSolverId = algoRegistry.getIdByName(mazeSolverName);
 
-    set({
-      mazeSolverId: algoRegistry.getIdByName(mazeSolverName),
-    });
+    if (newMazeSolverId !== get().mazeSolverId) {
+      get().resetSolution();
+
+      set({
+        mazeSolverId: newMazeSolverId,
+      });
+    }
   },
 
   setDisplayMode(displayMode) {
@@ -85,10 +89,15 @@ export const createMazeConfigSlice: StateCreator<
   updateColumnsAmount: (newColumnsAmount) =>
     set({ columnsAmount: newColumnsAmount }),
 
-  updateMazeGenerationAlgorithm: (newAlgorithm) =>
-    set({
-      mazeGenerationAlgorithmId: algoRegistry.getIdByName(newAlgorithm),
-      wallHistory: clearHistory(),
-      isMazeGenerationDone: false,
-    }),
+  updateMazeGenerationAlgorithm: (newAlgorithm) => {
+    const newMazeGeneratorId = algoRegistry.getIdByName(newAlgorithm);
+
+    if (newMazeGeneratorId !== get().mazeGenerationAlgorithmId) {
+      set({
+        mazeGenerationAlgorithmId: newMazeGeneratorId,
+        wallHistory: clearHistory(),
+        isMazeGenerationDone: false,
+      });
+    }
+  },
 });
