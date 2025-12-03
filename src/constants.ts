@@ -57,3 +57,9 @@ export type CellSelectionMode = keyof typeof cellSelectionMode;
 export const DEFAULT_CELL_SELECTION = cellSelectionMode.none;
 
 export const INITIAL_MAX_PATH_DISTANCE = 0;
+
+export const searchParams = {
+  MAZE_GENERATOR: "mazeGenerator",
+  MAZE_SOLVER: "mazeSolver",
+  DISPLAY_MODE: "displayMode",
+} as const;

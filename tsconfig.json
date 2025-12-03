@@ -17,7 +17,8 @@
       "@stores": ["src/stores/index"],
       "@constants": ["src/constants"],
       "@workers/*": ["src/workers/*"],
-      "@configs/*": ["src/configs/*"]
+      "@configs/*": ["src/configs/*"],
+      "@pages/*": ["src/pages/*"]
     }
   },
   "include": ["src"]

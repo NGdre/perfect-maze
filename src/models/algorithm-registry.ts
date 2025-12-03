@@ -125,3 +125,9 @@ export const mazeSolversNames = algoRegistry
 export const DEFAULT_MAZE_SOLVER_ID = algoRegistry.getGroup(
   MazeMode.solving,
 )[0];
+
+export const DEFAULT_MAZE_GENERATOR_ID = algoRegistry.getGroup(
+  MazeMode.generation,
+)[0];
+
+export const DEFAULT_DISPLAY_MODE = ALGO_DISPLAY_MODES.base;
