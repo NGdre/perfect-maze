@@ -1,6 +1,8 @@
+import { searchParams } from "@constants";
+import { useCurrentAlgoId } from "@hooks/useCurrentAlgoId";
+import { useSyncUrlParam } from "@hooks/useSyncUrlParam";
 import { algoRegistry } from "@models/algorithm-registry";
-import { useCurrentAlgoId } from "src/hooks/useCurrentAlgoId";
-import { useMazeStore } from "src/stores";
+import { useMazeStore } from "@stores";
 
 import { useEffect } from "react";
 
@@ -14,12 +16,15 @@ function DisplayModes() {
   const setDisplayMode = useMazeStore((state) => state.setDisplayMode);
 
   useEffect(() => {
-    if (modes.length < 2) {
+    if (modes.length === 0) {
       setDisplayMode(null);
     }
   }, [modes.length, setDisplayMode]);
 
-  if (modes.length < 2) {
+  const { updateParamInUrl: updateParams, currentParamValue: paramValue } =
+    useSyncUrlParam(searchParams.DISPLAY_MODE, setDisplayMode);
+
+  if (modes.length === 0) {
     return null;
   }
 
@@ -29,7 +34,8 @@ function DisplayModes() {
 
       <ChoiceChips
         options={modes.map((mode) => ({ value: mode, label: mode }))}
-        onChange={(mode) => mode && setDisplayMode(mode)}
+        onChange={(mode) => mode && updateParams(mode)}
+        initialValue={paramValue}
       />
     </div>
   );

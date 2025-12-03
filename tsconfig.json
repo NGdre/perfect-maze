@@ -18,7 +18,8 @@
       "@constants": ["src/constants"],
       "@workers/*": ["src/workers/*"],
       "@configs/*": ["src/configs/*"],
-      "@pages/*": ["src/pages/*"]
+      "@pages/*": ["src/pages/*"],
+      "@hooks/*": ["src/hooks/*"]
     }
   },
   "include": ["src"]

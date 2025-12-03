@@ -2,16 +2,13 @@ import { MazeMode, MazeModeType } from "@models/algorithm-registry.ts";
 import { useMazeMode, useSetMazeMode } from "@stores/selectors.ts";
 
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { Tab, TabList, TabPanel, Tabs, TabsProps } from "react-tabs";
 
 import { useMazeGenerationWarning } from "../../hooks/useMazeGenerationWarning.ts";
 import { Dialog } from "../lib/dialog/Dialog.tsx";
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading.tsx";
 import MazeLegend from "../maze-legend/MazeLegend.tsx";
-import DisplayModes from "./DisplayModes.tsx";
-import { MazeGenerationPanel } from "./MazeGenerationPanel.tsx";
-import { PathFindingPanel } from "./PathFindingPanel.tsx";
 
 const tabNameForGeneration = "Генерация";
 const tabNameForPathFinding = "Нахождение пути";
@@ -84,14 +81,13 @@ export default function MazeControlTabs() {
       </TabList>
 
       <TabPanel className={tabPanelClassName}>
-        <MazeGenerationPanel />
+        <Outlet />
       </TabPanel>
 
       <TabPanel className={tabPanelClassName}>
-        <PathFindingPanel />
+        <Outlet />
       </TabPanel>
 
-      <DisplayModes />
       <MazeLegend />
 
       <Dialog {...dialogConfig} isOpen={isOpen} />

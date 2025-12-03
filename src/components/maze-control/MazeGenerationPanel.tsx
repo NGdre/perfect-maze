@@ -1,3 +1,5 @@
+import { searchParams } from "@constants";
+import { useSyncUrlParam } from "@hooks/useSyncUrlParam";
 import { generatorNames } from "@models/algorithm-registry";
 import { useMazeStore } from "@stores";
 
@@ -19,6 +21,9 @@ export function MazeGenerationPanel() {
   const resetMaze = useMazeStore((state) => state.resetMaze);
   const generateMaze = useMazeStore((state) => state.generateMaze);
 
+  const { updateParamInUrl: updateParams, currentParamValue: paramValue } =
+    useSyncUrlParam(searchParams.MAZE_GENERATOR, updateMazeGenerator);
+
   return (
     <>
       <VisualizationControls
@@ -31,8 +36,8 @@ export function MazeGenerationPanel() {
       <MazeControlsHeading>{headingForGenerators}</MazeControlsHeading>
       <AlgorithmChoiceChips
         algorithmNames={generatorNames}
-        onAlgorithmChange={updateMazeGenerator}
-        selectedAlgorithm={generatorNames[0]}
+        onAlgorithmChange={updateParams}
+        selectedAlgorithm={paramValue}
       />
     </>
   );
