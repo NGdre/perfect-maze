@@ -1,6 +1,7 @@
 import { MazeGenerationPanel } from "@components/maze-control/MazeGenerationPanel";
 import { PathFindingPanel } from "@components/maze-control/PathFindingPanel";
 import { pathSegments, routes } from "@constants";
+import NotFound from "@pages/NotFound";
 import VisualizationPage from "@pages/VisualizationPage";
 
 import { Navigate, createBrowserRouter } from "react-router";
@@ -27,6 +28,10 @@ const AppRouter = createBrowserRouter([
         loader: pathFindingLoader,
       },
     ],
+  },
+  {
+    path: "*",
+    Component: NotFound,
   },
 ]);
 
