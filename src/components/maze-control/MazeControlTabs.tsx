@@ -1,3 +1,4 @@
+import { pathSegments, routes } from "@constants";
 import { MazeMode, MazeModeType } from "@models/algorithm-registry.ts";
 import { useMazeMode, useSetMazeMode } from "@stores/selectors.ts";
 
@@ -20,8 +21,6 @@ export default function MazeControlTabs() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const routes = ["generation", "path-finding"];
-
   const { dialogConfig, isOpen } = useMazeGenerationWarning();
 
   const handleTabSelect: TabsProps["onSelect"] = (
@@ -29,6 +28,7 @@ export default function MazeControlTabs() {
     _lastIndex,
     event,
   ) => {
+    const paths = ["generation", "path-finding"];
     const tabElement = event.target as HTMLElement;
     const mazeMode = tabElement.dataset.mazeMode;
 
@@ -37,16 +37,16 @@ export default function MazeControlTabs() {
 
       const selectedIndex = mazeMode === MazeMode.generation ? 0 : 1;
 
-      navigate("/visualization/" + routes[selectedIndex]);
+      navigate("/" + pathSegments.visualization + "/" + paths[selectedIndex]);
     }
   };
 
   useEffect(() => {
     switch (location.pathname) {
-      case "/visualization/generation":
+      case routes.generation:
         setMazeMode(MazeMode.generation);
         break;
-      case "/visualization/path-finding":
+      case routes["path-finding"]:
         setMazeMode(MazeMode.solving);
         break;
       default:

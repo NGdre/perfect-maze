@@ -63,3 +63,14 @@ export const searchParams = {
   MAZE_SOLVER: "mazeSolver",
   DISPLAY_MODE: "displayMode",
 } as const;
+
+export const pathSegments = {
+  visualization: "visualization",
+  generation: "generation",
+  "path-finding": "path-finding",
+} as const;
+
+export const routes = {
+  generation: `/${pathSegments.visualization}/${pathSegments.generation}`,
+  "path-finding": `/${pathSegments.visualization}/${pathSegments["path-finding"]}`,
+} as const;
