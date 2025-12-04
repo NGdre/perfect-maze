@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "jsx": "react-jsx",
     "paths": {
       "src/*": ["src/*"],
       "@components/*": ["src/components/*"],

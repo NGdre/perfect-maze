@@ -1,8 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import React from "react";
-
 import { ChipOption, ChoiceChips } from "./ChoiceChips";
 
 const MockIcon = () => <span data-testid="mock-icon"></span>;
