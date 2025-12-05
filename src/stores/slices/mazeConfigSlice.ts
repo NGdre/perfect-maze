@@ -33,7 +33,7 @@ type Action = {
   setDisplayMode: (displayMode: State["displayMode"]) => void;
   updateRowsAmount: (newRowsAmount: State["rowsAmount"]) => void;
   updateColumnsAmount: (newColumnsAmount: State["columnsAmount"]) => void;
-  updateMazeGenerationAlgorithm: (newAlgorithm: string) => void;
+  updateMazeGenerationAlgorithm: (newAlgorithm: string) => Promise<void>;
 };
 
 export type MazeConfigSlice = State & Action;
@@ -89,14 +89,15 @@ export const createMazeConfigSlice: StateCreator<
   updateColumnsAmount: (newColumnsAmount) =>
     set({ columnsAmount: newColumnsAmount }),
 
-  updateMazeGenerationAlgorithm: (newAlgorithm) => {
+  updateMazeGenerationAlgorithm: async (newAlgorithm) => {
     const newMazeGeneratorId = algoRegistry.getIdByName(newAlgorithm);
 
     if (newMazeGeneratorId !== get().mazeGenerationAlgorithmId) {
+      await get().resetMaze();
+
       set({
         mazeGenerationAlgorithmId: newMazeGeneratorId,
         wallHistory: clearHistory(),
-        isMazeGenerationDone: false,
       });
     }
   },
