@@ -9,19 +9,6 @@ export { default as pick } from "lodash/pick";
 
 export { default as flow } from "lodash/fp/flow";
 
-export function loopPairs<T>(pairs: Array<T>, cb: (prev: T, curr: T) => void) {
-  let prev = pairs[0];
-  const len = pairs.length;
-
-  for (let i = 1; i < len; i++) {
-    const curr = pairs[i];
-
-    cb(prev, curr);
-
-    prev = curr;
-  }
-}
-
 export function mapGenerator<T, U, R>(
   generator: Generator<T, R>,
   transform: (value: T) => U,

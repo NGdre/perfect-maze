@@ -37,14 +37,8 @@ export const WALLS_WIDTH = 1;
 
 export const FILL_TO_CELL_RATIO = 0.5;
 
-export const localStorageKeys = {
-  MAZE_MATRIX: "maze-matrix",
-} as const;
-
 export const VISIALIZATION_ANIMATION_DELAY = 10;
 export const CELL_SELECTION_THROTTLE_DELAY = 0;
-
-export const CELL_ID_DELIMITER = ",";
 
 export const cellSelectionMode = {
   none: "none",

@@ -170,20 +170,6 @@ export class SquareCell extends PolygonCell {
   }
 }
 
-export class HexagonCell extends PolygonCell {
-  numberOfWalls = 6;
-
-  constructor(id: string) {
-    super(id);
-  }
-
-  generateWalls(x: number, y: number, clockwise: boolean = true) {
-    const rotationAngle = 60;
-    const start = new Point2d(x, y);
-    this._generateWalls(start, clockwise ? rotationAngle : -rotationAngle);
-  }
-}
-
 type RectMazeCells = Array<SquareCell>;
 
 type MazeCells = PolygonCell[];
