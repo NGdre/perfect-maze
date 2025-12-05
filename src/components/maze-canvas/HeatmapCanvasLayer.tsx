@@ -8,6 +8,7 @@ import {
   useCurrVisualMazeChange,
   useEndId,
   useIsCellHistoryEmpty,
+  useIsMazeInitialized,
   useMaxPathDistance,
   useStartId,
 } from "@stores/selectors";
@@ -31,14 +32,18 @@ export const HeatmapCanvasLayer = () => {
   const maxPathDistance = useMaxPathDistance();
   const setMaxPathDistance = useMazeStore((state) => state.setMaxPathDistance);
 
+  const isMazeInitialized = useIsMazeInitialized();
+
   useEffect(() => {
     setMaxPathDistance(0);
   }, [endId, startId, setMaxPathDistance]);
 
   useEffect(() => {
+    if (!isMazeInitialized || columns === 0) return;
+
     const goal = idToCellMap.get(endId);
+
     if (!goal) throw new Error("can not find goal id");
-    if (columns === 0) return;
 
     let currentMax = 0;
 
@@ -64,6 +69,7 @@ export const HeatmapCanvasLayer = () => {
     columns,
     maxPathDistance,
     setMaxPathDistance,
+    isMazeInitialized,
   ]);
 
   const renderLayer = useCallback(

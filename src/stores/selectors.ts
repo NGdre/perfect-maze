@@ -49,3 +49,6 @@ export const useAlgoDisplayMode = () =>
 
 export const useWallHistoryState = () =>
   useMazeStore(useShallow((state) => getHistoryState(state.wallHistory)));
+
+export const useIsMazeInitialized = () =>
+  useMazeStore((state) => state.mazeData.cellIds.length !== 0);
