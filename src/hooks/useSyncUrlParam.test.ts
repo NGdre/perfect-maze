@@ -141,6 +141,26 @@ describe("useSyncUrlParam", () => {
         'Parameter "nullParam" not found in URL.',
       );
     });
+
+    it("should not throw when shouldThrowNotFound is set to false", () => {
+      const mockParams = {
+        get: jest.fn().mockReturnValue(null),
+      } as unknown as URLSearchParams;
+
+      mockUseLoaderData.mockReturnValue(mockParams);
+
+      const renderHookWithNullParam = () => {
+        renderHook(() =>
+          useSyncUrlParam("nullParam", mockOnParamChange, {
+            shouldThrowNotFound: false,
+          }),
+        );
+      };
+
+      expect(renderHookWithNullParam).not.toThrow(
+        'Parameter "nullParam" not found in URL.',
+      );
+    });
   });
 
   describe("updateParamInUrl function", () => {

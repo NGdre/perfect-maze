@@ -1,23 +1,37 @@
 import { useEffect } from "react";
 import { useLoaderData, useLocation, useNavigate } from "react-router";
 
-export function useSyncUrlParam(
+interface UseSyncUrlParamOptions {
+  shouldThrowNotFound?: boolean;
+}
+
+interface UseSyncUrlParamReturn<T extends boolean> {
+  updateParamInUrl(updatedValue: string): void;
+  currentParamValue: T extends true ? string : string | null;
+}
+
+export function useSyncUrlParam<T extends boolean = true>(
   paramName: string,
   onParamChange: (paramValue: string) => void | Promise<void>,
-) {
+  options?: { shouldThrowNotFound?: T } & UseSyncUrlParamOptions,
+): UseSyncUrlParamReturn<T> {
+  const { shouldThrowNotFound = true } = options ?? {};
+
   const params = useLoaderData<URLSearchParams>();
   const navigate = useNavigate();
   const location = useLocation();
 
   const currentParamValue = params.get(paramName);
 
-  if (!currentParamValue)
+  if (!currentParamValue && shouldThrowNotFound)
     throw new Error(`Parameter "${paramName}" not found in URL.`);
 
   useEffect(() => {
     const handleParamChange = async () => {
       try {
-        await onParamChange(currentParamValue);
+        if (currentParamValue) {
+          await onParamChange(currentParamValue);
+        }
       } catch (error) {
         console.error(
           `Error in onParamChange for parameter "${paramName}":`,
@@ -39,6 +53,6 @@ export function useSyncUrlParam(
         replace: true,
       });
     },
-    currentParamValue,
-  };
+    currentParamValue: currentParamValue,
+  } as UseSyncUrlParamReturn<T>;
 }

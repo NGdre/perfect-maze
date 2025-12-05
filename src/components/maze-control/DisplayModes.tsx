@@ -22,7 +22,9 @@ function DisplayModes() {
   }, [modes.length, setDisplayMode]);
 
   const { updateParamInUrl: updateParams, currentParamValue: paramValue } =
-    useSyncUrlParam(searchParams.DISPLAY_MODE, setDisplayMode);
+    useSyncUrlParam(searchParams.DISPLAY_MODE, setDisplayMode, {
+      shouldThrowNotFound: false,
+    });
 
   if (modes.length === 0) {
     return null;
