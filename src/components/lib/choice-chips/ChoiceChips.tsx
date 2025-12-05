@@ -1,60 +1,58 @@
 import clsx from "clsx";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
-export interface ChipOption {
-  value: string;
-  label: string;
+export interface ChipOption<T = string> {
+  value: T; // this is used for internal logic
+  label: string; // this value is showed on the page
+  // the separation is useful for localization
   icon?: React.ReactNode;
   disabled?: boolean;
 }
 
-export interface ChoiceChipsProps {
-  options: ChipOption[];
-  value?: string | null;
-  onChange?: (value: string | null) => void;
-  isToggle?: boolean;
+export interface ChoiceChipsProps<T = string> {
+  options: ChipOption<T>[];
+  initialValue?: T;
+  onChange?: (value?: T) => void;
+  allowDeselect?: boolean;
   className?: string;
   chipClassName?: string;
   style?: React.CSSProperties;
   chipStyle?: React.CSSProperties;
 }
 
-export const ChoiceChips: React.FC<ChoiceChipsProps> = ({
+export const ChoiceChips = <T,>({
   options,
-  value = "0",
+  initialValue,
   onChange,
-  isToggle = false,
+  allowDeselect = false,
   className = "",
   chipClassName = "",
   style,
   chipStyle,
-}) => {
+}: ChoiceChipsProps<T>) => {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  const [internalValue, setInternalValue] = useState<string | null>(null);
+  const [selectedValue, setSelectedValue] = useState<T | undefined>(
+    initialValue,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (value !== undefined) {
-      setInternalValue(value);
-    }
-  }, [value]);
-
   const handleClick = useCallback(
-    (option: ChipOption, index: number) => {
+    (option: ChipOption<T>, index: number) => {
       if (option.disabled) return;
 
-      let newValue: string | null = option.value;
+      let newValue: T | undefined = option.value;
 
-      if (isToggle) {
-        newValue = internalValue === option.value ? null : option.value;
+      if (allowDeselect) {
+        newValue = selectedValue === option.value ? undefined : option.value;
       }
 
-      setInternalValue(newValue);
+      setSelectedValue(newValue);
+
       onChange?.(newValue);
       setFocusedIndex(index);
     },
-    [internalValue, isToggle, onChange],
+    [selectedValue, allowDeselect, onChange],
   );
 
   const handleKeyDown = useCallback(
@@ -78,7 +76,6 @@ export const ChoiceChips: React.FC<ChoiceChipsProps> = ({
         );
         let nextIndex = currentIndex + direction;
 
-        // Циклическая навигация
         if (nextIndex >= enabledChips.length) nextIndex = 0;
         if (nextIndex < 0) nextIndex = enabledChips.length - 1;
 
@@ -87,7 +84,7 @@ export const ChoiceChips: React.FC<ChoiceChipsProps> = ({
         const nextChipValue =
           enabledChips[nextIndex].getAttribute("data-value");
         const optionIndex = options.findIndex(
-          (opt) => opt.value === nextChipValue,
+          (opt) => String(opt.value) === nextChipValue,
         );
         setFocusedIndex(optionIndex);
       }
@@ -104,12 +101,12 @@ export const ChoiceChips: React.FC<ChoiceChipsProps> = ({
       role="radiogroup"
     >
       {options.map((option, index) => {
-        const isSelected = internalValue === option.value;
+        const isSelected = selectedValue === option.value;
         const isFocused = focusedIndex === index;
 
         return (
           <button
-            key={option.value}
+            key={String(option.value)}
             className={clsx(
               "inline-flex min-h-8 items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 capitalize outline-none transition-all duration-200",
               !option.disabled && [
@@ -129,8 +126,8 @@ export const ChoiceChips: React.FC<ChoiceChipsProps> = ({
             role="radio"
             aria-checked={isSelected}
             type="button"
-            data-value={option.value}
-            data-testid={`chip-${option.value}`}
+            data-value={String(option.value)}
+            data-testid={`chip-${String(option.value)}`}
             data-selected={isSelected}
             data-focused={isFocused}
             data-disabled={option.disabled}

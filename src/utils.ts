@@ -1,32 +1,13 @@
 import { Point2d } from "@models/maze";
 
-// наверное Point2d нужно вынести из maze
+export { default as clamp } from "lodash/clamp";
+export { default as random } from "lodash/random";
+export { default as mean } from "lodash/mean";
+export { default as throttle } from "lodash/throttle";
+export { default as noop } from "lodash/noop";
+export { default as pick } from "lodash/pick";
 
-export {
-  sample,
-  cloneDeep,
-  clamp,
-  random,
-  mean,
-  first,
-  throttle,
-  noop,
-  pick,
-} from "lodash";
-export { flow } from "lodash/fp";
-
-export function loopPairs<T>(pairs: Array<T>, cb: (prev: T, curr: T) => void) {
-  let prev = pairs[0];
-  const len = pairs.length;
-
-  for (let i = 1; i < len; i++) {
-    const curr = pairs[i];
-
-    cb(prev, curr);
-
-    prev = curr;
-  }
-}
+export { default as flow } from "lodash/fp/flow";
 
 export function mapGenerator<T, U, R>(
   generator: Generator<T, R>,

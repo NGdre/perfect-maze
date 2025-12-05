@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "jsx": "react-jsx",
     "paths": {
       "src/*": ["src/*"],
       "@components/*": ["src/components/*"],
@@ -17,7 +18,9 @@
       "@stores": ["src/stores/index"],
       "@constants": ["src/constants"],
       "@workers/*": ["src/workers/*"],
-      "@configs/*": ["src/configs/*"]
+      "@configs/*": ["src/configs/*"],
+      "@pages/*": ["src/pages/*"],
+      "@hooks/*": ["src/hooks/*"]
     }
   },
   "include": ["src"]

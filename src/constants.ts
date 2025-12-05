@@ -37,14 +37,8 @@ export const WALLS_WIDTH = 1;
 
 export const FILL_TO_CELL_RATIO = 0.5;
 
-export const localStorageKeys = {
-  MAZE_MATRIX: "maze-matrix",
-} as const;
-
 export const VISIALIZATION_ANIMATION_DELAY = 10;
 export const CELL_SELECTION_THROTTLE_DELAY = 0;
-
-export const CELL_ID_DELIMITER = ",";
 
 export const cellSelectionMode = {
   none: "none",
@@ -57,3 +51,20 @@ export type CellSelectionMode = keyof typeof cellSelectionMode;
 export const DEFAULT_CELL_SELECTION = cellSelectionMode.none;
 
 export const INITIAL_MAX_PATH_DISTANCE = 0;
+
+export const searchParams = {
+  MAZE_GENERATOR: "mazeGenerator",
+  MAZE_SOLVER: "mazeSolver",
+  DISPLAY_MODE: "displayMode",
+} as const;
+
+export const pathSegments = {
+  visualization: "visualization",
+  generation: "generation",
+  "path-finding": "path-finding",
+} as const;
+
+export const routes = {
+  generation: `/${pathSegments.visualization}/${pathSegments.generation}`,
+  "path-finding": `/${pathSegments.visualization}/${pathSegments["path-finding"]}`,
+} as const;

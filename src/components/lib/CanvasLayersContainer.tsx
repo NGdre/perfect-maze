@@ -1,4 +1,4 @@
-import { throttle } from "lodash";
+import { throttle } from "@utils";
 
 import {
   ReactNode,

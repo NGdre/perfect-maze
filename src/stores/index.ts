@@ -65,3 +65,5 @@ export const createMazeStore = (initialState: Partial<State> = {}) =>
   );
 
 export const useMazeStore = createMazeStore();
+
+export const getState = useMazeStore.getState;

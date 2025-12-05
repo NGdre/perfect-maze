@@ -5,25 +5,21 @@ import { Popup, PopupProps } from "./Popup";
 export type DialogButton = ButtonType & { text: string };
 
 export interface DialogConfig {
+  isOpen?: boolean;
   title: string;
   message: string;
   buttons: Array<DialogButton>;
-  onClose?: () => void;
-}
-
-interface DialogProps extends DialogConfig {
   onClose: () => void;
 }
 
-export const Dialog: React.FC<DialogProps & Omit<PopupProps, "children">> = ({
+export const Dialog: React.FC<DialogConfig & Omit<PopupProps, "children">> = ({
   title,
   message,
   buttons,
-  onClose,
   ...popupProps
 }) => {
   return (
-    <Popup onClose={onClose} {...popupProps}>
+    <Popup {...popupProps}>
       <div
         role="dialog"
         aria-labelledby="dialog-title"
@@ -44,7 +40,6 @@ export const Dialog: React.FC<DialogProps & Omit<PopupProps, "children">> = ({
               key={button.text}
               onClick={() => {
                 button.onClick?.();
-                onClose();
               }}
               variant={button.variant}
             >

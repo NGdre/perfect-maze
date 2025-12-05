@@ -1,4 +1,4 @@
-import { useDialog } from "@components/lib/dialog/useDialog";
+import { DialogConfig } from "@components/lib/dialog/Dialog";
 import { MazeMode } from "@models/algorithm-registry";
 import { useMazeStore } from "@stores";
 import {
@@ -7,11 +7,10 @@ import {
   useSetMazeMode,
 } from "@stores/selectors.ts";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useNavigate } from "react-router";
 
 export function useMazeGenerationWarning() {
-  const { dialog, showDialog, hideDialog } = useDialog();
-
   const isMazeGenerationDone = useMazeStore(
     (state) => state.isMazeGenerationDone,
   );
@@ -24,44 +23,41 @@ export function useMazeGenerationWarning() {
 
   const optionSelectedRef = useRef(false);
 
-  useEffect(() => {
-    if (!isMazeGenerationDone && mazeMode === MazeMode.solving) {
+  const navigate = useNavigate();
+
+  const dialogConfig: DialogConfig = {
+    title: "Лабиринт не полностью сгенерирован",
+    message: "Завершить генерацию автоматически?",
+    buttons: [
+      {
+        text: "Автозавершение",
+        variant: "primary",
+        onClick: async () => {
+          optionSelectedRef.current = true;
+          await generateMaze();
+        },
+      },
+      {
+        text: "Продолжить генерацию",
+        variant: "secondary",
+        onClick: () => {
+          optionSelectedRef.current = true;
+          setMazeMode(MazeMode.generation);
+          navigate("/visualization/generation");
+        },
+      },
+    ],
+    onClose: () => {
+      if (!optionSelectedRef.current) {
+        setMazeMode(MazeMode.generation);
+        navigate("/visualization/generation");
+      }
       optionSelectedRef.current = false;
-
-      showDialog({
-        title: "Лабиринт не полностью сгенерирован",
-        message: "Завершить генерацию автоматически?",
-        buttons: [
-          {
-            text: "Автозавершение",
-            variant: "primary",
-            onClick: () => {
-              optionSelectedRef.current = true;
-              generateMaze();
-            },
-          },
-          {
-            text: "Продолжить генерацию",
-            variant: "secondary",
-            onClick: () => {
-              optionSelectedRef.current = true;
-              setMazeMode(MazeMode.generation);
-            },
-          },
-        ],
-      });
-    }
-  }, [isMazeGenerationDone, mazeMode, showDialog, generateMaze, setMazeMode]);
-
-  const handleHideDialog = useCallback(() => {
-    if (!optionSelectedRef.current) {
-      setMazeMode(MazeMode.generation);
-    }
-    hideDialog();
-  }, [setMazeMode, hideDialog]);
+    },
+  };
 
   return {
-    dialog,
-    hideDialog: handleHideDialog,
+    dialogConfig,
+    isOpen: !isMazeGenerationDone && mazeMode === MazeMode.solving,
   };
 }
