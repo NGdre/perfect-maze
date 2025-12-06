@@ -15,17 +15,45 @@ const PlayButton = ({
   const isMazeRendering = useIsMazeRendering();
   const setIsMazeRendering = useSetIsMazeRendering();
 
-  // this is needed there is always at most one call to onStep at the same time
   const isPrevStepFinished = useRef(true);
+  const animationFrameRef = useRef<number>();
+  const stopRequestedRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
-    if (!isMazeRendering) return () => {};
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
-    let animationId: number | undefined;
+  useEffect(() => {
+    if (!isMazeRendering) {
+      stopRequestedRef.current = true;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = undefined;
+      }
+      return;
+    }
+
+    stopRequestedRef.current = false;
+
     let accumulatedTime = 0;
     let previousTime = performance.now();
 
     const animate = async (currentTime: DOMHighResTimeStamp) => {
+      if (
+        !isMountedRef.current ||
+        !isMazeRendering ||
+        stopRequestedRef.current
+      ) {
+        return;
+      }
+
       const deltaTime = currentTime - previousTime;
       previousTime = currentTime;
       accumulatedTime += deltaTime;
@@ -36,37 +64,62 @@ const PlayButton = ({
       ) {
         isPrevStepFinished.current = false;
 
-        const success = await onStep();
-        if (!success) {
-          setIsMazeRendering(false);
-          return;
-        }
-        accumulatedTime = 0;
+        try {
+          const success = await onStep();
 
-        isPrevStepFinished.current = true;
+          if (!isMountedRef.current || stopRequestedRef.current) {
+            isPrevStepFinished.current = true;
+            return;
+          }
+
+          if (!success) {
+            setIsMazeRendering(false);
+            isPrevStepFinished.current = true;
+            return;
+          }
+
+          accumulatedTime -= VISIALIZATION_ANIMATION_DELAY;
+        } catch (error) {
+          console.error("Error in animation step:", error);
+          if (isMountedRef.current) {
+            setIsMazeRendering(false);
+          }
+        } finally {
+          isPrevStepFinished.current = true;
+        }
       }
 
-      if (isMazeRendering) {
-        animationId = requestAnimationFrame(animate);
+      if (
+        isMountedRef.current &&
+        isMazeRendering &&
+        !stopRequestedRef.current
+      ) {
+        animationFrameRef.current = requestAnimationFrame(animate);
       }
     };
 
-    animationId = requestAnimationFrame(animate);
+    animationFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
-      setIsMazeRendering(false);
-      if (animationId !== undefined) {
-        cancelAnimationFrame(animationId);
+      stopRequestedRef.current = true;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = undefined;
       }
     };
   }, [isMazeRendering, onStep, setIsMazeRendering]);
 
+  const handleClick = () => {
+    if (isMazeRendering) {
+      stopRequestedRef.current = true;
+    }
+    setIsMazeRendering(!isMazeRendering);
+  };
+
   return (
     <>
       <Button
-        onClick={() => {
-          setIsMazeRendering(!isMazeRendering);
-        }}
+        onClick={handleClick}
         variant="outline"
         isToggle
         active={isMazeRendering}
