@@ -1,6 +1,7 @@
 import { CanvasLayer } from "@components/lib/CanvasLayer";
 import { PATH_WIDTH } from "@constants";
 import { clearCellArea, drawLine } from "@models/maze-canvas-rendering";
+import { useMazeStore } from "@stores";
 import {
   useColumnsAmount,
   useCurrVisualMazeChange,
@@ -16,21 +17,35 @@ export const MazePathCanvasLayer = () => {
   const change = useCurrVisualMazeChange();
 
   const isCellHistoryEmpty = useIsCellHistoryEmpty();
+  const cellHistoryState = useMazeStore((state) =>
+    state.cellHistory.getState(),
+  );
+
   const columns = useColumnsAmount();
 
   const idToCellMap = useIdToCellMap();
 
   const renderPath = useCallback(
-    function (ctx: CanvasRenderingContext2D, width: number, height: number) {
+    function (
+      ctx: CanvasRenderingContext2D,
+      width: number,
+      height: number,
+      _dpr: number,
+      isResized: boolean,
+    ) {
       if (width === 0) return;
 
-      if (isCellHistoryEmpty) ctx.clearRect(0, 0, width, height);
+      if (isCellHistoryEmpty || isResized) ctx.clearRect(0, 0, width, height);
 
       if (columns === 0 || !change || !idToCellMap) return;
 
       const cellSize = width / columns;
 
-      for (const cellChange of change) {
+      const shouldRedraw = isResized;
+
+      const changes = shouldRedraw ? [...cellHistoryState.values()] : change;
+
+      for (const cellChange of changes) {
         const currCell = idToCellMap.get(cellChange.id);
 
         if (!currCell) continue;
@@ -74,7 +89,7 @@ export const MazePathCanvasLayer = () => {
         }
       }
     },
-    [change, isCellHistoryEmpty, columns, idToCellMap],
+    [change, isCellHistoryEmpty, cellHistoryState, columns, idToCellMap],
   );
   return <CanvasLayer onRender={renderPath} />;
 };
