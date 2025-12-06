@@ -80,6 +80,10 @@ export const createMazeGenerationSlice: StateCreator<
     },
 
     async resetMaze() {
+      const isMazeInitialized = get().mazeData.cellIds.length !== 0;
+
+      if (!isMazeInitialized) return;
+
       try {
         const generator = await getMazeGenerator();
         await generator.reset();
