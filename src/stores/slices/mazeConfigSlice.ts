@@ -9,7 +9,12 @@ import {
   MazeMode,
   algoRegistry,
 } from "@models/algorithm-registry";
-import { MazeSize, RectMaze, generateRectMazeId } from "@models/maze";
+import {
+  MazeSize,
+  RectMaze,
+  generateRectMazeId,
+  getEndCellDefaultPositon,
+} from "@models/maze";
 import { clearHistory } from "@models/wall-history";
 import { MainStore } from "@stores/index";
 import { StateCreator } from "zustand";
@@ -44,10 +49,10 @@ export const createMazeConfigSlice: StateCreator<
   MazeConfigSlice
 > = (set, get) => ({
   startId: generateRectMazeId(0, 0),
-  endId: generateRectMazeId(
-    DEFAULT_ROWS_AMOUNT - 1,
-    DEFAULT_COLUMNS_AMOUNT - 1,
-  ),
+  endId: getEndCellDefaultPositon({
+    rows: DEFAULT_ROWS_AMOUNT,
+    cols: DEFAULT_COLUMNS_AMOUNT,
+  }),
   cellSelection: DEFAULT_CELL_SELECTION,
   mazeSolverId: DEFAULT_MAZE_SOLVER_ID,
   displayMode: null,
@@ -89,9 +94,12 @@ export const createMazeConfigSlice: StateCreator<
 
     if (rows === get().rowsAmount && cols === get().columnsAmount) return;
 
+    await get().resetMaze();
+
     set({
       rowsAmount: rows,
       columnsAmount: cols,
+      endId: getEndCellDefaultPositon({ rows, cols }),
     });
   },
 

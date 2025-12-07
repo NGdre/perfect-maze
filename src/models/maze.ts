@@ -522,3 +522,6 @@ export const createCellFinder = (mazeData: MazeData, neighbors: string[][]) => {
     };
   };
 };
+
+export const getEndCellDefaultPositon = ({ rows, cols }: MazeSize) =>
+  generateRectMazeId(rows - 1, cols - 1);
