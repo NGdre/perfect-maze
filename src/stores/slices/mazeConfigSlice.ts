@@ -13,6 +13,7 @@ import {
   MazeSize,
   RectMaze,
   generateRectMazeId,
+  getDefaultMazeData,
   getEndCellDefaultPositon,
 } from "@models/maze";
 import { clearHistory } from "@models/wall-history";
@@ -104,6 +105,7 @@ export const createMazeConfigSlice: StateCreator<
       rowsAmount: rows,
       columnsAmount: cols,
       endId: getEndCellDefaultPositon({ rows, cols }),
+      mazeData: getDefaultMazeData(),
     });
   },
 
