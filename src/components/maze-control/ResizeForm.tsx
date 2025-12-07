@@ -3,8 +3,15 @@ import {
   useIsMazeRendering,
   useRowsAmount,
 } from "@stores/selectors";
+import { debounce } from "@utils";
 
-import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../../constants";
+import {
+  MAX_COLUMNS,
+  MAX_ROWS,
+  MIN_COLUMNS,
+  MIN_ROWS,
+  UPDATE_MAZE_SIZE_DELAY,
+} from "../../constants";
 import { useMazeStore } from "../../stores/maze-store";
 import SelectNumber from "../lib/SelectNumber";
 
@@ -19,9 +26,9 @@ export function SelectRows({ ...props }) {
   const rowsAmount = useRowsAmount();
   const updateMazeSize = useMazeStore((state) => state.updateMazeSize);
 
-  const updateRowsAmount = async (rows: number) => {
+  const updateRowsAmount = debounce(async (rows: number) => {
     await updateMazeSize({ rows });
-  };
+  }, UPDATE_MAZE_SIZE_DELAY);
 
   return (
     <SelectNumber
@@ -39,9 +46,9 @@ export function SelectColumns({ ...props }) {
   const columnsAmount = useColumnsAmount();
   const updateMazeSize = useMazeStore((state) => state.updateMazeSize);
 
-  const updateColumnsAmount = async (cols: number) => {
+  const updateColumnsAmount = debounce(async (cols: number) => {
     await updateMazeSize({ cols });
-  };
+  }, UPDATE_MAZE_SIZE_DELAY);
 
   return (
     <SelectNumber

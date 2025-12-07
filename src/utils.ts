@@ -4,6 +4,7 @@ export { default as clamp } from "lodash/clamp";
 export { default as random } from "lodash/random";
 export { default as mean } from "lodash/mean";
 export { default as throttle } from "lodash/throttle";
+export { default as debounce } from "lodash/debounce";
 export { default as noop } from "lodash/noop";
 export { default as pick } from "lodash/pick";
 

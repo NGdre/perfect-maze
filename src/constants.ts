@@ -39,6 +39,7 @@ export const FILL_TO_CELL_RATIO = 0.5;
 
 export const VISIALIZATION_ANIMATION_DELAY = 10;
 export const CELL_SELECTION_THROTTLE_DELAY = 0;
+export const UPDATE_MAZE_SIZE_DELAY = 500;
 
 export const cellSelectionMode = {
   none: "none",
