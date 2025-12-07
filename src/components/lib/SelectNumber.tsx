@@ -1,7 +1,8 @@
-import "./select-number.css";
-import { useState, useId, FC, useEffect, ChangeEvent, FocusEvent } from "react";
+import { ChangeEvent, FC, FocusEvent, useEffect, useId, useState } from "react";
 import React from "react";
+
 import { clamp } from "../../utils";
+import "./select-number.css";
 
 const classNames = {
   button:
@@ -43,7 +44,7 @@ const UpdateCountButton = ({
 export type NumericValue = string | number;
 
 interface SelectNumberProps {
-  onSelect: (number: number) => void;
+  onSelect: (number: number) => void | Promise<void>;
   value?: NumericValue;
   labelContent?: string;
   min?: NumericValue;
@@ -85,7 +86,11 @@ const SelectNumber: FC<SelectNumberProps> = ({
 
     if (Number.isNaN(maybeNumber)) return;
 
-    if (maybeNumber <= max && maybeNumber >= min) onSelect(maybeNumber);
+    async function handleSelect() {
+      await onSelect(maybeNumber);
+    }
+
+    if (maybeNumber <= max && maybeNumber >= min) handleSelect();
   }, [counter]);
 
   const handleDecrement = () => {
@@ -126,7 +131,7 @@ const SelectNumber: FC<SelectNumberProps> = ({
 
   return (
     <div className="grid grid-cols-3">
-      <div className="text-center col-span-3">
+      <div className="col-span-3 text-center">
         <label htmlFor={inputId} className={classNames.selectNumberLabel}>
           {labelContent}
         </label>

@@ -7,6 +7,11 @@ import {
 } from "../validation/utils";
 import { LineCords } from "./maze-canvas-rendering";
 
+export interface MazeSize {
+  rows: number;
+  cols: number;
+}
+
 const FRACTION_DIGITS = 2;
 
 // может не должно быть возможности изменять координаты после создания точки?

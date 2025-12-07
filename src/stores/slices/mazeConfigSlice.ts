@@ -9,7 +9,7 @@ import {
   MazeMode,
   algoRegistry,
 } from "@models/algorithm-registry";
-import { RectMaze, generateRectMazeId } from "@models/maze";
+import { MazeSize, RectMaze, generateRectMazeId } from "@models/maze";
 import { clearHistory } from "@models/wall-history";
 import { MainStore } from "@stores/index";
 import { StateCreator } from "zustand";
@@ -31,8 +31,7 @@ type Action = {
   setEndId: (endId: State["endId"]) => void;
   setMazeSolverId: (mazeSolverName: string) => void;
   setDisplayMode: (displayMode: State["displayMode"]) => void;
-  updateRowsAmount: (newRowsAmount: State["rowsAmount"]) => void;
-  updateColumnsAmount: (newColumnsAmount: State["columnsAmount"]) => void;
+  updateMazeSize: (size: Partial<MazeSize>) => Promise<void>;
   updateMazeGenerationAlgorithm: (newAlgorithm: string) => Promise<void>;
 };
 
@@ -84,10 +83,17 @@ export const createMazeConfigSlice: StateCreator<
     set({ displayMode });
   },
 
-  updateRowsAmount: (newRowsAmount) => set({ rowsAmount: newRowsAmount }),
+  async updateMazeSize({ rows, cols }) {
+    if (rows === undefined) rows = get().rowsAmount;
+    if (cols === undefined) cols = get().columnsAmount;
 
-  updateColumnsAmount: (newColumnsAmount) =>
-    set({ columnsAmount: newColumnsAmount }),
+    if (rows === get().rowsAmount && cols === get().columnsAmount) return;
+
+    set({
+      rowsAmount: rows,
+      columnsAmount: cols,
+    });
+  },
 
   updateMazeGenerationAlgorithm: async (newAlgorithm) => {
     const newMazeGeneratorId = algoRegistry.getIdByName(newAlgorithm);
