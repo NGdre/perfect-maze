@@ -49,6 +49,7 @@ interface SelectNumberProps {
   labelContent?: string;
   min?: NumericValue;
   max?: NumericValue;
+  disabled?: boolean;
 }
 
 const INCREASE_BTN_TEXT = "+";
@@ -62,6 +63,7 @@ const SelectNumber: FC<SelectNumberProps> = ({
   onSelect,
   min = 0,
   max = 10,
+  disabled = false,
   ...props
 }) => {
   const [counter, updateCounter] = useState<NumericValue>(+value);
@@ -139,7 +141,7 @@ const SelectNumber: FC<SelectNumberProps> = ({
       <UpdateCountButton
         onClick={handleDecrement}
         text={DECREASE_BTN_TEXT}
-        disabled={counterAsNumber <= min}
+        disabled={counterAsNumber <= min || disabled}
       />
       <input
         {...props}
@@ -151,11 +153,12 @@ const SelectNumber: FC<SelectNumberProps> = ({
         onBlur={handleBlur}
         min={min}
         max={max}
+        disabled={disabled}
       />
       <UpdateCountButton
         onClick={handleIncrement}
         text={INCREASE_BTN_TEXT}
-        disabled={counterAsNumber >= max}
+        disabled={counterAsNumber >= max || disabled}
       />
     </div>
   );

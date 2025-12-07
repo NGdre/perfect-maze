@@ -92,7 +92,11 @@ export const createMazeConfigSlice: StateCreator<
     if (rows === undefined) rows = get().rowsAmount;
     if (cols === undefined) cols = get().columnsAmount;
 
-    if (rows === get().rowsAmount && cols === get().columnsAmount) return;
+    if (
+      (rows === get().rowsAmount && cols === get().columnsAmount) ||
+      get().isMazeRendering
+    )
+      return;
 
     await get().resetMaze();
 

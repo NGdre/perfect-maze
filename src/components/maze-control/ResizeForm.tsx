@@ -1,4 +1,8 @@
-import { useColumnsAmount, useRowsAmount } from "@stores/selectors";
+import {
+  useColumnsAmount,
+  useIsMazeRendering,
+  useRowsAmount,
+} from "@stores/selectors";
 
 import { MAX_COLUMNS, MAX_ROWS, MIN_COLUMNS, MIN_ROWS } from "../../constants";
 import { useMazeStore } from "../../stores/maze-store";
@@ -11,7 +15,7 @@ const classNames = {
   resizeFormWrapper: "flex mt-5 space-x-6",
 };
 
-export function SelectRows() {
+export function SelectRows({ ...props }) {
   const rowsAmount = useRowsAmount();
   const updateMazeSize = useMazeStore((state) => state.updateMazeSize);
 
@@ -26,11 +30,12 @@ export function SelectRows() {
       min={MIN_ROWS}
       max={MAX_ROWS}
       onSelect={updateRowsAmount}
+      {...props}
     />
   );
 }
 
-export function SelectColumns() {
+export function SelectColumns({ ...props }) {
   const columnsAmount = useColumnsAmount();
   const updateMazeSize = useMazeStore((state) => state.updateMazeSize);
 
@@ -45,15 +50,17 @@ export function SelectColumns() {
       min={MIN_COLUMNS}
       max={MAX_COLUMNS}
       onSelect={updateColumnsAmount}
+      {...props}
     />
   );
 }
 
 export default function ResizeForm() {
+  const isMazeRendering = useIsMazeRendering();
   return (
     <div className={classNames.resizeFormWrapper}>
-      <SelectRows />
-      <SelectColumns />
+      <SelectRows disabled={isMazeRendering} />
+      <SelectColumns disabled={isMazeRendering} />
     </div>
   );
 }
