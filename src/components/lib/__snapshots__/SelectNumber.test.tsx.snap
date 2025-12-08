@@ -3,45 +3,55 @@
 exports[`SelectNumber Component should take a snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="grid grid-cols-3"
+    class="flex flex-col items-center gap-2"
   >
+    <label
+      class="text-sm font-semibold capitalize text-text-primary"
+      for=":r0:"
+    >
+      label
+    </label>
     <div
-      class="text-center col-span-3"
+      class="flex"
     >
-      <label
-        class="text-gray-700 text-sm font-semibold capitalize"
-        for=":r0:"
+      <div
+        class=""
       >
-        label
-      </label>
+        <button
+          class="btn btn--primary btn--sm rounded-full"
+          type="button"
+        >
+          <span
+            class="btn__text"
+          >
+            -
+          </span>
+        </button>
+      </div>
+      <input
+        class="bg-transparent text-center font-semibold outline-none hover:text-gray-500 focus:text-black focus:outline-none md:text-base"
+        id=":r0:"
+        max="200"
+        min="50"
+        step="1"
+        type="number"
+        value="100"
+      />
+      <div
+        class=""
+      >
+        <button
+          class="btn btn--primary btn--sm rounded-full"
+          type="button"
+        >
+          <span
+            class="btn__text"
+          >
+            +
+          </span>
+        </button>
+      </div>
     </div>
-    <button
-      class="bg-gray-300 text-gray-600 rounded-full outline-none cursor-pointer hover:text-white hover:bg-blue-500"
-    >
-      <span
-        class="m-auto text-2xl"
-      >
-        -
-      </span>
-    </button>
-    <input
-      class="outline-none focus:outline-none text-center font-semibold 
-              hover:text-gray-500 focus:text-black md:text-base flex items-center"
-      id=":r0:"
-      max="200"
-      min="50"
-      type="number"
-      value="100"
-    />
-    <button
-      class="bg-gray-300 text-gray-600 rounded-full outline-none cursor-pointer hover:text-white hover:bg-blue-500"
-    >
-      <span
-        class="m-auto text-2xl"
-      >
-        +
-      </span>
-    </button>
   </div>
 </DocumentFragment>
 `;

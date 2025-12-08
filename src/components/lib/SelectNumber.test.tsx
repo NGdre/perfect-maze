@@ -1,5 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+
 import SelectNumber from "./SelectNumber";
 
 describe(`${SelectNumber.name} Component`, () => {
@@ -11,11 +12,11 @@ describe(`${SelectNumber.name} Component`, () => {
     const { asFragment } = render(
       <SelectNumber
         onSelect={() => {}}
-        value={beetween}
+        initialValue={beetween}
         min={min}
         max={max}
         labelContent="label"
-      />
+      />,
     );
 
     expect(asFragment()).toMatchSnapshot();
@@ -29,10 +30,10 @@ describe(`${SelectNumber.name} Component`, () => {
         onSelect={(number) => {
           expect(number).toBe(expected);
         }}
-        value={expected}
+        initialValue={expected}
         min={min}
         max={max}
-      />
+      />,
     );
     const countElement = screen.getByDisplayValue(expected);
     expect(countElement).toBeInTheDocument();
@@ -44,7 +45,12 @@ describe(`${SelectNumber.name} Component`, () => {
     const onSelect = jest.fn((number) => number);
 
     render(
-      <SelectNumber onSelect={onSelect} value={beetween} min={min} max={max} />
+      <SelectNumber
+        onSelect={onSelect}
+        initialValue={beetween}
+        min={min}
+        max={max}
+      />,
     );
 
     const incrementButton = screen.getByText(/\+/);
@@ -61,7 +67,12 @@ describe(`${SelectNumber.name} Component`, () => {
     const onSelect = jest.fn((number) => number);
 
     render(
-      <SelectNumber onSelect={onSelect} value={beetween} min={min} max={max} />
+      <SelectNumber
+        onSelect={onSelect}
+        initialValue={beetween}
+        min={min}
+        max={max}
+      />,
     );
 
     const decrementButton = screen.getByText(/\-/);
@@ -78,7 +89,12 @@ describe(`${SelectNumber.name} Component`, () => {
     const onSelect = jest.fn((number) => number);
 
     render(
-      <SelectNumber onSelect={onSelect} value={beetween} min={min} max={max} />
+      <SelectNumber
+        onSelect={onSelect}
+        initialValue={beetween}
+        min={min}
+        max={max}
+      />,
     );
 
     const incrementButton = screen.getByText(/\+/);
@@ -100,10 +116,10 @@ describe(`${SelectNumber.name} Component`, () => {
         onSelect={(number) => {
           expect(number).toBe(max);
         }}
-        value={max}
+        initialValue={max}
         min={min}
         max={max}
-      />
+      />,
     );
     const incrementButton = screen.getByText(/\+/);
     fireEvent.click(incrementButton);
@@ -117,10 +133,10 @@ describe(`${SelectNumber.name} Component`, () => {
         onSelect={(number) => {
           expect(number).toBe(min);
         }}
-        value={min}
+        initialValue={min}
         min={min}
         max={max}
-      />
+      />,
     );
     const decrementButton = screen.getByText(/\-/);
     fireEvent.click(decrementButton);
@@ -131,7 +147,12 @@ describe(`${SelectNumber.name} Component`, () => {
   test("produces a clamped value on input blur", async () => {
     const onSelect = jest.fn();
     render(
-      <SelectNumber onSelect={onSelect} value={max} min={min} max={max} />
+      <SelectNumber
+        onSelect={onSelect}
+        initialValue={max}
+        min={min}
+        max={max}
+      />,
     );
     const input = screen.getByDisplayValue(max);
     const user = userEvent.setup();
@@ -160,10 +181,10 @@ describe(`${SelectNumber.name} Component`, () => {
     render(
       <SelectNumber
         onSelect={onSelect}
-        value={defaultValue}
+        initialValue={defaultValue}
         min={min}
         max={max}
-      />
+      />,
     );
 
     const input = screen.getByDisplayValue(defaultValue);
