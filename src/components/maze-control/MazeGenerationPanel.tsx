@@ -5,6 +5,7 @@ import { useMazeStore } from "@stores";
 
 import MazeControlsHeading from "../lib/typography/MazeControlsHeading";
 import { AlgorithmChoiceChips } from "./AlgorithmChoiceChips";
+import ResizeForm from "./ResizeForm";
 import VisualizationControls from "./VisualizationControls";
 
 const headingForGenerators = "Алгоритмы";
@@ -33,6 +34,7 @@ export function MazeGenerationPanel() {
         resetTooltipContent="сбросить лабиринт"
         completeTooltipContent="сгенерировать лабиринт"
       />
+      <ResizeForm />
       <MazeControlsHeading>{headingForGenerators}</MazeControlsHeading>
       <AlgorithmChoiceChips
         algorithmNames={generatorNames}

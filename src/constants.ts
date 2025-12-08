@@ -8,7 +8,7 @@ export const DEFAULT_COLUMNS_AMOUNT = 40;
 export const MIN_ROWS = 5;
 export const MAX_ROWS = 100;
 export const MIN_COLUMNS = 5;
-export const MAX_COLUMNS = 100;
+export const MAX_COLUMNS = 200;
 
 export const PROJECT_NAME = "Perfect Maze";
 
