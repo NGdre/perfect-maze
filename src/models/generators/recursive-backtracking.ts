@@ -2,6 +2,12 @@ import { MAX_COLUMNS, MAX_ROWS } from "@constants";
 import ow from "ow";
 
 import { sampleWithRandom, seededRandom } from "../../utils";
+import { MazeGeneratorResult } from "../algorithm-registry";
+
+interface RecursiveBacktrackingCell {
+  visited: boolean;
+  id: string;
+}
 
 const generateCellId = (i: number, j: number) => `${i},${j}`;
 
@@ -29,10 +35,10 @@ export function* recursiveBacktracking(m: number, n: number, seed?: number) {
 
   const random = seed !== undefined ? seededRandom(seed) : Math.random;
 
-  const cellsMatrix = new Array(m);
+  const cellsMatrix = new Array<RecursiveBacktrackingCell[]>(m);
 
   for (let i = 0; i < m; i++) {
-    cellsMatrix[i] = new Array(n);
+    cellsMatrix[i] = new Array<RecursiveBacktrackingCell>(n);
 
     for (let j = 0; j < n; j++) {
       cellsMatrix[i][j] = { visited: false, id: generateCellId(i, j) };
@@ -47,7 +53,7 @@ export function* recursiveBacktracking(m: number, n: number, seed?: number) {
   const cells = [initialCell];
 
   while (cells.length > 0) {
-    const currentCell = cells.at(-1);
+    const currentCell = cells.at(-1)!;
 
     const [ic, jc] = currentCell.id.split(",");
 
@@ -61,7 +67,11 @@ export function* recursiveBacktracking(m: number, n: number, seed?: number) {
 
     const nextCell = sampleWithRandom(unvisitedCells, random);
 
-    if (nextCell !== undefined) yield [currentCell, nextCell];
+    if (nextCell !== undefined) {
+      yield {
+        wallsToRemove: [[currentCell.id, nextCell.id]],
+      } as MazeGeneratorResult;
+    }
 
     currentCell.visited = true;
 

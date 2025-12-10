@@ -1,5 +1,7 @@
 import { mapGenerator } from "src/utils";
 
+import { MazeGeneratorResult } from "../algorithm-registry";
+
 interface EllerCell {
   rightWall: boolean;
   bottomWall: boolean;
@@ -205,6 +207,8 @@ export function eller(m: number, n: number) {
         newRow.push([cellId(value.rowIndex, j), cellId(value.rowIndex + 1, j)]);
     }
 
-    return newRow;
+    return {
+      wallsToRemove: newRow,
+    } as MazeGeneratorResult;
   });
 }

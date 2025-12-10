@@ -1,5 +1,6 @@
 import { seededRandom } from "@utils";
 
+import { MazeGeneratorResult } from "../algorithm-registry.js";
 // @ts-ignore
 import UnionFind from "./union-find.js";
 
@@ -53,7 +54,9 @@ export function* kruskal(m: number, n: number, seed?: number) {
     if (!uf.connected(firstCellId, secondCellId)) {
       uf.union(firstCellId, secondCellId);
 
-      yield neighborsPairs[randomNeighborPairIndex].map((id) => ({ id }));
+      yield {
+        wallsToRemove: [neighborsPairs[randomNeighborPairIndex]],
+      } as MazeGeneratorResult;
     }
 
     neighborsPairs.splice(randomNeighborPairIndex, 1);

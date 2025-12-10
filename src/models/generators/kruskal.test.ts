@@ -9,9 +9,10 @@ describe(kruskal.name, () => {
 
     expect(kruskal.constructor).toEqual(sampleGenerator.constructor);
 
-    const walls = [...kruskal(m, n)];
+    const result = [...kruskal(m, n)];
 
-    expect(walls[0]).toHaveLength(2);
-    expect(walls[0][0]).toMatchObject({ id: expect.stringMatching(/\d,\d/) });
+    for (let i = 0; i < result.length; i++) {
+      expect(result[i].wallsToRemove[0]).toHaveLength(2);
+    }
   });
 });
