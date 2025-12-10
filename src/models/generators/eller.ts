@@ -1,4 +1,4 @@
-import { mapGenerator } from "src/utils";
+import { mapGenerator, sampleWithRandom, seededRandom } from "@utils";
 
 import { MazeGeneratorResult } from "../algorithm-registry";
 
@@ -24,10 +24,12 @@ export class EllerMazeGenerator {
   private currentRowIndex: number;
   private horizontalBias: number;
   private verticalBias: number;
+  private random: () => number;
 
   constructor(
     rows: number,
     cols: number,
+    seed?: number,
     horizontalBias: number = 0.5,
     verticalBias: number = 0.5,
   ) {
@@ -50,6 +52,8 @@ export class EllerMazeGenerator {
     this.currentRow = [];
     this.nextRowSetId = 0;
     this.currentRowIndex = 0;
+
+    this.random = seed !== undefined ? seededRandom(seed) : Math.random;
 
     this.initializeFirstRow();
   }
@@ -98,7 +102,7 @@ export class EllerMazeGenerator {
         continue;
       }
 
-      if (Math.random() < this.horizontalBias) {
+      if (this.random() < this.horizontalBias) {
         this.currentRow[x].rightWall = false;
 
         this.mergeSets(x, x + 1);
@@ -118,11 +122,11 @@ export class EllerMazeGenerator {
     }
 
     for (const [_set, columns] of sets) {
-      const randomColumn = columns[Math.floor(Math.random() * columns.length)];
+      const randomColumn = sampleWithRandom(columns, this.random) ?? columns[0];
       this.currentRow[randomColumn].bottomWall = false;
 
       for (const x of columns) {
-        if (x !== randomColumn && Math.random() < this.verticalBias) {
+        if (x !== randomColumn && this.random() < this.verticalBias) {
           this.currentRow[x].bottomWall = false;
         }
       }
@@ -188,8 +192,20 @@ export class EllerMazeGenerator {
   }
 }
 
-export function eller(m: number, n: number) {
-  const generator = new EllerMazeGenerator(m, n);
+export function eller(
+  m: number,
+  n: number,
+  seed?: number,
+  horizontalBias: number = 0.5,
+  verticalBias: number = 0.5,
+) {
+  const generator = new EllerMazeGenerator(
+    m,
+    n,
+    seed,
+    horizontalBias,
+    verticalBias,
+  );
   const cellId = (row: number, col: number) => `${row},${col}`;
 
   return mapGenerator(generator.generate(), (value) => {
