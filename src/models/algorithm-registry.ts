@@ -1,5 +1,6 @@
 import { pick } from "@utils";
 
+import { eller } from "./generators/eller";
 import { kruskal } from "./generators/kruskal";
 import { recursiveBacktracking } from "./generators/recursive-backtracking";
 import { WallsToRemove } from "./maze";
@@ -98,6 +99,12 @@ export const RECURSIVE_BACKTRACKING_ID = algoRegistry.push({
   name: "recursive backtracking",
   type: MazeMode.generation,
   func: recursiveBacktracking,
+});
+
+export const ELLER_ID = algoRegistry.push({
+  name: "eller",
+  type: MazeMode.generation,
+  func: eller,
 });
 
 export const A_STAR_DISPLAY_MODES = pick(ALGO_DISPLAY_MODES, [
