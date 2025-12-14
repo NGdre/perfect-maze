@@ -1,4 +1,12 @@
-import { searchParams } from "@constants";
+import {
+  DEFAULT_COLUMNS_AMOUNT,
+  DEFAULT_ROWS_AMOUNT,
+  MAX_COLUMNS,
+  MAX_ROWS,
+  MIN_COLUMNS,
+  MIN_ROWS,
+  searchParams,
+} from "@constants";
 import {
   DEFAULT_DISPLAY_MODE,
   DEFAULT_MAZE_SOLVER_ID,
@@ -10,6 +18,7 @@ import {
   ensureValidDisplayModeParam,
   ensureValidMazeGeneratorParam,
   ensureValidMazeSolverParam,
+  ensureValidPositiveNumberParam,
 } from "./validators";
 
 export const mazeGenerationLoader = async ({
@@ -26,6 +35,24 @@ export const mazeGenerationLoader = async ({
   };
 
   ensureValidMazeGeneratorParam(mazeGenerator, url);
+
+  ensureValidPositiveNumberParam(
+    searchParams.ROWS_AMOUNT,
+    params.get(searchParams.ROWS_AMOUNT),
+    MIN_ROWS,
+    MAX_ROWS,
+    DEFAULT_ROWS_AMOUNT,
+    url,
+  );
+
+  ensureValidPositiveNumberParam(
+    searchParams.COLUMNS_AMOUNT,
+    params.get(searchParams.COLUMNS_AMOUNT),
+    MIN_COLUMNS,
+    MAX_COLUMNS,
+    DEFAULT_COLUMNS_AMOUNT,
+    url,
+  );
 
   return params;
 };

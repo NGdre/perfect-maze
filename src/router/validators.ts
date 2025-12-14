@@ -4,6 +4,7 @@ import {
   generatorNames,
   mazeSolversNames,
 } from "@models/algorithm-registry";
+import { clamp } from "@utils";
 import {
   ParamValidationInput,
   validateUrlParam,
@@ -58,4 +59,34 @@ export const ensureValidDisplayModeParam = (
   }
 
   return displayModeValidation.value;
+};
+
+export const ensureValidPositiveNumberParam = (
+  paramName: string,
+  searchParam: string | null,
+  min: number,
+  max: number,
+  defaultValue: number,
+  url: URL,
+) => {
+  let isValid = true;
+
+  let maybePositive = parseInt(searchParam ?? "");
+
+  if (Number.isNaN(maybePositive)) {
+    maybePositive = defaultValue;
+    isValid = false;
+  }
+
+  if (maybePositive < 0) {
+    maybePositive *= -1;
+    isValid = false;
+  }
+
+  if (maybePositive < min || max < maybePositive) {
+    maybePositive = clamp(maybePositive, min, max);
+    isValid = false;
+  }
+
+  if (!isValid) setSearchParam(url, paramName, String(maybePositive));
 };

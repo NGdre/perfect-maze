@@ -57,6 +57,8 @@ export const searchParams = {
   MAZE_GENERATOR: "mazeGenerator",
   MAZE_SOLVER: "mazeSolver",
   DISPLAY_MODE: "displayMode",
+  ROWS_AMOUNT: "rowsAmount",
+  COLUMNS_AMOUNT: "columnsAmount",
 } as const;
 
 export const pathSegments = {
