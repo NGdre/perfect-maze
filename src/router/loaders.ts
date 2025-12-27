@@ -1,6 +1,4 @@
 import {
-  DEFAULT_COLUMNS_AMOUNT,
-  DEFAULT_ROWS_AMOUNT,
   MAX_COLUMNS,
   MAX_ROWS,
   MIN_COLUMNS,
@@ -41,7 +39,7 @@ export const mazeGenerationLoader = async ({
     params.get(searchParams.ROWS_AMOUNT),
     MIN_ROWS,
     MAX_ROWS,
-    DEFAULT_ROWS_AMOUNT,
+    getState().rowsAmount,
     url,
   );
 
@@ -50,7 +48,7 @@ export const mazeGenerationLoader = async ({
     params.get(searchParams.COLUMNS_AMOUNT),
     MIN_COLUMNS,
     MAX_COLUMNS,
-    DEFAULT_COLUMNS_AMOUNT,
+    getState().columnsAmount,
     url,
   );
 

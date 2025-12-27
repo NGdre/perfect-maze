@@ -90,23 +90,27 @@ export const createMazeConfigSlice: StateCreator<
   },
 
   async updateMazeSize({ rows, cols }) {
-    if (rows === undefined) rows = get().rowsAmount;
-    if (cols === undefined) cols = get().columnsAmount;
+    if (get().isMazeRendering) return;
 
-    if (
-      (rows === get().rowsAmount && cols === get().columnsAmount) ||
-      get().isMazeRendering
-    )
-      return;
+    if (rows !== undefined && rows !== get().rowsAmount) {
+      await get().resetMaze();
 
-    await get().resetMaze();
+      set({
+        rowsAmount: rows,
+        endId: getEndCellDefaultPositon({ rows, cols: get().columnsAmount }),
+        mazeData: getDefaultMazeData(),
+      });
+    }
 
-    set({
-      rowsAmount: rows,
-      columnsAmount: cols,
-      endId: getEndCellDefaultPositon({ rows, cols }),
-      mazeData: getDefaultMazeData(),
-    });
+    if (cols !== undefined && cols !== get().columnsAmount) {
+      await get().resetMaze();
+
+      set({
+        columnsAmount: cols,
+        endId: getEndCellDefaultPositon({ rows: get().rowsAmount, cols }),
+        mazeData: getDefaultMazeData(),
+      });
+    }
   },
 
   updateMazeGenerationAlgorithm: async (newAlgorithm) => {

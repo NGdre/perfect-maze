@@ -1,5 +1,8 @@
 import { CanvasLayersContainer } from "@components/lib/CanvasLayersContainer";
+import { searchParams } from "@constants";
 import { useMazeStore } from "src/stores/maze-store";
+
+import { useSearchParams } from "react-router";
 
 import { CanvasLayer } from "../lib/CanvasLayer";
 import { CellMarksCanvasLayer } from "./CellMarksCanvasLayer";
@@ -34,8 +37,22 @@ export default function MazeViewport({
 }: {
   containerClassName?: string;
 }) {
-  const rows = useMazeStore((state) => state.rowsAmount);
-  const columns = useMazeStore((state) => state.columnsAmount);
+  const [params] = useSearchParams();
+  let rows = useMazeStore((state) => state.rowsAmount);
+  let columns = useMazeStore((state) => state.columnsAmount);
+
+  const rowsParam = params.get(searchParams.ROWS_AMOUNT);
+  const colsParam = params.get(searchParams.COLUMNS_AMOUNT);
+
+  if (
+    rowsParam !== null &&
+    colsParam !== null &&
+    (rows !== +rowsParam || columns !== +colsParam)
+  ) {
+    rows = +rowsParam;
+    columns = +colsParam;
+  }
+
   const aspect = columns / rows;
 
   return (

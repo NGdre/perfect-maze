@@ -11,6 +11,8 @@ import { useMazeStore } from "@stores";
 import { useIsMazeRendering } from "@stores/selectors";
 import { debounce, flow } from "@utils";
 
+import { useCallback } from "react";
+
 import SelectNumber from "../lib/SelectNumber";
 
 const ROWS_LABEL = "строки";
@@ -39,6 +41,16 @@ export default function ResizeForm() {
     }),
   );
 
+  const handleSelectRows = useCallback(
+    debounce(flow(String, updateRowsAmount), UPDATE_MAZE_SIZE_DELAY),
+    [updateRowsAmount],
+  );
+
+  const handleSelectColumns = useCallback(
+    debounce(flow(String, updateColumnsAmount), UPDATE_MAZE_SIZE_DELAY),
+    [updateColumnsAmount],
+  );
+
   return (
     <div className="!mt-10 flex space-x-6 rounded-sm">
       <SelectNumber
@@ -46,10 +58,7 @@ export default function ResizeForm() {
         initialValue={rowsAmount}
         min={MIN_ROWS}
         max={MAX_ROWS}
-        onSelect={debounce(
-          flow(String, updateRowsAmount),
-          UPDATE_MAZE_SIZE_DELAY,
-        )}
+        onSelect={handleSelectRows}
         disabled={isMazeRendering}
       />
 
@@ -58,10 +67,7 @@ export default function ResizeForm() {
         initialValue={columnsAmount}
         min={MIN_COLUMNS}
         max={MAX_COLUMNS}
-        onSelect={debounce(
-          flow(String, updateColumnsAmount),
-          UPDATE_MAZE_SIZE_DELAY,
-        )}
+        onSelect={handleSelectColumns}
         disabled={isMazeRendering}
       />
     </div>
