@@ -5,10 +5,10 @@ import {
   clearHistory,
   createWallHistory,
   forwardHistory,
-  saveHistoryChange,
   saveHistoryChanges,
 } from "@models/wall-history";
 import { MainStore } from "@stores";
+import { flatMap } from "@utils";
 import { MazeGeneratorWorkerManager } from "@workers/maze-generator-worker-manager";
 import { StateCreator } from "zustand";
 
@@ -129,7 +129,10 @@ export const createMazeGenerationSlice: StateCreator<
           } else {
             if (next.value) {
               set({
-                wallHistory: saveHistoryChange(wallHistory, next.value),
+                wallHistory: saveHistoryChanges(
+                  wallHistory,
+                  next.value.wallsToRemove,
+                ),
               });
             }
           }
@@ -156,7 +159,10 @@ export const createMazeGenerationSlice: StateCreator<
 
         if (wallChanges) {
           set({
-            wallHistory: saveHistoryChanges(wallHistory, wallChanges),
+            wallHistory: saveHistoryChanges(
+              wallHistory,
+              flatMap(wallChanges, (genResult) => genResult.wallsToRemove),
+            ),
             isMazeGenerationDone: true,
           });
         }

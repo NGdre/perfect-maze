@@ -7,7 +7,7 @@ describe(recursiveBacktracking.name, () => {
     const sampleGenerator = function* () {};
 
     expect(recursiveBacktracking.constructor).toEqual(
-      sampleGenerator.constructor
+      sampleGenerator.constructor,
     );
   });
 
@@ -17,16 +17,13 @@ describe(recursiveBacktracking.name, () => {
         fc.integer({ min: 2, max: 15 }),
         fc.integer({ min: 2, max: 15 }),
         (m, n) => {
-          const pairs = [...recursiveBacktracking(m, n)];
+          const result = [...recursiveBacktracking(m, n)];
 
-          const firstPairToRemove = pairs[0];
-
-          expect(firstPairToRemove).toHaveLength(2);
-          expect(firstPairToRemove[0]).toMatchObject({
-            id: expect.stringMatching(/\d,\d/),
-          });
-        }
-      )
+          for (let i = 0; i < result.length; i++) {
+            expect(result[i].wallsToRemove[0]).toHaveLength(2);
+          }
+        },
+      ),
     );
   });
 });

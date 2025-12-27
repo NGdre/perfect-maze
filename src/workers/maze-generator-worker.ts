@@ -1,7 +1,9 @@
-import { MazeGenerator, algoRegistry } from "@models/algorithm-registry";
+import {
+  MazeGenerator,
+  MazeGeneratorResult,
+  algoRegistry,
+} from "@models/algorithm-registry";
 import { MazeData, createMaze } from "@models/maze";
-import { HistoryChange } from "@models/wall-history";
-import { mapGenerator } from "@utils";
 import * as Comlink from "comlink";
 
 export interface MazeGeneratorInitData {
@@ -15,8 +17,8 @@ export interface MazeGeneratorWorker {
   mazeGenerator: MazeGenerator | null;
   initMazeGenerator(initData: MazeGeneratorInitData): void;
   createMazeGrid(rows: number, cols: number): MazeData;
-  generateMaze(): HistoryChange[] | void;
-  takeStep(): IteratorResult<HistoryChange, void> | undefined;
+  generateMaze(): MazeGeneratorResult[] | void;
+  takeStep(): IteratorResult<MazeGeneratorResult, void> | void;
   isMazeGeneratorExist(): boolean;
   resetMazeGenerator(): void;
 }
@@ -39,10 +41,7 @@ const api: MazeGeneratorWorker = {
   }) {
     const mazeGenerator = algoRegistry.findAlgoById(mazeGeneratorAlgoId);
 
-    this.mazeGenerator = mapGenerator(
-      mazeGenerator(rows, cols, seed),
-      (pair) => [pair[0].id, pair[1].id],
-    );
+    this.mazeGenerator = mazeGenerator(rows, cols, seed);
   },
 
   [CREATE_GRID_WORKER_METHOD](rows, cols) {

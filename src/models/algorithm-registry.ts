@@ -1,7 +1,9 @@
 import { pick } from "@utils";
 
+import { eller } from "./generators/eller";
 import { kruskal } from "./generators/kruskal";
 import { recursiveBacktracking } from "./generators/recursive-backtracking";
+import { WallsToRemove } from "./maze";
 import { aStarSerialVisual } from "./solvers/a-star";
 import { bfsSerialVisual } from "./solvers/breadth-first-search";
 
@@ -10,7 +12,11 @@ export const MazeMode = {
   solving: "solving",
 } as const;
 
-export type MazeGenerator = Generator<[string, string], void, any>;
+export interface MazeGeneratorResult {
+  wallsToRemove: WallsToRemove;
+}
+
+export type MazeGenerator = Generator<MazeGeneratorResult, void, unknown>;
 
 export type MazeModeType = (typeof MazeMode)[keyof typeof MazeMode];
 
@@ -93,6 +99,12 @@ export const RECURSIVE_BACKTRACKING_ID = algoRegistry.push({
   name: "recursive backtracking",
   type: MazeMode.generation,
   func: recursiveBacktracking,
+});
+
+export const ELLER_ID = algoRegistry.push({
+  name: "eller",
+  type: MazeMode.generation,
+  func: eller,
 });
 
 export const A_STAR_DISPLAY_MODES = pick(ALGO_DISPLAY_MODES, [

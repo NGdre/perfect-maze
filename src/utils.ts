@@ -7,6 +7,7 @@ export { default as throttle } from "lodash/throttle";
 export { default as debounce } from "lodash/debounce";
 export { default as noop } from "lodash/noop";
 export { default as pick } from "lodash/pick";
+export { default as flatMap } from "lodash/flatMap";
 
 export { default as flow } from "lodash/fp/flow";
 
