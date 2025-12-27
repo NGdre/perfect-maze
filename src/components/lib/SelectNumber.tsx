@@ -1,15 +1,7 @@
 import { clamp } from "@utils";
 import clsx from "clsx";
 
-import {
-  ChangeEvent,
-  FC,
-  FocusEvent,
-  ReactNode,
-  useEffect,
-  useId,
-  useState,
-} from "react";
+import { ChangeEvent, FC, FocusEvent, ReactNode, useId, useState } from "react";
 
 import Button, { ButtonType } from "./button/Button";
 import "./select-number.css";
@@ -44,38 +36,44 @@ const SelectNumber: FC<SelectNumberProps> = ({
   labelClassName,
   ...props
 }) => {
-  const [counter, updateCounter] = useState<NumericValue>(initialValue);
+  const [counter, setCounter] = useState<NumericValue>(initialValue);
   const inputId = useId();
 
-  min = +min;
-  max = +max;
-
+  const minNum = +min;
+  const maxNum = +max;
   const counterAsNumber = +counter;
 
-  useEffect(() => {
-    const maybeNumber = parseInt(String(counter));
-
-    if (Number.isNaN(maybeNumber)) return;
-
-    async function handleSelect() {
-      await onSelect(maybeNumber);
+  const updateValue = (newValue: number) => {
+    if (newValue !== counterAsNumber) {
+      setCounter(newValue);
+      onSelect(newValue);
     }
-
-    if (maybeNumber <= max && maybeNumber >= min) handleSelect();
-  }, [counter]);
+  };
 
   const createNumberUpdater = (newNumber: number) => () => {
-    const isValidNumber = min <= newNumber && newNumber <= max;
+    const isValidNumber = minNum <= newNumber && newNumber <= maxNum;
 
     if (isValidNumber) {
-      updateCounter(newNumber);
+      updateValue(newNumber);
     }
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
 
-    updateCounter(value);
+    setCounter(value);
+
+    const maybeNumber = parseInt(value, 10);
+
+    if (
+      !Number.isNaN(maybeNumber) &&
+      maybeNumber >= minNum &&
+      maybeNumber <= maxNum
+    ) {
+      if (maybeNumber !== counterAsNumber) {
+        onSelect(maybeNumber);
+      }
+    }
   };
 
   const handleInputBlur = (event: FocusEvent<HTMLInputElement>) => {
@@ -84,12 +82,11 @@ const SelectNumber: FC<SelectNumberProps> = ({
     let maybeNumber = parseInt(value, 10);
 
     if (Number.isNaN(maybeNumber)) {
-      maybeNumber = min;
+      maybeNumber = minNum;
     }
 
-    const clamped = clamp(maybeNumber, min, max);
-
-    updateCounter(clamped);
+    const clamped = clamp(maybeNumber, minNum, maxNum);
+    updateValue(clamped);
   };
 
   return (
@@ -106,7 +103,7 @@ const SelectNumber: FC<SelectNumberProps> = ({
       <div className="flex">
         <Button
           onClick={createNumberUpdater(counterAsNumber - step)}
-          disabled={counterAsNumber <= min || disabled}
+          disabled={counterAsNumber <= minNum || disabled}
           size="sm"
           className="rounded-full"
           {...buttonProps}
@@ -124,8 +121,8 @@ const SelectNumber: FC<SelectNumberProps> = ({
           )}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
-          min={min}
-          max={max}
+          min={minNum}
+          max={maxNum}
           step={step}
           disabled={disabled}
           {...props}
@@ -133,7 +130,7 @@ const SelectNumber: FC<SelectNumberProps> = ({
 
         <Button
           onClick={createNumberUpdater(counterAsNumber + step)}
-          disabled={counterAsNumber >= max || disabled}
+          disabled={counterAsNumber >= maxNum || disabled}
           size="sm"
           className="rounded-full"
           {...buttonProps}
